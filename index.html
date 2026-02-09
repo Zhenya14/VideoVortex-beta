@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoVortex beta</title>
+    <title>VideoVortex</title>
 <meta name="description" content="VideoVortex — незалежна платформа для відео без цензури. Альтернатива YouTube.">
 <meta name="keywords" content="відеохостинг, відео онлайн, відеосервіс, альтернатива youtube, VideoVortex">
     <link rel="icon" href="VideoVortex_logo.ico">
@@ -1590,9 +1590,11 @@ text-decoration: none;
         <input type="checkbox" id="domain-restrict-checkbox"><span class="slider round"></span></label>
 </div>
 <br>
-
-           <label id="nsfw"><input type="checkbox" id="nsfw-checkbox">Позначити відео як NSFW</label>
+<div id="nsfw-container" style="margin-top: 10px;">
+           <span>Позначити відео як NSFW</span><label class="switch">
+        <input type="checkbox" id="nsfw"><span class="slider round"></span></label>
            <br>
+           </div>
     <div id="bandura-options" style="display:none; margin-top:10px;">
       
       <h3>🎵 Налаштування бандури</h3>
@@ -1979,7 +1981,7 @@ videoInput.addEventListener("change", () => {
 </script>
 <script>
 function isMobile() {
-  return window.innerWidth <= 768;
+  return window.innerWidth <= 968;
 }
 
 function showTgPopup() {
@@ -2488,7 +2490,7 @@ messaging.onMessage((payload) => {
                     padding: 10px 20px;
                     font-size: 16px;
                     border: none;
-                    border-radius: 55px;
+                    border-radius: 5px;
                     background: #ffffff;
                     color: #ff7e5f;
                     cursor: pointer;
@@ -3569,7 +3571,13 @@ const input = document.getElementById("avatar-input");
 const btn = document.getElementById("change-avatar");
 
 btn.onclick = () => input.click();
-
+document.getElementById("nsfw").onclick = function(event) {
+  if (userAge < 18) {
+    alert("Cталася помилка.");
+  document.getElementById("nsfw").checked = false;
+    
+  }
+  }
 auth.onAuthStateChanged(async (user) => {
     if (!user) return;
 loadPhotoChannelSelect();
@@ -3691,6 +3699,7 @@ if (isValentineDay) {
         const nsfwSlider = document.getElementById("slidernsfw");
         const nsfwInfo = document.getElementById("information-nsfw");
         const NSFW = document.getElementById("nsfw");
+        const nsfwContainer = document.getElementById("nsfw-container");
         const privateVideo = document.getElementById("private-checkbox");
         const privatePhoto = document.getElementById("private-checkbox");
         if (nsfwCheckbox) {
@@ -3700,16 +3709,19 @@ if (isValentineDay) {
                 nsfwCheckbox.checked = false;
                 nsfwCheckbox.disabled = true;
                 if (NSFW) NSFW.style.display = "none";
+                if (nsfwContainer) NSFW.style.display = "none";
                 if (nsfwInfo) nsfwInfo.style.display = "block";
             } else if (userAge < 18) {
               if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
                 nsfwCheckbox.checked = false;
                 nsfwCheckbox.disabled = true;
                 if (NSFW) NSFW.style.display = "none";
+                if (nsfwContainer) NSFW.style.display = "none";
                 if (nsfwInfo) nsfwInfo.style.display = "block";
             } else {
                 nsfwCheckbox.disabled = false;
                 if (NSFW) NSFW.style.display = "block";
+                if (nsfwContainer) NSFW.style.display = "block";
                 if (nsfwInfo) nsfwInfo.style.display = "none";
 
                 if (!nsfwCheckbox.dataset.listenerAdded) {
