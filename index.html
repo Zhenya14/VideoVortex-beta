@@ -62,18 +62,38 @@
     </filter>
 </svg>
 <style>
+.btn-liquid-glass {
+  position: fixed;
+  bottom: 20px;
+  left: 92%;
+  transform: translateX(-80%);
+  width: 20%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 0px;
+  border-radius: 89px;
+  background: rgba(255, 255, 255, 0.1);
+  /* Тінь і обведення для глибини */
+  z-index: 1000;
+  isolation: isolate;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        @apply bg-muted/25;
+    }
     .bg-liquid-glass {
   position: fixed;
   bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
+  left: 38%;
+  transform: translateX(-52%);
+  width: 70%;
   max-width: 600px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 0px 0px;
-  border-radius: 56px;
+  border-radius: 65px;
   background: rgba(255, 255, 255, 0.1);
   /* Тінь і обведення для глибини */
   z-index: 1000;
@@ -178,7 +198,7 @@ width: 80%;  /* Ширина поля вводу */
     }
 
     @supports not (hanging-punctuation:first) {
-        .bg-liquid-glass, .comment-liquid-glass, .tg-popup-card {
+        .bg-liquid-glass, .btn-liquid-glass, .comment-liquid-glass, .tg-popup-card {
             backdrop-filter: url(#displacementFilter) blur(2px);
         }
     }
@@ -1435,21 +1455,20 @@ text-decoration: none;
   transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s;
 }
 #plus-button {
-  width: 10%;
- height: 10%;
-  font-size: 32px;
+  max-width 600px;
   border-radius: 89px;
-  border: 2px solid white;
-  transition: 0.3s;
-  z-index: 999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#plus-button.open {
-  transform: rotate(45deg);
-  border-color: red;
-  box-shadow: 0 0 15px red;
+  width: 10%;
+ height: 50%;
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ text-decoration: none;
+ 
+ padding: 30px 2px;
+  font-size: 32px;
+  z-index: 1000;
+  color: white;
+  
 }
 .comments * {
     white-space: normal;
@@ -1799,7 +1818,6 @@ text-decoration: none;
  <a class="button-liquid-glass" href="#" id="smart-video" onclick="video()">
         <i class="material-icons">movie</i><span>Відео</span>
     </a>
-    <a  href="#" id="plus-button"><i class="material-icons">add</i></a>
        <a href="#" id="smart-post" onclick="post()">
         <i class="material-icons">photo</i><span>Дописи</span>
         </a>
@@ -1808,6 +1826,9 @@ text-decoration: none;
     </a>
 </div>
 </div>
+          <div class="btn-liquid-glass">
+            <a href="#" id="plus-button"><i class="material-icons">add</i></a>
+          </div>
 
                 <div class="menu" style="align-items: center;">
     <a href="#" id="close-menu" onclick="closeSidebar()">
