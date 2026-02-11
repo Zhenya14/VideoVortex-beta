@@ -1595,7 +1595,7 @@ text-decoration: none;
 <input type="file" id="video-file" accept="video/*">
 <br>
 <select id="video-channel-select">
-  <option value="main">Основний канал</option>
+  <option value="main" data-i18n="main-channel">Основний канал</option>
   <option value="second">Другий канал</option>
 </select>
 <br>
@@ -1711,7 +1711,6 @@ text-decoration: none;
                 <span id="progressicon-text">0%</span>
 <span id="time-left"></span>
             </div>
-  
             <button id="upload-button" onclick="uploadVideo()">Завантажити</button>
 <label>Публікуючи відео, ви погоджуєтеся з <a href="https://telegra.ph/Pravila-sp%D1%96lnoti-VideoVortex-09-14-2" target="_blank">правилами спільноти.</a></label>
 </div>
@@ -3132,7 +3131,7 @@ function uploadVideo() {
   const videoTitle = document.getElementById("video-title").value;
   const videoDescription = document.getElementById("video-description").value;
   const videoFile = document.getElementById("video-file").files[0];
-  const isNSFW = document.getElementById("nsfw-checkbox").checked;
+  const isNSFW = document.getElementById("nsfw").checked;
   const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
   const privateVideo = document.getElementById("private-checkbox").checked;
   const domainRestrict = document.getElementById("domain-restrict-checkbox")?.checked || false;
