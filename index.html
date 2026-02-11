@@ -2069,7 +2069,12 @@ const plusDesktop = document.getElementById("plus-desktop-button");
 const closeBtn = document.querySelector(".close-modal");
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
-
+function showNotificationModal() {
+  notification.style.display = "flex";
+}
+function showNotificationModal() {
+  notification.style.display = "none";
+}
 function requireAuth(action) {
     if (!auth.currentUser) {
       showNotificationModal();
@@ -2605,12 +2610,7 @@ if ('serviceWorker' in navigator) {
     })
     .catch(err => console.error('❌ Помилка реєстрації SW:', err));
 }
-function showNotificationModal() {
-  notification.style.display = "flex";
-}
-function showNotificationModal() {
-  notification.style.display = "none";
-}
+
 // ==========================
 // Запит дозволу на пуші
 // ==========================
