@@ -299,6 +299,17 @@ input:checked + .slider:before {
   align-items: center;
   animation: fadeIn 0.3s ease;
 }
+#notification-modal {
+  display: none;
+  position: fixed;
+  z-index: 100000000000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
 .ny-popup {
   position: fixed;
   inset: 0;
@@ -841,6 +852,36 @@ border: 2px solid #333333;
     outline: none;
     font-size: 1em;
         }
+        .media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.media-item {
+  position: relative;
+}
+
+.media-item img,
+.media-item video {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
 #delete-account:hover {
 border-color: red;
 box-shadow: 0 0 15px red; /* світіння */
@@ -1571,8 +1612,45 @@ text-decoration: none;
     <button id="agree-btn" onclick="acceptRulesUpdate()">Зрозуміло</button>
   </div>
 </div>
+<div id="notification-modal" class="ios-notification-modal">
+  <div class="ios-modal-content">
+    <h2>VideoVortex</h2>
+    <p id="message"></p>
+    <div class="modal-divider"></div>
+    <button id="agree-btn" onclick="closeNotificationModal()">ОК</button>
+  </div>
+</div>
+<div id="videoModal" class="ios-modal">
+  <div class="modal-window">
+    <h3>Вибір відео</h3>
 
-<div id="upload-modal" class="modal-overlay">
+    <button id="pickVideos">Обрати відео</button>
+    <input type="file" id="videoInput" accept="video/*" multiple hidden>
+
+    <div id="videoPreviewGrid" class="media-grid"></div>
+
+    <div class="modal-actions">
+      <button onclick="closeVideoModal()">Скасувати</button>
+
+    </div>
+  </div>
+</div>
+
+<div id="upload-modal" class="modal-overlay"><div id="photoModal" class="ios-modal">
+  <div class="modal-window">
+    <h3>Вибір фото</h3>
+
+    <button id="pickPhotos">Обрати фото</button>
+    <input type="file" id="photoInput" accept="image/*" multiple hidden>
+
+    <div id="photoPreviewGrid" class="media-grid"></div>
+
+    <div class="modal-actions">
+      <button onclick="closePhotoModal()">Скасувати</button>
+      <button id="uploadPhotosBtn">Завантажити</button>
+    </div>
+  </div>
+</div>
   <div class="modal-window">
     <div class="modal-header">
       <span data-i18n="tab-button active" class="tab-button active" data-tab="video-tab">Відео</span>
@@ -1592,10 +1670,11 @@ text-decoration: none;
   <label for="video-file" class="video-label">
   <i class="material-icons">cloud_upload</i> Завантажити відео
 </label>
+<button id="openVideoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="video-file" accept="video/*">
 <br>
 <select id="video-channel-select">
-  <option value="main" data-i18n="main-channel">Основний канал</option>
+  <option value="main">Основний канал</option>
   <option value="second">Другий канал</option>
 </select>
 <br>
@@ -1711,6 +1790,7 @@ text-decoration: none;
                 <span id="progressicon-text">0%</span>
 <span id="time-left"></span>
             </div>
+  
             <button id="upload-button" onclick="uploadVideo()">Завантажити</button>
 <label>Публікуючи відео, ви погоджуєтеся з <a href="https://telegra.ph/Pravila-sp%D1%96lnoti-VideoVortex-09-14-2" target="_blank">правилами спільноти.</a></label>
 </div>
@@ -1726,11 +1806,12 @@ text-decoration: none;
 <label for="photo-file" class="photo-label">
   <i class="material-icons">cloud_upload</i><p data-i18n="label-photo">Завантажити фото</p>
 </label>
+<button id="openPhotoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="photo-file" accept="image/*">
             <br>
             <select id="photo-channel-select">
   <option value="main" data-i18n="main-channel">Основний канал</option>
-  <option value="second">Другий канал</option>
+  <option value="second" data-i18n="second-channel">Другий канал</option>
 </select>
 <br>
             <div id="progress-photo-container" style="display: none; margin-top: 10px;">
@@ -1888,64 +1969,95 @@ document.addEventListener("DOMContentLoaded", () => {
     initLanguageSwitcher("language-select");
 });
 </script>
+<script>
+let selectedPhotos = [];
+let selectedVideos = [];
 
-        <script>
-const modal = document.getElementById("upload-modal");
-const accountModal = document.getElementById("account-modal");
-const buttonAccountModal = document.getElementById("account-link");
-const closeAccountModal = document.querySelector(".close-account-modal");
-const plus = document.getElementById("plus-button");
-const plusDesktop = document.getElementById("plus-desktop-button");
-const closeBtn = document.querySelector(".close-modal");
-const tabButtons = document.querySelectorAll(".tab-button");
-const tabContents = document.querySelectorAll(".tab-content");
+// Відкрити модалки
+openPhotoPicker.onclick = () => document.getElementById("photoModal").style.display = "flex";
+openVideoPicker.onclick = () => document.getElementById("videoModal").style.display = "flex";
 
-function requireAuth(action) {
-    if (!auth.currentUser) {
-        alert("Щоб виконати цю дію, увійдіть у акаунт.");
-        window.location.href = "auth.html";
-        return false;
-    }
-    return true;
+function closePhotoModal() {
+  document.getElementById("photoModal").style.display = "none";
 }
 
-// Відкриття модалок
-plus?.addEventListener("click", () => {
-    if (!requireAuth()) return;
-    modal.style.display = "flex";
-});
-plusDesktop?.addEventListener("click", () => {
-    if (!requireAuth()) return;
-    modal.style.display = "flex";
-});
+function closeVideoModal() {
+  document.getElementById("videoModal").style.display = "none";
+}
 
-buttonAccountModal?.addEventListener("click", () => {
-    if (!requireAuth()) return;
-    accountModal.style.display = "flex";
-});
+// Кнопки вибору файлів
+pickPhotos.onclick = () => photoInput.click();
+pickVideos.onclick = () => videoInput.click();
 
-// Закриття модалок
-closeAccountModal?.addEventListener("click", () => accountModal.style.display = "none");
-closeBtn?.addEventListener("click", () => modal.style.display = "none");
-
-// Закриття при кліку поза модалкою
-[modal, accountModal].forEach(m => {
-    m?.addEventListener("click", e => {
-        if (e.target === m) m.style.display = "none";
-    });
+// Фото
+photoInput.addEventListener("change", e => {
+  for (const file of e.target.files) {
+    if (file.type.startsWith("image/")) {
+      selectedPhotos.push(file);
+    }
+  }
+  renderPhotoPreviews();
 });
 
-// Перемикання вкладок
-tabButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        tabButtons.forEach(b => b.classList.remove("active"));
-        tabContents.forEach(c => c.classList.remove("active"));
-
-        btn.classList.add("active");
-        const tabId = btn.dataset.tab;
-        document.getElementById(tabId)?.classList.add("active");
-    });
+// Відео
+videoInput.addEventListener("change", e => {
+  for (const file of e.target.files) {
+    if (file.type.startsWith("video/")) {
+      selectedVideos.push(file);
+    }
+  }
+  renderVideoPreviews();
 });
+
+// Рендер прев’ю фото
+function renderPhotoPreviews() {
+  const grid = document.getElementById("photoPreviewGrid");
+  grid.innerHTML = "";
+
+  selectedPhotos.forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+
+    const div = document.createElement("div");
+    div.className = "media-item";
+
+    div.innerHTML = `
+      <img src="${url}">
+      <button class="remove-btn" onclick="removePhoto(${index})">✕</button>
+    `;
+
+    grid.appendChild(div);
+  });
+}
+
+function removePhoto(i) {
+  selectedPhotos.splice(i, 1);
+  renderPhotoPreviews();
+}
+
+// Рендер прев’ю відео
+function renderVideoPreviews() {
+  const grid = document.getElementById("videoPreviewGrid");
+  grid.innerHTML = "";
+
+  selectedVideos.forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+
+    const div = document.createElement("div");
+    div.className = "media-item";
+
+    div.innerHTML = `
+      <video src="${url}" muted></video>
+      <button class="remove-btn" onclick="removeVideo(${index})">✕</button>
+    `;
+
+    grid.appendChild(div);
+  });
+}
+
+function removeVideo(i) {
+  selectedVideos.splice(i, 1);
+  renderVideoPreviews();
+}
 </script>
         <script>
           const searchBox = document.getElementById("search-box");
@@ -2375,6 +2487,70 @@ window.addEventListener("load", showRulesModal);
   </script>
 
     <script>
+const modal = document.getElementById("upload-modal");
+const accountModal = document.getElementById("account-modal");
+const message = document.getElementById("message");
+const notification = document.getElementById("notification-modal");
+const buttonAccountModal = document.getElementById("account-link");
+const closeAccountModal = document.querySelector(".close-account-modal");
+const plus = document.getElementById("plus-button");
+const plusDesktop = document.getElementById("plus-desktop-button");
+const closeBtn = document.querySelector(".close-modal");
+const tabButtons = document.querySelectorAll(".tab-button");
+const tabContents = document.querySelectorAll(".tab-content");
+function showNotificationModal() {
+  notification.style.display = "flex";
+}
+function closeNotificationModal() {
+  notification.style.display = "none";
+}
+function requireAuth(action) {
+    if (!auth.currentUser) {
+      showNotificationModal();
+        message.innerHTML = "Щоб виконати цю дію, увійдіть у акаунт.";
+        window.location.href = "auth.html";
+        return false;
+    }
+    return true;
+}
+
+// Відкриття модалок
+plus?.addEventListener("click", () => {
+    if (!requireAuth()) return;
+    modal.style.display = "flex";
+});
+plusDesktop?.addEventListener("click", () => {
+    if (!requireAuth()) return;
+    modal.style.display = "flex";
+});
+
+buttonAccountModal?.addEventListener("click", () => {
+    if (!requireAuth()) return;
+    accountModal.style.display = "flex";
+});
+
+// Закриття модалок
+closeAccountModal?.addEventListener("click", () => accountModal.style.display = "none");
+closeBtn?.addEventListener("click", () => modal.style.display = "none");
+
+// Закриття при кліку поза модалкою
+[modal, accountModal].forEach(m => {
+    m?.addEventListener("click", e => {
+        if (e.target === m) m.style.display = "none";
+    });
+});
+
+// Перемикання вкладок
+tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        tabContents.forEach(c => c.classList.remove("active"));
+
+        btn.classList.add("active");
+        const tabId = btn.dataset.tab;
+        document.getElementById(tabId)?.classList.add("active");
+    });
+});
 function toggleSidebar() {
     var sidebar = document.querySelector('.menu');
     var content = document.querySelector('.content');
@@ -2403,6 +2579,7 @@ let timeLeftInSeconds = null;
 let sleepStart = null;
 let sleepEnd = null;
 let userAge = null;
+
  // Конвертуємо час в секунди
     let currentUserEmail = null;
     let showNSFW = false; // Track whether the user wants to view NSFW content
@@ -2531,10 +2708,12 @@ function resendVerification() {
     if (user) {
         user.sendEmailVerification()
             .then(() => {
-                alert("Лист підтвердження надіслано повторно!");
+                showNotificationModal();
+                message.innerHTML = "Лист підтвердження надіслано повторно!";
             })
             .catch((error) => {
-                alert("Помилка надсилання листа: " + error.message);
+              showNotificationModal();
+                message.innerHTML = "Помилка надсилання листа: " + error.message;
             });
     }
 }
@@ -2543,7 +2722,8 @@ function deleteAccount() {
     const user = firebase.auth().currentUser;
 
     if (!user) {
-        alert("Спочатку увійдіть у свій акаунт.");
+      showNotificationModal();
+        message.innerHTML = "Спочатку увійдіть у свій акаунт.";
         return;
     }
 
@@ -2603,16 +2783,19 @@ function deleteAccount() {
         .then(() => user.delete())
         // ?? 5. Повідомлення користувачу
         .then(() => {
-            alert("? Акаунт і всі пов’язані дані успішно видалено.");
+          showNotificationModal();
+            message.innerHTML = "? Акаунт і всі пов’язані дані успішно видалено.";
             location.reload();
         })
         .catch(error => {
             if (error.code === 'auth/requires-recent-login') {
-                alert("Будь ласка, увійдіть знову перед видаленням акаунту.");
+                message.innerHTML = "Будь ласка, увійдіть знову перед видаленням акаунту.";
+                showNotificationModal();
                 firebase.auth().signOut();
             } else {
                 console.error("? Помилка при видаленні акаунту:", error);
-                alert("Сталася помилка при видаленні акаунту: " + error.message);
+                showNotificationModal();
+                message.innerHTML = "Сталася помилка при видаленні акаунту: " + error.message;
             }
         });
 }
@@ -2625,7 +2808,8 @@ if (auth.currentUser) {
         showNSFW = this.checked;  // Update the variable based on the checkbox state
         loadVideos();  // Reload the videos with the updated setting
 } else {
-alert("Сталася помилка при увімкненні функції показувати відео позначення як NSFW.");
+  showNotificationModal();
+message.innerHTML = "Сталася помилка при увімкненні функції показувати відео позначення як NSFW.";
 }
     });
     async function isUserBlockedByMe(targetUid) {
@@ -2655,7 +2839,7 @@ async function didUserBlockMe(targetUid) {
 }
 document.getElementById("domain-restrict-checkbox").onclick = function(event) {
     if (!currentUserEmail || !currentUserEmail.endsWith("@kfccte-nau.ukr.education")) {
-        alert('Сталася помилка');
+        message.innerHTML = "Сталася помилка. ACCOUNT_IS_NOT_DOMAIN_KFCCTE-NAU.UKR.EDUCATION";
         event.preventDefault(); // Prevents checkbox from being checked
     }
 }
@@ -2928,7 +3112,7 @@ function insertRandomComment(videoKey) {
   }
 }
 function deleteVideo(videoKey, videoURL) {
-    if (!videoURL || !videoKey) return alert("Немає даних для видалення відео");
+    if (!videoURL || !videoKey) return showNotificationModal(); message.innerHTML = "Немає даних для видалення відео";
 
     if (confirm("Ви впевнені, що хочете видалити це відео?")) {
         const storageRef = storage.refFromURL(videoURL);
@@ -2937,18 +3121,21 @@ function deleteVideo(videoKey, videoURL) {
             return database.ref(`videos/${videoKey}`).remove();
         })
         .then(() => {
-            alert("Відео успішно видалено.");
+          showNotificationModal();
+            message.innerHTML = "Відео успішно видалено.";
             loadVideos();
         })
         .catch((error) => {
             console.error("Помилка при видаленні відео:", error);
-            alert("Помилка при видаленні відео: " + error.message);
+            showNotificationModal();
+            message.innerHTML = "Помилка при видаленні відео: " + error.message;
         });
     }
 }
 function createSecondChannel() {
   const name = document.getElementById("second-channel-name").value.trim();
-  if (!name) return alert("Введи назву");
+  if (!name) return showNotificationModal();
+  message.innerHTML = "Введи назву";
 
   const uid = auth.currentUser.uid;
 
@@ -2956,8 +3143,8 @@ function createSecondChannel() {
     name,
     avatar: name.charAt(0).toUpperCase()
   });
-
-  alert("Другий канал створено ✅");
+showNotificationModal();
+  message.innerHTML = "Другий канал створено ✅";
 }
 function editVideo(videoKey, videoData) {
   currentEditKey = videoKey;
@@ -2970,14 +3157,15 @@ document.getElementById("edit-private-checkbox").checked = videoData.private || 
 }
 
 function saveVideoChanges() {
-  if (!currentEditKey) return alert("Відео не вибрано.");
+  if (!currentEditKey) return showNotificationModal(); message.innerHTML = "Відео не вибрано.";
 
   const newTitle = document.getElementById("edit-video-title").value.trim();
 const newPrivate = document.getElementById("edit-private-checkbox").checked;
   const newDescription = document.getElementById("edit-video-description").value.trim();
 
   if (!newTitle) {
-    alert("Назва не може бути порожньою!");
+    showNotificationModal();
+    message.innerHTML = "Назва не може бути порожньою!";
     return;
   }
 
@@ -2987,12 +3175,14 @@ const newPrivate = document.getElementById("edit-private-checkbox").checked;
     description: newDescription,
     private: newPrivate
   }).then(() => {
-    alert("? Відео оновлено!");
+    showNotificationModal();
+    message.innerHTML = "? Відео оновлено!";
     document.getElementById("edit-form").style.display = 'none';
     currentEditKey = null;
     loadVideos(); // перезавантаження списку
   }).catch(error => {
-    alert("? Помилка при оновленні відео: " + error.message);
+    showNotificationModal();
+    message.innerHTML = "? Помилка при оновленні відео: " + error.message;
   });
 }
 function loadChannelSelect() {
@@ -3048,7 +3238,8 @@ function getActiveChannelData() {
 function generateDescription() {
     const title = document.getElementById("video-title").value;
 
-    if (!title) return alert("Введіть назву відео");
+    if (!title) return showNotificationModal();
+    message.innerHTML = "Введіть назву відео";
 
     const functions = firebase.app().functions("europe-west1");
     const fn = functions.httpsCallable("generateDescription");
@@ -3107,7 +3298,8 @@ document.getElementById("video-file").addEventListener("change", async (e) => {
     statusEl.innerText = "Готово до завантаження ✔";
   } catch (err) {
     console.error("❌ Конвертація не вдалася:", err);
-    alert("Помилка конвертації відео");
+   showNotificationModal();
+    message.innerHTML = "Помилка конвертації відео";
   }
 });
 
@@ -3137,13 +3329,15 @@ function uploadVideo() {
   const domainRestrict = document.getElementById("domain-restrict-checkbox")?.checked || false;
 
   if (!videoTitle || !videoFile) {
-    alert("Будь ласка, заповніть всі поля!");
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, заповніть всі поля!";
     return;
   }
 
   const user = firebase.auth().currentUser;
   if (!user) {
-    alert("Потрібно увійти в акаунт");
+    showNotificationModal();
+    message.innerHTML = "Потрібно увійти в акаунт";
     return;
   }
 
@@ -3189,7 +3383,8 @@ function uploadVideo() {
       },
       error => {
         console.error(error);
-        alert("Помилка завантаження відео.");
+        showNotificationModal();
+        message.innerHTML = "Помилка завантаження відео.";
       },
       () => {
         const uploadData = JSON.parse(localStorage.getItem("activeUpload"));
@@ -3217,7 +3412,8 @@ function uploadVideo() {
             banduraExtra
           }).then(() => {
             localStorage.removeItem("activeUpload");
-            alert("Відео завантажено!");
+            showNotificationModal();
+            message.innerHTML = "Відео завантажено!";
             loadVideos();
             document.getElementById("upload-form").reset();
             document.getElementById("progress-container").style.display = "none";
@@ -3227,7 +3423,8 @@ function uploadVideo() {
     );
   }).catch(err => {
     console.error("Помилка при отриманні даних користувача:", err);
-    alert("Не вдалося отримати дані профілю.");
+    showNotificationModal();
+    message.innerHTML = "Не вдалося отримати дані профілю.";
   });
 }
 
@@ -3339,34 +3536,56 @@ function editSuperName() {
 function saveEditName() {
   const newName = document.getElementById("edit-name").value.trim();
   const user = firebase.auth().currentUser;
-  if (!user) return alert("Будь ласка, увійдіть.");
+
+  if (!user) {
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, увійдіть.";
+    return;
+  }
 
   const uid = user.uid;
-  database.ref("users/" + uid).update({ name: newName }).then(() => {
-    alert("? Ім’я змінено!");
-    document.getElementById("form-edit-name").style.display = "none";
-    document.getElementById("name").style.display = "block";
-    document.getElementById("button-name").style.display = "block";
-    document.getElementById("name").textContent = "Ім'я: " + newName;
-    updateVideosAuthor();
-  }).catch(err => alert("? Помилка: " + err.message));
+  database.ref("users/" + uid).update({ name: newName })
+    .then(() => {
+      showNotificationModal();
+      message.innerHTML = "Ім’я змінено!";
+      document.getElementById("form-edit-name").style.display = "none";
+      document.getElementById("name").style.display = "block";
+      document.getElementById("button-name").style.display = "block";
+      document.getElementById("name").textContent = "Ім'я: " + newName;
+      updateVideosAuthor();
+    })
+    .catch(err => {
+      showNotificationModal();
+      message.innerHTML = "Помилка: " + err.message;
+    });
 }
 
 // Зберегти зміну прізвища
 function saveEditSuperName() {
   const newSuperName = document.getElementById("edit-supername").value.trim();
   const user = firebase.auth().currentUser;
-  if (!user) return alert("Будь ласка, увійдіть.");
+
+  if (!user) {
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, увійдіть.";
+    return;
+  }
 
   const uid = user.uid;
-  database.ref("users/" + uid).update({ supername: newSuperName }).then(() => {
-    alert("? Прізвище змінено!");
-    document.getElementById("form-edit-supername").style.display = "none";
-    document.getElementById("supername").style.display = "block";
-    document.getElementById("button-supername").style.display = "block";
-    document.getElementById("supername").textContent = "Прізвище: " + newSuperName;
-    updateVideosAuthor();
-  }).catch(err => alert("? Помилка: " + err.message));
+  database.ref("users/" + uid).update({ supername: newSuperName })
+    .then(() => {
+      showNotificationModal();
+      message.innerHTML = "Прізвище змінено!";
+      document.getElementById("form-edit-supername").style.display = "none";
+      document.getElementById("supername").style.display = "block";
+      document.getElementById("button-supername").style.display = "block";
+      document.getElementById("supername").textContent = "Прізвище: " + newSuperName;
+      updateVideosAuthor();
+    })
+    .catch(err => {
+      showNotificationModal();
+      message.innerHTML = "Помилка: " + err.message;
+    });
 }
 function loadPhotoChannelSelect() {
     const select = document.getElementById("photo-channel-select");
@@ -3426,7 +3645,8 @@ async function uploadComment(videoKey, videoOwnerEmail) {
     const commentText = commentInput.value.trim();
     const isPrivate = document.getElementById(`private-comment-${videoKey}`).checked;
 
-    if (!commentText) return alert("Коментар не може бути порожнім.");
+    if (!commentText) return showNotificationModal();
+    message.innerHTML = "Коментар не може бути порожнім.";
 
     let commentData = commentText;
     if (isPrivate) {
@@ -3593,7 +3813,8 @@ const btn = document.getElementById("change-avatar");
 btn.onclick = () => input.click();
 document.getElementById("nsfw").onclick = function(event) {
   if (userAge < 18) {
-    alert("Cталася помилка.");
+    showNotificationModal();
+    message.innerHTML = "Cталася помилка.";
   document.getElementById("nsfw").checked = false;
     
   }
@@ -3777,13 +3998,14 @@ input.onchange = async () => {
             uploadFile = new File([blob], file.name.replace(/\.heic$/i, ".webp"), { type: "image/webp" });
         } catch (err) {
             console.error("Помилка конвертації HEIC:", err);
-            return alert("Не вдалося конвертувати HEIC");
+            return showNotificationModal(); message.innerHTML = "Не вдалося конвертувати HEIC";
         }
     }
 
     // Далі завантаження як раніше
     const user = firebase.auth().currentUser;
-    if (!user) return alert("Не авторизований");
+    if (!user) return showNotificationModal();
+    message.innerHTML = "Не авторизований";
 
     try {
         const avatarId = `${user.uid}_${Date.now()}`;
@@ -3802,7 +4024,8 @@ input.onchange = async () => {
         navAvatar.prepend(img.cloneNode(true));
     } catch (err) {
         console.error(err);
-        alert("Не вдалося завантажити аватар");
+        showNotificationModal();
+        message.innerHTML = "Не вдалося завантажити аватар";
     }
 };
 updateVideosAuthor();
@@ -3814,7 +4037,8 @@ function submitBirthdate() {
 
 
   if (!input || !nameInput || !supernameInput) {
-    alert("Будь ласка, введіть дату народження.");
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, введіть дату народження.";
     return;
   }
 
@@ -3827,7 +4051,8 @@ function submitBirthdate() {
     name: nameInput,
     supername: supernameInput
   }).then(() => {
-    alert("Дата збережена.");
+    showNotificationModal();
+    message.innerHTML = "Дата збережена.";
    updateVideosAuthor();
   });
 }
@@ -3868,7 +4093,8 @@ function updateVideosAuthor() {
 }
 document.getElementById("logout-link").onclick = function() {
             auth.signOut().then(() => {
-                alert("Ви вийшли з акаунту.");
+              showNotificationModal();
+                message.innerHTML = "Ви вийшли з акаунту.";
                 location.reload();
             });
         };
@@ -3959,13 +4185,16 @@ function deletePhoto(photoKey, photoURL) {
         storageRef.delete().then(() => {
             // Видалення запису з бази даних
             database.ref(`photos/${photoKey}`).remove().then(() => {
-                alert("Фото успішно видалено.");
+              showNotificationModal();
+                message.innerHTML = "Фото успішно видалено.";
                 loadPhotos(); // Оновлюємо список відео
             }).catch((error) => {
-                alert("Помилка при видаленні фото з бази даних: " + error.message);
+              showNotificationModal();
+                message.innerHTML = "Помилка при видаленні фото з бази даних: " + error.message;
             });
         }).catch((error) => {
-            alert("Помилка при видаленні фото зі сховища: " + error.message);
+          showNotificationModal();
+            message.innerHTML = "Помилка при видаленні фото зі сховища: " + error.message;
         });
     }
 }
@@ -4009,10 +4238,12 @@ function loadPhotoChannelSelect() {
     // Example of how video data might be stored with an 'nsfw' attribute
 function uploadPhoto() {
     const user = firebase.auth().currentUser;
-    if (!user) return alert("Увійдіть в акаунт");
+    if (!user) return showNotificationModal();
+    message.innerHTML = "Увійдіть в акаунт";
 
     const channel = getActiveChannelData();
-    if (!channel) return alert("Не вибрано канал");
+    if (!channel) return showNotificationModal();
+    message.innerHTML = "Не вибрано канал";
 
     const photoDescription = document.getElementById("photo-description")?.value || "";
     const photoTitle = document.getElementById("photo-title")?.value || "";
@@ -4023,7 +4254,8 @@ function uploadPhoto() {
     const progressContainer = document.getElementById("progress-photo-container");
 
     if (!photoTitle || !photoFile) {
-        alert("Будь ласка, заповніть всі поля!");
+      showNotificationModal();
+        message.innerHTML = "Будь ласка, заповніть всі поля!";
         return;
     }
 
@@ -4040,7 +4272,8 @@ function uploadPhoto() {
             }
         },
         (error) => {
-            alert("Помилка завантаження фото: " + error.message);
+          showNotificationModal();
+            message.innerHTML = "Помилка завантаження фото: " + error.message;
         },
         () => {
             uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
@@ -4056,7 +4289,8 @@ function uploadPhoto() {
                     email: user.email,
                     publishDate: currentDate
                 }).then(() => {
-                    alert("Фото завантажено!");
+                  showNotificationModal();
+                    message.innerHTML = "Фото завантажено!";
                     loadPhotos();
                     document.getElementById("upload-photo-form")?.reset();
                     if (progressContainer) progressContainer.style.display = "none";
