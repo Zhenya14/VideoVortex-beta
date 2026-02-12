@@ -1563,7 +1563,19 @@ text-decoration: none;
     </style>
 </head>
 <body> 
+<div id="cookieBanner" class="cookie-banner">
+  <div class="cookie-box">
+    <p>
+      Ми використовуємо cookies для роботи сайту та аналітики.
+      Детальніше в <a href=#" target="_blank">Privacy Policy</a>
+    </p>
 
+    <div class="cookie-buttons">
+      <button id="acceptCookies">Прийняти</button>
+      <button id="rejectCookies">Відхилити</button>
+    </div>
+  </div>
+</div>
  <nav>
         <div style="display: flex; align-items: center;">
             <a href="#" id="open-menu" onclick="toggleSidebar()">
@@ -1968,6 +1980,52 @@ text-decoration: none;
 document.addEventListener("DOMContentLoaded", () => {
     initLanguageSwitcher("language-select");
 });
+</script>
+<script>
+const banner = document.getElementById("cookieBanner");
+const consent = localStorage.getItem("cookieConsent");
+
+// показуємо тільки якщо користувач ще не відповів
+if(!consent){
+  banner.style.display = "block";
+}
+
+// прийняти
+document.getElementById("acceptCookies").onclick = () => {
+  localStorage.setItem("cookieConsent","accepted");
+  enableAnalytics();
+  banner.style.display="none";
+};
+
+// відхилити
+document.getElementById("rejectCookies").onclick = () => {
+  localStorage.setItem("cookieConsent","rejected");
+  disableAnalytics();
+  banner.style.display="none";
+};
+import { getAnalytics } from "firebase/analytics";
+import { initializeApp } from "firebase/app";
+
+function enableAnalytics(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyBkPYP3bnDy61NFjRSboRZrfTVNTdIMWbY",
+  authDomain: "videovortex-235cd.firebaseapp.com",
+  databaseURL: "https://videovortex-235cd-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "videovortex-235cd",
+  storageBucket: "videovortex-235cd.appspot.com",
+  messagingSenderId: "681594250269",
+  appId: "1:681594250269:web:1176b21fcc8fe2a7d052f4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  console.log("Firebase analytics enabled");
+}
+function disableAnalytics(){
+  // нічого не підключаємо
+  console.log("analytics disabled");
+}
 </script>
 <script>
 let selectedPhotos = [];
