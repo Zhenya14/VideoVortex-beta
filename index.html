@@ -601,7 +601,9 @@ button:disabled {
   transform: none;
 }
 .photo-label { 
-            display: inline-block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
     padding: 12px 28px;
     border-radius: 50px;
     text-align: center;
@@ -627,10 +629,12 @@ box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
 transform: scale(0.95); /* легке стиснення */
 }
 .video-label { 
-            display: inline-block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
     padding: 12px 28px;
     border-radius: 50px;
-    text-align: center;
     text-decoration: none;
     color: white;
     background: #111111;
@@ -1694,7 +1698,7 @@ text-decoration: none;
             <button onclick="generateDescription()">🤖 Згенерувати опис</button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
   <label for="video-file" class="video-label">
-  <i class="material-icons">cloud_upload</i> Завантажити відео
+  <i class="material-icons">cloud_upload</i><p style="padding: 0 5px;" data-i18n="label-video">Завантажити відео</p>
 </label>
 <button id="openVideoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="video-file" accept="video/*">
@@ -1830,7 +1834,7 @@ text-decoration: none;
             <textarea id="photo-description" placeholder="Опис Фото"></textarea>
             <p id="file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
 <label for="photo-file" class="photo-label">
-  <i class="material-icons">cloud_upload</i><p data-i18n="label-photo">Завантажити фото</p>
+  <i class="material-icons">cloud_upload</i><p style="padding: 0 5px;" data-i18n="label-photo">Завантажити фото</p>
 </label>
 <button id="openPhotoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="photo-file" accept="image/*">
