@@ -1495,11 +1495,25 @@ text-decoration: none;
   font-weight: 600;
   transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s;
 }
+.icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
 #plus-button {
   max-width 600px;
   border-radius: 89px;
   width: 10%;
- height: 50%;
+ height: 10%;
  display: flex;
  justify-content: center;
  align-items: center;
@@ -1599,7 +1613,7 @@ text-decoration: none;
             <a href="#" id="logout-link" style="display: none;">
                 <i class="material-icons">logout</i><span class="icon-text">Вийти</span>
                 </a>
-            <a href="#" id="account-link-desktop" onclick="openAccountModal()" style="display: none;">
+            <a href="#" id="account-desktop-link" onclick="openAccountModal()" style="display: none;">
                 <i class="material-icons">person</i><span class="icon-text" id="email">Завантаження...</span>
             </a>
                     <button data-i18n="installBtn" id="installBtn" style="display:none; width: 128px; right: 152px; position: fixed; top: 82px;">Встановити додаток</button>
@@ -2385,7 +2399,7 @@ popupClose.style.display = "none";
    🔳 ICON SYSTEM
    ================================ */
 const halloweenIcons = {
-  "account-link": (user) => `🕸<span class="icon-text">${user.name} ${user.supername}</span>`,
+  "account-desktop-link": (user) => `🕸<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "🕸",
   "logout-link": "🚪",
   "auth-link": "🚪",
@@ -2393,7 +2407,7 @@ const halloweenIcons = {
   "smart-video": "🦇<span>Відео</span>",
   "": "👻<span>Дописи</span>",
   "video": "🦇<span>Відео</span>",
-  "plus-button": "🎃",
+  "plus-button": `<i class="icon">🎃</i>`,
   "plus-desktop-button": "🎃"
 };
 
@@ -2406,7 +2420,7 @@ const newyearIcons = {
   "smart-video": "🎬<span>Відео</span>",
   "post": "❄️<span>Дописи</span>",
   "video": "🎬<span>Відео</span>",
-  "plus-button": "🎄",
+  "plus-button": `<i class="icon">🎄</i>`,
   "plus-desktop-button": "🎄"
 };
 const valentineIcons = {
@@ -2417,9 +2431,9 @@ const valentineIcons = {
   "auth-link": "💘",
   "smart-post": "💌<span>Дописи</span>",
   "smart-video": "💞<span>Відео</span>",
-  "": "💌<span>Дописи</span>",
+  "post": "💌<span>Дописи</span>",
   "video": "💞<span>Відео</span>",
-  "plus-button": "💝",
+  "plus-button": `<i class="icon">💝</i>`,
   "plus-desktop-button": "💝"
 };
 const easterIcons = {
@@ -2432,7 +2446,7 @@ const easterIcons = {
   "smart-video": "🐥<span>Відео</span>",
   "post": "🌸<span>Дописи</span>",
   "video": "🐥<span>Відео</span>",
-  "plus-button": "🧺",
+  "plus-button": `<i class="icon">🧺</i>`,
   "plus-desktop-button": "🧺"
 };
 const vyshyvankaIcons = {
@@ -2445,7 +2459,7 @@ const vyshyvankaIcons = {
   "smart-video": "📽️<span>Відео</span>",
   "post": "🪢<span>Дописи</span>",
   "video": "📽️<span>Відео</span>",
-  "plus-button": "🧿",
+  "plus-button": `<i class="icon">🧿</i>`,
   "plus-desktop-button": "🧿"
 };
 const independenceIcons = {
@@ -2458,7 +2472,7 @@ const independenceIcons = {
   "smart-video": "📹<span>Відео</span>",
   "post": "📝<span>Дописи</span>",
   "video": "📹<span>Відео</span>",
-  "plus-button": "🌾",
+  "plus-button": `<i class="icon">🌾</i>`,
   "plus-desktop-button": "🌾"
 };
 function applyIcons(set, user = null) {
