@@ -601,9 +601,7 @@ button:disabled {
   transform: none;
 }
 .photo-label { 
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: inline-block;
     padding: 12px 28px;
     border-radius: 50px;
     text-align: center;
@@ -629,12 +627,10 @@ box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
 transform: scale(0.95); /* легке стиснення */
 }
 .video-label { 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            
+            display: inline-block;
     padding: 12px 28px;
     border-radius: 50px;
+    text-align: center;
     text-decoration: none;
     color: white;
     background: #111111;
@@ -673,7 +669,23 @@ transform: scale(0.95); /* легке стиснення */
   transform: translateY(-4px);
   box-shadow: 0 0 26px rgba(0, 255, 255, .18);
 }
+.photo-container {
+  background: rgba(8, 12, 20, 0.9);
+  border-radius: 18px;
+  padding: 12px;
+  border: 1px solid rgba(0, 255, 255, .12);
+  box-shadow: 0 0 22px rgba(0, 255, 255, .07);
+  transition: transform .2s ease, box-shadow .25s ease;
+  display: flex;
+  flex-direction: column-reverse;
+  position: relative;
+  z-index: 1;
+}
 
+.photo-container:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 26px rgba(0, 255, 255, .18);
+}
 video,
 audio {
   border-radius: 14px;
@@ -697,9 +709,9 @@ audio {
 margin-top: 50px;
 width: 90%;
         }
-        .photo-container {
+        #photo-container {
     margin-top: 50px;
-    flex-direction: column-reverse;
+    width: 90%;
         }
         /* Стилі для зображень з класом .photo-item */
 img.photo-item {
@@ -1698,7 +1710,7 @@ text-decoration: none;
             <button onclick="generateDescription()">🤖 Згенерувати опис</button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
   <label for="video-file" class="video-label">
-  <i class="material-icons">cloud_upload</i><p style="padding: 0 5px;" data-i18n="label-video">Завантажити відео</p>
+  <i class="material-icons">cloud_upload</i> Завантажити відео
 </label>
 <button id="openVideoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="video-file" accept="video/*">
@@ -1834,7 +1846,7 @@ text-decoration: none;
             <textarea id="photo-description" placeholder="Опис Фото"></textarea>
             <p id="file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
 <label for="photo-file" class="photo-label">
-  <i class="material-icons">cloud_upload</i><p style="padding: 0 5px;" data-i18n="label-photo">Завантажити фото</p>
+  <i class="material-icons">cloud_upload</i><p data-i18n="label-photo">Завантажити фото</p>
 </label>
 <button id="openPhotoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="photo-file" accept="image/*">
@@ -2954,6 +2966,34 @@ function stringToColor(str) {
   }
   return `hsl(${hash % 360}, 65%, 55%)`;
 }
+function createVideoThumbnail(videoUrl) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.src = videoUrl;
+    video.crossOrigin = "anonymous";
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+
+    video.addEventListener("loadeddata", () => {
+      video.currentTime = 1; // беремо кадр з 1 секунди
+    });
+
+    video.addEventListener("seeked", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+      resolve(dataUrl);
+    });
+
+    video.addEventListener("error", reject);
+  });
+}
 function loadVideos() {
     const videoGallery = document.getElementById("video-gallery");
     if (!videoGallery) return;
@@ -2980,32 +3020,20 @@ function loadVideos() {
         if (videoData.domainRestrict && (!currentUserEmail || !currentUserEmail.endsWith("@kfccte-nau.ukr.education"))) return;
 
         // 🔹 2. Відео елемент
-        const videoElement = document.createElement("video");
-        videoElement.classList.add("video-item");
-        videoElement.controls = false;
-        videoElement.preload = "metadata";
-        videoElement.playsInline = true;
+        // 🔹 2. Прев’ю як IMG замість VIDEO
+// 🔹 2. Прев’ю з відео як IMG
+const videoElement = document.createElement("img");
+videoElement.classList.add("video-item");
+videoElement.alt = videoData.title || "Відео";
 
-        const source = document.createElement("source");
-        source.src = videoData.url;
-        source.type = "video/mp4";
-        videoElement.appendChild(source);
-
-        videoElement.addEventListener("loadedmetadata", () => {
-            if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
-                const audio = document.createElement("audio");
-                audio.controls = true;
-                audio.src = videoData.url;
-                audio.className = "audio-item";
-                audio.style.width = "100%";
-                videoElement.replaceWith(audio);
-            }
-        });
-
-        videoElement.dataset.title = videoData.title || "";  
-        videoElement.dataset.description = videoData.description || "";  
-        videoElement.dataset.author = videoData.author || "";
-
+createVideoThumbnail(videoData.url)
+  .then(thumbnail => {
+    videoElement.src = thumbnail;
+  })
+  .catch(err => {
+    console.warn("Не вдалося створити прев’ю:", err);
+    videoElement.src = "fallback.jpg";
+  });
         // 🔹 3. Коментарі
         const commentSection = document.createElement("div");
         commentSection.classList.add("video-comment");
@@ -3477,6 +3505,7 @@ function uploadVideo() {
             author: authorName || "Анонім",
             authorAvatar: authorAvatar, // ✅ зберігаємо аватар
             email: user.email,
+            authorUid: user.uid, // ← ОБОВ'ЯЗКОВО
             disabledComments: disabledComments,
             url: downloadURL,
             description: videoDescription,
@@ -3964,24 +3993,36 @@ if (isValentineDay) {
         }
 
         // 🔹 Обчислення віку
-        if (birthStr) {
-            let birthDate;
-            const match = birthStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-            if (match) {
-                const [, d, m, y] = match;
-                birthDate = new Date(`${y}-${m}-${d}`);
-            } else {
-                birthDate = new Date(birthStr);
-            }
+      // 🔹 Обчислення віку
+if (birthStr) {
+    let birthDate;
+    const match = birthStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (match) {
+        const [, d, m, y] = match;
+        birthDate = new Date(`${y}-${m}-${d}`);
+    } else {
+        birthDate = new Date(birthStr);
+    }
 
-            if (!isNaN(birthDate)) {
-                const today = new Date();
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const mm = today.getMonth() - birthDate.getMonth();
-                if (mm < 0 || (mm === 0 && today.getDate() < birthDate.getDate())) age--;
-                userAge = age;
-            }
+    if (!isNaN(birthDate)) {
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const mm = today.getMonth() - birthDate.getMonth();
+        if (mm < 0 || (mm === 0 && today.getDate() < birthDate.getDate())) age--;
+        userAge = age;
+
+        // 🔹 Підтягання birthYear у базу, не змінюючи структуру
+        const birthYear = birthDate.getFullYear();
+        if (!userData.birthYear || userData.birthYear !== birthYear) {
+            // Не блокує решту коду, async виконується тут
+            database.ref("users/" + uid).update({ birthYear: birthYear })
+                .then(() => console.log("birthYear оновлено у базі:", birthYear))
+                .catch(err => console.error("Помилка оновлення birthYear:", err));
         }
+    }
+
+}
+// Далі йде решта твоїх функцій (NSFW, аватар, свята, відео, UI) — без змін
 
         // 🔹 Оновлення UI
         const viewBirthdate = document.getElementById("view");
@@ -4247,9 +4288,9 @@ function loadPhotos() {
         // 🔹 Контейнер фото
         const Photocontainer = document.createElement("div");
         Photocontainer.classList.add("photo-container");
-        Photocontainer.appendChild(photoElement);
         Photocontainer.appendChild(infophotoElement);
-
+        Photocontainer.appendChild(photoElement);
+        
         photoGallery.appendChild(Photocontainer);
     });
 }
@@ -4363,6 +4404,7 @@ function uploadPhoto() {
                     authorAvatar: channel.avatar,
                     channelKey: channel.key,
                     email: user.email,
+                    authorUid: user.uid, // ← ОБОВ'ЯЗКОВО
                     publishDate: currentDate
                 }).then(() => {
                   showNotificationModal();
