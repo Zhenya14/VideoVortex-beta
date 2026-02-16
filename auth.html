@@ -412,6 +412,7 @@ document.getElementById("appeal-close").addEventListener("click", () => {
 
         const [year, month, day] = birthInput.split("-");
         const birthdate = `${day}.${month}.${year}`;
+        const birthYear = parseInt(year);
 
         try {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
@@ -422,7 +423,7 @@ document.getElementById("appeal-close").addEventListener("click", () => {
                 supername: supername,
                 email: email,
                 birthdate: birthdate,
-                birthYear: Number(year),
+                birthYear: birthYear,
                 createdAt: new Date().toISOString()
             });
 
