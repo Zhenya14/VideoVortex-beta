@@ -2583,6 +2583,7 @@ const accountModal = document.getElementById("account-modal");
 const message = document.getElementById("message");
 const notification = document.getElementById("notification-modal");
 const buttonAccountModal = document.getElementById("account-link");
+const buttonAccountDesktopModal = document.getElementById("account-desktop-link");
 const closeAccountModal = document.querySelector(".close-account-modal");
 const plus = document.getElementById("plus-button");
 const plusDesktop = document.getElementById("plus-desktop-button");
@@ -2616,6 +2617,10 @@ plusDesktop?.addEventListener("click", () => {
 });
 
 buttonAccountModal?.addEventListener("click", () => {
+    if (!requireAuth()) return;
+    accountModal.style.display = "flex";
+});
+buttonAccountDesktopModal?.addEventListener("click", () => {
     if (!requireAuth()) return;
     accountModal.style.display = "flex";
 });
