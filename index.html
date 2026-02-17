@@ -998,7 +998,7 @@ transform: scale(0.95); /* легке стиснення */
   margin-left: 240px;
 }
 #open-menu {
-        display: flex;
+        display: none;
 }
 .action-menu {
   position: absolute;
@@ -3807,16 +3807,18 @@ function toggleUploadVisibility() {
     const smartPhotoUpload = document.getElementById("smart-upload-link-photo");
     const smartUpload = document.getElementById("smart-upload-link");
     const openMenu = document.getElementById("open-menu");
-
+const accountDesktopLink = document.getElementById("account-desktop-link");
     if (isMobile) {
         openMenu.style.display = "none";
         smartUpload.style.display = "grid";
+        accountDesktopLink.style.display = "none";
         smartPhotoUpload.style.display = "grid";
         if (auth.currentUser) {
             upload.style.display = "none";
             photoUpload.style.display = "none";
         }
     } else {
+      accountDesktopLink.style.display = "flex";
         openMenu.style.display = "flex";
         smartUpload.style.display = "none";
         smartPhotoUpload.style.display = "none";
@@ -3844,7 +3846,7 @@ function updateUI(user) {
     document.getElementById("auth-link")?.style?.setProperty("display", "none");
     document.getElementById("register-link")?.style?.setProperty("display", "none");
     document.getElementById("logout-link")?.style?.setProperty("display", "flex");
-    document.getElementById("account-link")?.style?.setProperty("display", "grid");
+    document.getElementById("account-desktop-link")?.style?.setProperty("display", "grid");
     document.getElementById("upload-link")?.style?.setProperty("display", "flex");
     document.getElementById("upload-link-photo")?.style?.setProperty("display", "flex");
     document.getElementById("smart-upload-link")?.style?.setProperty("display", "grid");
@@ -3877,7 +3879,7 @@ function updateUI(user) {
     document.getElementById("auth-link")?.style?.setProperty("display", "flex");
     document.getElementById("register-link")?.style?.setProperty("display", "flex");
     document.getElementById("logout-link")?.style?.setProperty("display", "none");
-    document.getElementById("account-link")?.style?.setProperty("display", "none");
+    document.getElementById("account-desktop-link")?.style?.setProperty("display", "none");
     document.getElementById("upload-link")?.style?.setProperty("display", "none");
     document.getElementById("upload-link-photo")?.style?.setProperty("display", "none");
     document.getElementById("smart-upload-link")?.style?.setProperty("display", "none");
