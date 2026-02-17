@@ -3023,17 +3023,31 @@ function loadVideos() {
         // 🔹 2. Прев’ю як IMG замість VIDEO
 // 🔹 2. Прев’ю з відео як IMG
 const videoElement = document.createElement("video");
-videoElement.classList.add("video-item");
-videoElement.alt = videoData.title || "Відео";
+        videoElement.classList.add("video-item");
+        videoElement.controls = false;
+        videoElement.preload = "metadata";
+        videoElement.playsInline = true;
 
-createVideoThumbnail(videoData.url)
-  .then(thumbnail => {
-    videoElement.src = thumbnail;
-  })
-  .catch(err => {
-    console.warn("Не вдалося створити прев’ю:", err);
-    videoElement.src = "fallback.jpg";
-  });
+        const source = document.createElement("source");
+        source.src = videoData.url;
+        source.type = "video/mp4";
+        videoElement.appendChild(source);
+
+        videoElement.addEventListener("loadedmetadata", () => {
+            if (videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.src = videoData.url;
+                audio.className = "audio-item";
+                audio.style.width = "100%";
+                videoElement.replaceWith(audio);
+            }
+        });
+
+        videoElement.dataset.title = videoData.title || "";  
+        videoElement.dataset.description = videoData.description || "";  
+        videoElement.dataset.author = videoData.author || "";
+
         // 🔹 3. Коментарі
         const commentSection = document.createElement("div");
         commentSection.classList.add("video-comment");
