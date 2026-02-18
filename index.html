@@ -3104,14 +3104,41 @@ const videoElement = document.createElement("video");
         };
 
         // 🔹 5. Приватні коментарі
-        const privateComment = commentSection.querySelector(`#private-checkbox-${videoKey}`);
-        const privateCheckbox = commentSection.querySelector(`#private-comment-${videoKey}`);
-        if (privateComment && privateCheckbox) {
-            const showPrivate = userAge >= 16;
-            privateComment.style.display = showPrivate ? "block" : "none";
-            privateCheckbox.disabled = !showPrivate;
-        }
+        // 🔹 5. Приватні коментарі
+// 🔹 5. Приватні коментарі
+const privateComment = commentSection.querySelector(`#private-checkbox-${videoKey}`);
+const privateCheckbox = commentSection.querySelector(`#private-comment-${videoKey}`);
 
+if (privateComment && privateCheckbox) {
+    const currentUser = firebase.auth().currentUser;
+    if (currentUser) {
+        database.ref(`users/${currentUser.uid}`).once("value")
+            .then(snapshot => {
+                const userData = snapshot.val();
+                const birthdateStr = userData?.birthdate;
+
+                // Функція для точного обчислення віку
+                function calculateAge(birthdate) {
+                    if (!birthdate) return null;
+                    const [day, month, year] = birthdate.split(".").map(Number);
+                    const today = new Date();
+                    let age = today.getFullYear() - year;
+                    if (today.getMonth() + 1 < month ||
+                        (today.getMonth() + 1 === month && today.getDate() < day)) {
+                        age--;
+                    }
+                    return age;
+                }
+
+                const userAge = calculateAge(birthdateStr);
+                const showPrivate = userAge !== null && userAge >= 16;
+
+                privateComment.style.display = showPrivate ? "block" : "none";
+                privateCheckbox.disabled = !showPrivate;
+            })
+            .catch(err => console.error("Помилка завантаження даних користувача:", err));
+    }
+}
         // 🔹 6. Інформація про відео
         const infoElement = document.createElement("div");
         infoElement.classList.add("video-info");
@@ -3948,111 +3975,164 @@ document.getElementById("nsfw").onclick = function(event) {
     
   }
   }
+  function configureAgeUI(age) {
+
+    const nsfwCheckbox = document.getElementById('show-nsfw-videos');
+    const nsfwSlider = document.getElementById("slidernsfw");
+    const nsfwInfo = document.getElementById("information-nsfw");
+    const NSFW = document.getElementById("nsfw");
+    const nsfwContainer = document.getElementById("nsfw-container");
+    const privateVideo = document.getElementById("private-checkbox");
+
+    if (!nsfwCheckbox) return;
+
+    // < 13
+    if (age < 13) {
+
+        if (privateVideo) privateVideo.checked = true;
+
+        nsfwCheckbox.checked = false;
+        nsfwCheckbox.disabled = true;
+
+        if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
+        if (NSFW) NSFW.style.display = "none";
+        if (nsfwContainer) nsfwContainer.style.display = "none";
+        if (nsfwInfo) nsfwInfo.style.display = "block";
+
+        return;
+    }
+
+    // 13–17
+    if (age < 18) {
+
+        nsfwCheckbox.checked = false;
+        nsfwCheckbox.disabled = true;
+
+        if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
+        if (NSFW) NSFW.style.display = "none";
+        if (nsfwContainer) nsfwContainer.style.display = "none";
+        if (nsfwInfo) nsfwInfo.style.display = "block";
+
+        return;
+    }
+
+    // 18+
+    nsfwCheckbox.disabled = false;
+
+    if (NSFW) NSFW.style.display = "block";
+    if (nsfwContainer) nsfwContainer.style.display = "block";
+    if (nsfwInfo) nsfwInfo.style.display = "none";
+
+    if (!nsfwCheckbox.dataset.listenerAdded) {
+        nsfwCheckbox.addEventListener("change", function () {
+            showNSFW = this.checked;
+            loadVideos();
+        });
+        nsfwCheckbox.dataset.listenerAdded = "true";
+    }
+}
+function calculateAge(birthdate) {
+            if (!birthdate) return null;
+            const [day, month, year] = birthdate.split(".").map(Number);
+            const today = new Date();
+            let age = today.getFullYear() - year;
+            if (today.getMonth() + 1 < month || 
+               (today.getMonth() + 1 === month && today.getDate() < day)) {
+                age--;
+            }
+            return age;
+        }
 auth.onAuthStateChanged(async (user) => {
     if (!user) return;
-loadPhotoChannelSelect();
-loadChannelSelect();
-backfillAuthorUidForUser();
+
+    loadPhotoChannelSelect();
+    loadChannelSelect();
+    backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
 
-    // 🔹 Перевірка підтвердження email
+    // 🔹 Email verification
     if (!user.emailVerified) {
         blockScreenForVerification();
         const verificationInterval = setInterval(() => {
             user.reload().then(() => {
                 if (user.emailVerified) {
                     clearInterval(verificationInterval);
+                    unblockScreenForVerification();
                     updateUI(user);
                 }
             }).catch(err => console.error("Помилка перевірки email:", err));
-        }, 10000);
+        }, 5000);
     }
 
-    // 🔹 Отримання даних користувача
-    const uid = user.uid;
-    database.ref("users/" + uid).once("value").then(async snapshot => {
+    try {
+        const snapshot = await database.ref(`users/${user.uid}`).once("value");
         const userData = snapshot.val();
-        const birthStr = userData?.birthdate;
+
         const role = userData?.role || "user";
-  const today = new Date();
-      const m = today.getMonth() + 1;
-      const d = today.getDate();
+        let birthdateStr = userData?.birthdate; // "DD.MM.YYYY"
+        let birthYear = userData?.birthYear;
 
+        let age = null;
+if (birthdateStr) {
+    age = calculateAge(birthdateStr);
 
-  // Вимкнення Halloween 1 листопада
-      // 🎃 Halloween
-const isHalloween = m === 10 && (d === 30 || d === 31);
-const isValentineDay = m === 2 && (d === 13 || d === 14);
-const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
-
-// 🎃 HALLOWEEN
-if (isHalloween) {
-  activateHalloweenMode();
-  applyIcons(halloweenIcons, userData);
-} else {
-  deactivateHalloweenMode();
-}
-
-// 🎄 NEW YEAR
-if (isNewYear) {
-  activateGirland();
-  activateNewYearMode();
-  applyIcons(newyearIcons, userData);
-} else {
-  deactivateGirland();
-  deactivateNewYearMode();
-  // Відновлюємо стандартні іконки тільки якщо не Valentine
-  if (!isValentineDay) restoreIcons();
-}
-
-// 💖 VALENTINE
-if (isValentineDay) {
-  applyIcons(valentineIcons, userData);
-}
-        // 🔹 Якщо немає email або дати народження — показати модальне вікно
-        if (!userData?.email || !birthStr) {
-            const modal = document.getElementById("birthdate-modal");
-            if (modal) modal.style.display = "flex";
-        }
-
-        // 🔹 Обчислення віку
-      // 🔹 Обчислення віку
-if (birthStr) {
-    let birthDate;
-    const match = birthStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-    if (match) {
-        const [, d, m, y] = match;
-        birthDate = new Date(`${y}-${m}-${d}`);
-    } else {
-        birthDate = new Date(birthStr);
+    // Якщо birthYear відсутній, підтягуємо з birthdate
+    if (!birthYear) {
+        const [day, month, year] = birthdateStr.split(".").map(Number);
+        birthYear = year;
+        await database.ref(`users/${user.uid}`).update({ birthYear });
     }
+}
 
-    if (!isNaN(birthDate)) {
+// 🔹 Вік відображаємо після обчислення
+if (age !== null) {
+    configureAgeUI(age);
+} else {
+    const modal = document.getElementById("birthdate-modal");
+    if (modal) modal.style.display = "flex";
+}
+
+        // 🔹 Розрахунок віку з урахуванням дня народження
+
+        // 🔹 Свята
         const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const mm = today.getMonth() - birthDate.getMonth();
-        if (mm < 0 || (mm === 0 && today.getDate() < birthDate.getDate())) age--;
-        userAge = age;
+        const m = today.getMonth() + 1;
+        const d = today.getDate();
 
-        // 🔹 Підтягання birthYear у базу, не змінюючи структуру
-        const birthYear = birthDate.getFullYear();
-        if (!userData.birthYear || userData.birthYear !== birthYear) {
-            // Не блокує решту коду, async виконується тут
-            database.ref("users/" + uid).update({ birthYear: birthYear })
-                .then(() => console.log("birthYear оновлено у базі:", birthYear))
-                .catch(err => console.error("Помилка оновлення birthYear:", err));
+        const isHalloween = m === 10 && (d === 30 || d === 31);
+        const isValentineDay = m === 2 && (d === 13 || d === 14);
+        const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
+
+        if (isHalloween) {
+            activateHalloweenMode();
+            applyIcons(halloweenIcons, userData);
+        } else deactivateHalloweenMode();
+
+        if (isNewYear) {
+            activateGirland();
+            activateNewYearMode();
+            applyIcons(newyearIcons, userData);
+        } else {
+            deactivateGirland();
+            deactivateNewYearMode();
+            if (!isValentineDay) restoreIcons();
         }
-    }
 
-}
-// Далі йде решта твоїх функцій (NSFW, аватар, свята, відео, UI) — без змін
+        if (isValentineDay) applyIcons(valentineIcons, userData);
+        // 🔹 Аватар
 
-        // 🔹 Оновлення UI
+
+        // 🔹 Аватар  
+
+  
+        // 🔹 UI оновлення
         const viewBirthdate = document.getElementById("view");
-        if (viewBirthdate) viewBirthdate.innerHTML = `Дата народження: ${birthStr || "не вказано"}`;
+        if (viewBirthdate) viewBirthdate.innerHTML = `Дата народження: ${birthdateStr || "не вказано"}`;
+
         const emailEl = document.getElementById("email");
         if (emailEl) emailEl.innerHTML = `${userData?.name || ""} ${userData?.supername || ""}`;
+
         document.getElementById("name").innerHTML = `Ім'я: ${userData?.name || ""}`;
         document.getElementById("supername").innerHTML = `Прізвище: ${userData?.supername || ""}`;
 
@@ -4076,50 +4156,13 @@ if (birthStr) {
             navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
         }
 
-        // 🔹 Обробка NSFW фільтру
-        const nsfwCheckbox = document.getElementById('show-nsfw-videos');
-        const nsfwSlider = document.getElementById("slidernsfw");
-        const nsfwInfo = document.getElementById("information-nsfw");
-        const NSFW = document.getElementById("nsfw");
-        const nsfwContainer = document.getElementById("nsfw-container");
-        const privateVideo = document.getElementById("private-checkbox");
-        const privatePhoto = document.getElementById("private-checkbox");
-        if (nsfwCheckbox) {
-            if (userAge < 13) {
-                privateVideo.checked = true;
-                if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
-                nsfwCheckbox.checked = false;
-                nsfwCheckbox.disabled = true;
-                if (NSFW) NSFW.style.display = "none";
-                if (nsfwContainer) NSFW.style.display = "none";
-                if (nsfwInfo) nsfwInfo.style.display = "block";
-            } else if (userAge < 18) {
-              if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
-                nsfwCheckbox.checked = false;
-                nsfwCheckbox.disabled = true;
-                if (NSFW) NSFW.style.display = "none";
-                if (nsfwContainer) NSFW.style.display = "none";
-                if (nsfwInfo) nsfwInfo.style.display = "block";
-            } else {
-                nsfwCheckbox.disabled = false;
-                if (NSFW) NSFW.style.display = "block";
-                if (nsfwContainer) NSFW.style.display = "block";
-                if (nsfwInfo) nsfwInfo.style.display = "none";
 
-                if (!nsfwCheckbox.dataset.listenerAdded) {
-                    nsfwCheckbox.addEventListener("change", function () {
-                        showNSFW = this.checked;
-                        loadVideos();
-                    });
-                    nsfwCheckbox.dataset.listenerAdded = "true";
-                }
-            }
-        }
-
-        // 🔹 Завантаження відео з фільтром за статтю
         loadVideos();
         enableBanduraUI(role);
-    }).catch(err => console.error("Помилка отримання даних користувача:", err));
+
+    } catch (err) {
+        console.error("Помилка отримання даних користувача:", err);
+    }
 
     updateUI(user);
     toggleUploadVisibility();
@@ -4171,31 +4214,45 @@ input.onchange = async () => {
 };
 updateVideosAuthor();
 function submitBirthdate() {
-  const user = firebase.auth().currentUser;
-  const input = document.getElementById("birthdate-input").value;
-  const nameInput = document.getElementById("name-input").value;
-  const supernameInput = document.getElementById("supername-input").value;
+    const user = firebase.auth().currentUser;
+    const input = document.getElementById("birthdate-input").value; // "YYYY-MM-DD"
+    const nameInput = document.getElementById("name-input").value;
+    const supernameInput = document.getElementById("supername-input").value;
 
+    if (!input || !nameInput || !supernameInput) {
+        showNotificationModal();
+        message.innerHTML = "Будь ласка, заповніть всі поля.";
+        return;
+    }
 
-  if (!input || !nameInput || !supernameInput) {
-    showNotificationModal();
-    message.innerHTML = "Будь ласка, введіть дату народження.";
-    return;
-  }
+    const [year, month, day] = input.split("-");
+    const formattedDate = `${day}.${month}.${year}`; // "DD.MM.YYYY"
+    const age = calculateAge(formattedDate);
 
-  const [year, month, day] = input.split("-");
-  const formattedDate = `${day}.${month}.${year}`;
+    firebase.database().ref("users/" + user.uid).update({
+        birthdate: formattedDate,
+        email: user.email,
+        name: nameInput,
+        supername: supernameInput
+    }).then(() => {
+        showNotificationModal();
+        message.innerHTML = "Дата збережена.";
+        if (age !== null) configureAgeUI(age);
+        updateVideosAuthor();
+    }).catch(err => console.error("Помилка збереження даних:", err));
+}
 
-  firebase.database().ref("users/" + user.uid).update({
-    birthdate: formattedDate,
-    email: user.email,
-    name: nameInput,
-    supername: supernameInput
-  }).then(() => {
-    showNotificationModal();
-    message.innerHTML = "Дата збережена.";
-   updateVideosAuthor();
-  });
+// 🔹 Використовуємо calculateAge і в onAuthStateChanged
+function calculateAge(birthdate) {
+    if (!birthdate) return null;
+    const [day, month, year] = birthdate.split(".").map(Number);
+    const today = new Date();
+    let age = today.getFullYear() - year;
+    if (today.getMonth() + 1 < month || 
+       (today.getMonth() + 1 === month && today.getDate() < day)) {
+        age--;
+    }
+    return age;
 }
 function updateVideosAuthor() {
   const user = firebase.auth().currentUser;
