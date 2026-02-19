@@ -1993,9 +1993,9 @@ text-decoration: none;
 ">
   <input type="text" id="name-input" placeholder="Ім'я" style="padding: 10px; font-size: 1em;">
 <input type="text" id="supername-input" placeholder="Прізвище" style="padding: 10px; font-size: 1em;">
-<h2>Вкажіть дату народження</h2>
+<h2 data-i18n="birthdate">Вкажіть дату народження</h2>
   <input type="date" id="birthdate-input" style="padding: 10px; font-size: 1em;">
-  <button onclick="submitBirthdate()" style="margin-top: 10px; padding: 10px 20px;">Зберегти</button>
+  <button data-i18n="save" onclick="submitBirthdate()" style="margin-top: 10px; padding: 10px 20px;">Зберегти</button>
 </div>
 <div id="newyear-easter-egg" class="ny-popup">
   <div class="ny-content">
@@ -3739,11 +3739,17 @@ avatarComment.title = data.commentAuthor;
 
 if (data.commentAuthor == "Видалений акаунт") {
  avatarComment.textContent = "👻";
+ 
 } else {
   avatarComment.textContent = getInitials(data.commentAuthor);
 }
         const userEl = document.createElement("strong");
-        userEl.textContent = data.commentAuthor || "Видалений акаунт";
+        if (data.commentAuthor == "Видалений акаунт") {
+ userEl.textContent = userEl.textContent = data.commentAuthor;
+ userEl.setAttribute('data-i18n', 'account-deleted');
+} else {
+  userEl.textContent = userEl.textContent = data.commentAuthor;
+}
 
         const textEl = document.createElement("span");
         if (data.isPrivate) {
