@@ -3502,10 +3502,12 @@ function generateDescription() {
         })
         .catch(err => console.error("AI error:", err));
 }
+let ffmpegLoaded = false;
+
 async function convertToMp4(file, onStatus) {
-  if (!window.ffmpeg.loaded) {
-    onStatus?.("Завантаження відео-движка…");
-    await window.ffmpeg.load(); // БЕЗ coreURL тут
+  if (!ffmpegLoaded) {
+    await window.ffmpeg.load();
+    ffmpegLoaded = true;
   }
 
   onStatus?.("Підготовка файлу…");
@@ -3527,30 +3529,30 @@ async function convertToMp4(file, onStatus) {
   const out = window.ffmpeg.FS("readFile", "output.mp4");
   return new File([out.buffer], "converted.mp4", { type: "video/mp4" });
 }
+let convertedVideoFile = null;
 document.getElementById("video-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  // якщо вже mp4 — нічого не робимо
-  if (file.type === "video/mp4") return;
+  convertedVideoFile = null;
+
+  if (file.type === "video/mp4") {
+    convertedVideoFile = file;
+    return;
+  }
 
   const statusEl = document.getElementById("progress-text");
   document.getElementById("progress-container").style.display = "block";
 
   try {
-    const converted = await convertToMp4(file, (status) => {
+    convertedVideoFile = await convertToMp4(file, (status) => {
       statusEl.innerText = status;
     });
 
-    // 🔁 ПІДМІНА ФАЙЛУ В INPUT
-    const dt = new DataTransfer();
-    dt.items.add(converted);
-    e.target.files = dt.files;
-
-    statusEl.innerText = "Готово до завантаження ✔";
+    statusEl.innerText = "Готово ✔";
   } catch (err) {
     console.error("❌ Конвертація не вдалася:", err);
-   showNotificationModal();
+    showNotificationModal();
     message.innerHTML = "Помилка конвертації відео";
   }
 });
@@ -3574,7 +3576,8 @@ function uploadVideo() {
 
   const videoTitle = document.getElementById("video-title").value;
   const videoDescription = document.getElementById("video-description").value;
-  const videoFile = document.getElementById("video-file").files[0];
+  const originalFile = document.getElementById("video-file").files[0];
+const videoFile = convertedVideoFile || originalFile;
   const isNSFW = document.getElementById("nsfw").checked;
   const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
   const privateVideo = document.getElementById("private-checkbox").checked;
