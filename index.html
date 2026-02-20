@@ -106,7 +106,7 @@
   position: fixed;
   inset: 0;
   display: inline;
-  z-index: 100;
+  z-index: 9999;
 }
 
 .tg-popup.hidden {
@@ -488,7 +488,6 @@ text-align: center;
   margin: 0 auto;
   padding: 16px;
     margin-bottom: 10px;
-    z-index: 100;
 }
         } 
         .snowflake {
@@ -663,7 +662,7 @@ transform: scale(0.95); /* легке стиснення */
   display: flex;
   flex-direction: column-reverse;
   position: relative;
-  z-index: 100;
+  z-index: 1;
 }
 
 .video-container:hover {
@@ -680,7 +679,7 @@ transform: scale(0.95); /* легке стиснення */
   display: flex;
   flex-direction: column-reverse;
   position: relative;
-  z-index: 100;
+  z-index: 1;
 }
 
 .photo-container:hover {
@@ -709,12 +708,10 @@ audio {
 #video-container {
 margin-top: 50px;
 width: 90%;
-z-index: 100;
         }
         #photo-container {
     margin-top: 50px;
     width: 90%;
-    z-index: 100;
         }
         /* Стилі для зображень з класом .photo-item */
 img.photo-item {
@@ -867,8 +864,7 @@ img.photo-item {
     background: linear-gradient(135deg, white, blue, black);
     color: #fff;
     font-weight: 600;
-    z-index: 101;
-  
+    z-index: 100000000;
 }
         .video-details {
   width: 100%;
@@ -2034,7 +2030,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-  let APP_VERSION = "5.0.4"; // Поточна версія VideoVortex
+  let APP_VERSION = "5.0.0"; // Поточна версія VideoVortex
  function clearLocalStorageExceptAuth() {
     const keepPrefixes = [
         "firebase:authUser:",
@@ -3506,12 +3502,10 @@ function generateDescription() {
         })
         .catch(err => console.error("AI error:", err));
 }
-let ffmpegLoaded = false;
-
 async function convertToMp4(file, onStatus) {
-  if (!ffmpegLoaded) {
-    await window.ffmpeg.load();
-    ffmpegLoaded = true;
+  if (!window.ffmpeg.loaded) {
+    onStatus?.("Завантаження відео-движка…");
+    await window.ffmpeg.load(); // БЕЗ coreURL тут
   }
 
   onStatus?.("Підготовка файлу…");
@@ -3533,30 +3527,30 @@ async function convertToMp4(file, onStatus) {
   const out = window.ffmpeg.FS("readFile", "output.mp4");
   return new File([out.buffer], "converted.mp4", { type: "video/mp4" });
 }
-let convertedVideoFile = null;
 document.getElementById("video-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  convertedVideoFile = null;
-
-  if (file.type === "video/mp4") {
-    convertedVideoFile = file;
-    return;
-  }
+  // якщо вже mp4 — нічого не робимо
+  if (file.type === "video/mp4") return;
 
   const statusEl = document.getElementById("progress-text");
   document.getElementById("progress-container").style.display = "block";
 
   try {
-    convertedVideoFile = await convertToMp4(file, (status) => {
+    const converted = await convertToMp4(file, (status) => {
       statusEl.innerText = status;
     });
 
-    statusEl.innerText = "Готово ✔";
+    // 🔁 ПІДМІНА ФАЙЛУ В INPUT
+    const dt = new DataTransfer();
+    dt.items.add(converted);
+    e.target.files = dt.files;
+
+    statusEl.innerText = "Готово до завантаження ✔";
   } catch (err) {
     console.error("❌ Конвертація не вдалася:", err);
-    showNotificationModal();
+   showNotificationModal();
     message.innerHTML = "Помилка конвертації відео";
   }
 });
@@ -3580,8 +3574,7 @@ function uploadVideo() {
 
   const videoTitle = document.getElementById("video-title").value;
   const videoDescription = document.getElementById("video-description").value;
-  const originalFile = document.getElementById("video-file").files[0];
-const videoFile = convertedVideoFile || originalFile;
+  const videoFile = document.getElementById("video-file").files[0];
   const isNSFW = document.getElementById("nsfw").checked;
   const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
   const privateVideo = document.getElementById("private-checkbox").checked;
@@ -3754,6 +3747,7 @@ if (data.commentAuthor == "Видалений акаунт") {
         const userEl = document.createElement("strong");
         if (data.commentAuthor == "Видалений акаунт") {
  userEl.setAttribute('data-i18n', 'account-deleted');
+ userEl.textContent = '';
 } else {
  userEl.textContent = data.commentAuthor;
 }
@@ -3774,7 +3768,6 @@ if (data.commentAuthor == "Видалений акаунт") {
         commentDiv.appendChild(textEl);
         commentDiv.appendChild(br);
         commentDiv.appendChild(dateEl);
-applyTranslations();
         commentsContainer.appendChild(commentDiv);
     }
 }
