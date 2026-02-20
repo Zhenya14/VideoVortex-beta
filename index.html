@@ -3747,6 +3747,7 @@ if (data.commentAuthor == "Видалений акаунт") {
         const userEl = document.createElement("strong");
         if (data.commentAuthor == "Видалений акаунт") {
  userEl.setAttribute('data-i18n', 'account-deleted');
+ userEl.textContent = data.commentAuthor;
 } else {
  userEl.textContent = data.commentAuthor;
 }
