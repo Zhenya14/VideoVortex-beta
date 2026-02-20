@@ -1448,8 +1448,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
     try {
       await navigator.share({
         title: 'VideoVortex',
-        text: sanitize(currentVideo.title),
-        description: sanitize(currentVideo.description),
+        text: `${sanitize(currentVideo.title)}\n${sanitize(currentVideo.description)}`,
         url: window.location.href, // або конкретний URL на твоєму хості
       });
       console.log('Поділено успішно');
