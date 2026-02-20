@@ -750,7 +750,7 @@ width: 80%;  /* Ширина поля вводу */
 </head>
 <body>
     <nav>
-            <a href="index.html"><img id="logo" src="VideoVortex_logo.ico" style="height: 50px; width: 50px; border-radius: 50%;">
+            <a href="beta.html"><img id="logo" src="VideoVortex_logo.ico" style="height: 50px; width: 50px; border-radius: 50%;">
             <h1 style="padding-left: 5px;">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup></a>
 
     </nav>
@@ -930,7 +930,7 @@ function showNotFound() {
     ">
       <h1>🎬 Відео не знайдено</h1>
       <p>Можливо, було видалене або недоступне.</p>
-      <a href="index.html" style="color:#4facfe;">⬅ На головну</a>
+      <a href="beta.html" style="color:#4facfe;">⬅ На головну</a>
     </div>
   `;
 }
@@ -1449,6 +1449,7 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
       await navigator.share({
         title: 'VideoVortex',
         text: sanitize(currentVideo.title),
+        description: sanitize(currentVideo.description),
         url: window.location.href, // або конкретний URL на твоєму хості
       });
       console.log('Поділено успішно');
