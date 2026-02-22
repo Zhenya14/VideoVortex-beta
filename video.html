@@ -1136,6 +1136,7 @@ database.ref("videos/" + videoKey).once("value").then(async snapshot => {
     localStorage.setItem(viewedKey, "1");
   }
   renderCommentSection(currentVideo, videoKey);
+  loadComments(videoKey, video.email);
 loadSimilarVideos(video);
 });
 function getVideoKey(videoKey) {
@@ -1149,7 +1150,10 @@ function getVideoKey(videoKey) {
 
 // Просте шифрування/дешифрування (можна замінити на AES)
 async function loadComments(videoKey, videoOwnerEmail) {   
+
   const commentsContainer = document.getElementById(`comments-${videoKey}`);  
+  if (!commentsContainer) return;
+
   commentsContainer.innerHTML = "";  
 
   const snap = await database.ref("comments")
@@ -1168,17 +1172,20 @@ async function loadComments(videoKey, videoOwnerEmail) {
 
   const videoKeyLocal = getVideoKey(videoKey);  
 
-  // 🔹 Завантажуємо мій список блокувань ОДИН раз
+  // 🔹 Завантажуємо блокування
   let myBlocked = {};
   if (myUid) {
     const blockedSnap = await database.ref(`users/${myUid}/blockedUsers`).once("value");
     myBlocked = blockedSnap.val() || {};
   }
 
+  // 🔹 Повертаємо масив comments[]
   const comments = [];
   snap.forEach(c => comments.push(c.val()));
 
   for (const data of comments) {
+
+    if (!data) continue;
 
     // 🔒 Приватні коментарі
     if (data.isPrivate) {
@@ -1206,9 +1213,16 @@ async function loadComments(videoKey, videoOwnerEmail) {
     }  
 
     const userEl = document.createElement("strong");  
-    userEl.textContent = data.commentAuthor || "Видалений акаунт";  
+
+    if (data.commentAuthor === "Видалений акаунт") {
+      userEl.setAttribute('data-i18n','account-deleted');
+      userEl.textContent="";
+    } else {
+      userEl.textContent=data.commentAuthor;
+    }
 
     const textEl = document.createElement("span");  
+
     if (data.isPrivate) {  
       textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);  
     } else {  
@@ -1223,13 +1237,17 @@ async function loadComments(videoKey, videoOwnerEmail) {
     actionMenu.classList.add("action-menu");  
     actionMenu.style.display = "none";  
 
-    // ❗ Показуємо "Заблокувати" тільки якщо це НЕ ти
+    // ❗ Заблокувати
     if (myUid && data.authorUid && data.authorUid !== myUid) {
+
       const blockUser = document.createElement("button");  
       blockUser.classList.add("block-button");  
-      blockUser.innerHTML = `<span style="display:flex;align-items:center;gap:6px;">
-        <i class="material-icons">block</i> Заблокувати
-      </span>`;  
+
+      blockUser.innerHTML = `
+      <span style="display:flex;align-items:center;gap:6px;">
+        <i class="material-icons">block</i>
+        Заблокувати
+      </span>`;
 
       blockUser.addEventListener("click", () => {  
         blockedUserName = data.commentAuthor || "Видалений акаунт";  
@@ -1241,17 +1259,22 @@ async function loadComments(videoKey, videoOwnerEmail) {
     }
 
     more.addEventListener("click", () => {  
-      actionMenu.style.display = actionMenu.style.display === "inline-flex" ? "none" : "inline-flex";  
+      actionMenu.style.display =
+        actionMenu.style.display === "inline-flex"
+          ? "none"
+          : "inline-flex";
     });
 
     const textContainer = document.createElement("div");  
     textContainer.style.display = "inline-flex";  
     textContainer.style.alignItems = "center";  
     textContainer.style.gap = "5px";  
+
     textContainer.appendChild(textEl);  
     textContainer.appendChild(more);  
 
     const br = document.createElement("br");  
+
     const dateEl = document.createElement("small");  
     dateEl.textContent = data.publishDate || "";  
 
@@ -1263,9 +1286,16 @@ async function loadComments(videoKey, videoOwnerEmail) {
     commentDiv.appendChild(dateEl);  
 
     commentsContainer.appendChild(commentDiv);  
-  }  
-}
 
+  }
+
+  // 🔹 ВАЖЛИВО — переклад після рендера
+  if (typeof loadLanguage === "function") {
+    const lang = localStorage.getItem("language") || "ua";
+    loadLanguage(lang);
+  }
+
+}
 function showModalBlocked() {
   document.getElementById("block-user-modal").style.display = "flex";
   document.getElementById("blocked-information").textContent =
@@ -1295,14 +1325,13 @@ async function confirmBlockUser() {
     .set(true);
 
   closeBlockModal();
+
   alert("Користувача заблоковано");
 
-  // Перезавантажуємо коментарі
   if (currentVideo) {
-    loadComments(currentVideo.key, currentVideo.email);
+    await loadComments(videoKey, currentVideo.email);
   }
 }
-
 /* ================= SIMILAR VIDEOS ================= */
 function loadSimilarVideos(currentVideo) {
   const container = document.getElementById("target-videos");
