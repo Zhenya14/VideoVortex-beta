@@ -810,6 +810,12 @@ width: 80%;  /* Ширина поля вводу */
 <div id="target-videos">
 <p id="message">Схожих відео немає 😔</p>
 </div>
+<script src="i18n.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    initLanguageSwitcher("language-select");
+});
+</script>
 <script>
 // ===================== Сніг =====================
 let snowInterval = null;
@@ -993,31 +999,26 @@ async function uploadComment(videoKey, videoOwnerEmail) {
     const commentText = commentInput.value.trim();
     const isPrivate = document.getElementById(`private-comment-${videoKey}`).checked;
 
-    if (!commentText) return alert("Коментар не може бути порожнім.");
+    if (!commentText) return showNotificationModal();
+    message.innerHTML = "Коментар не може бути порожнім.";
 
-    const user = firebase.auth().currentUser;
-    if (!user) return alert("Увійдіть, щоб залишати коментарі");
-
-    const uid = user.uid;
-    const currentUserEmail = user.email;
-
-    // Отримуємо дані користувача
-    const snapshot = await database.ref("users/" + uid).once("value");
-    const userData = snapshot.val() || {};
-    const commentAuthor = `${userData.name || "Анонім"} ${userData.supername || ""}`.trim();
-
-    // Шифрування, якщо приватний коментар
     let commentData = commentText;
     if (isPrivate) {
         const videoKeyLocal = getVideoKey(videoKey);
         commentData = await encryptText(commentText, videoKeyLocal);
     }
 
-    // Додаємо коментар у Firebase
+    const uid = firebase.auth().currentUser.uid;
+
+    // Беремо дані користувача з Firebase
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val();
+    const commentAuthor = `${userData.name} ${userData.supername}`;
+
+    // Додаємо коментар у базу
     await database.ref("comments").push({
         comment: commentData,
         email: currentUserEmail,
-        authorUid: uid,
         commentAuthor: commentAuthor,
         videoOwner: videoOwnerEmail,
         isPrivate: isPrivate,
@@ -1025,10 +1026,8 @@ async function uploadComment(videoKey, videoOwnerEmail) {
         videoKey: videoKey
     });
 
-    // Очищуємо поле
+    // Очищуємо поле та оновлюємо коментарі
     commentInput.value = "";
-
-    // Оновлюємо список коментарів
     await loadComments(videoKey, videoOwnerEmail);
 }
 /* ================= GET VIDEO KEY ================= */
@@ -1149,152 +1148,70 @@ function getVideoKey(videoKey) {
 }
 
 // Просте шифрування/дешифрування (можна замінити на AES)
-async function loadComments(videoKey, videoOwnerEmail) {   
+async function loadComments(videoKey, videoOwnerEmail) { 
+    const commentsContainer = document.getElementById(`comments-${videoKey}`);
+    commentsContainer.innerHTML = "";
 
-  const commentsContainer = document.getElementById(`comments-${videoKey}`);  
-  if (!commentsContainer) return;
+    const snapshot = await database.ref("comments")
+        .orderByChild("videoKey")
+        .equalTo(videoKey)
+        .once("value");
 
-  commentsContainer.innerHTML = "";  
-
-  const snap = await database.ref("comments")
-    .orderByChild("videoKey")
-    .equalTo(videoKey)
-    .once("value");  
-
-  if (!snap.exists()) {  
-    commentsContainer.textContent = "Ще немає коментарів...";  
-    return;  
-  }  
-
-  const me = firebase.auth().currentUser;
-  const myUid = me ? me.uid : null;
-  const myEmail = me ? me.email : null;
-
-  const videoKeyLocal = getVideoKey(videoKey);  
-
-  // 🔹 Завантажуємо блокування
-  let myBlocked = {};
-  if (myUid) {
-    const blockedSnap = await database.ref(`users/${myUid}/blockedUsers`).once("value");
-    myBlocked = blockedSnap.val() || {};
-  }
-
-  // 🔹 Повертаємо масив comments[]
-  const comments = [];
-  snap.forEach(c => comments.push(c.val()));
-
-  for (const data of comments) {
-
-    if (!data) continue;
-
-    // 🔒 Приватні коментарі
-    if (data.isPrivate) {
-      if (!myEmail) continue;
-      if (data.email !== myEmail && videoOwnerEmail !== myEmail) continue;
+    if (!snapshot.exists()) {
+        commentsContainer.textContent = "Ще немає коментарів...";
+        return;
     }
 
-    // 🚫 Блокування
-    if (myUid && data.authorUid) {
-      if (myBlocked[data.authorUid]) continue;
-    }
+    const videoKeyLocal = getVideoKey(videoKey);
+    const commentsArray = [];
 
-    // ---------- РЕНДЕР ----------
-    const commentDiv = document.createElement("div");  
-    commentDiv.className = "comment-item";  
-
-    const avatarComment = document.createElement("div");  
-    avatarComment.className = "avatar";  
-    avatarComment.title = data.commentAuthor || "Видалений акаунт";  
-
-    if (data.commentAuthor === "Видалений акаунт") {  
-      avatarComment.textContent = "👻";  
-    } else {  
-      avatarComment.textContent = getInitials(data.commentAuthor || "?");  
-    }  
-
-    const userEl = document.createElement("strong");  
-
-    if (data.commentAuthor === "Видалений акаунт") {
-      userEl.setAttribute('data-i18n','account-deleted');
-      userEl.textContent="";
-    } else {
-      userEl.textContent=data.commentAuthor;
-    }
-
-    const textEl = document.createElement("span");  
-
-    if (data.isPrivate) {  
-      textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);  
-    } else {  
-      textEl.textContent = ": " + data.comment;  
-    }  
-
-    const more = document.createElement("a");  
-    more.classList.add("moreBtn");  
-    more.innerHTML = `<i class="material-icons">more_vert</i>`;  
-
-    const actionMenu = document.createElement("div");  
-    actionMenu.classList.add("action-menu");  
-    actionMenu.style.display = "none";  
-
-    // ❗ Заблокувати
-    if (myUid && data.authorUid && data.authorUid !== myUid) {
-
-      const blockUser = document.createElement("button");  
-      blockUser.classList.add("block-button");  
-
-      blockUser.innerHTML = `
-      <span style="display:flex;align-items:center;gap:6px;">
-        <i class="material-icons">block</i>
-        Заблокувати
-      </span>`;
-
-      blockUser.addEventListener("click", () => {  
-        blockedUserName = data.commentAuthor || "Видалений акаунт";  
-        blockedUserUid = data.authorUid;  
-        showModalBlocked();  
-      });
-
-      actionMenu.appendChild(blockUser);
-    }
-
-    more.addEventListener("click", () => {  
-      actionMenu.style.display =
-        actionMenu.style.display === "inline-flex"
-          ? "none"
-          : "inline-flex";
+    snapshot.forEach(childSnapshot => {
+        commentsArray.push(childSnapshot.val());
     });
 
-    const textContainer = document.createElement("div");  
-    textContainer.style.display = "inline-flex";  
-    textContainer.style.alignItems = "center";  
-    textContainer.style.gap = "5px";  
+    for (const data of commentsArray) {
+        if (data.isPrivate && !(data.email === currentUserEmail || videoOwnerEmail === currentUserEmail)) {
+            continue; // Пропускаємо приватні коментарі, якщо користувач не автор або власник відео
+        }
 
-    textContainer.appendChild(textEl);  
-    textContainer.appendChild(more);  
+        const commentDiv = document.createElement("div");
+        commentDiv.className = "comments";
+const avatarComment = document.createElement("div");
+avatarComment.className = "avatar";
+avatarComment.title = data.commentAuthor;
 
-    const br = document.createElement("br");  
+if (data.commentAuthor == "Видалений акаунт") {
+ avatarComment.textContent = "👻";
+ 
+} else {
+  avatarComment.textContent = getInitials(data.commentAuthor);
+}
+        const userEl = document.createElement("strong");
+        if (data.commentAuthor == "Видалений акаунт") {
+ userEl.setAttribute('data-i18n', 'account-deleted');
+} else {
+ userEl.textContent = data.commentAuthor;
+}
 
-    const dateEl = document.createElement("small");  
-    dateEl.textContent = data.publishDate || "";  
+        const textEl = document.createElement("span");
+        if (data.isPrivate) {
+            textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);
+        } else {
+            textEl.textContent = ": " + data.comment;
+        }
 
-    commentDiv.appendChild(avatarComment);  
-    commentDiv.appendChild(userEl);  
-    commentDiv.appendChild(textContainer);  
-    commentDiv.appendChild(actionMenu);  
-    commentDiv.appendChild(br);  
-    commentDiv.appendChild(dateEl);  
+        const br = document.createElement("br");
+        const dateEl = document.createElement("small");
+        dateEl.textContent = data.publishDate;
 
-    commentsContainer.appendChild(commentDiv);  
-
-  }
-
-  // 🔹 ВАЖЛИВО — переклад після рендера
-  if (typeof loadLanguage === "function") {
-    const lang = localStorage.getItem("language") || "ua";
-    loadLanguage(lang);
-  }
-
+        commentDiv.appendChild(avatarComment);
+        commentDiv.appendChild(userEl);
+        commentDiv.appendChild(textEl);
+        commentDiv.appendChild(br);
+        commentDiv.appendChild(dateEl);
+        applyTranslations();
+        commentsContainer.appendChild(commentDiv);
+    }
 }
 function showModalBlocked() {
   document.getElementById("block-user-modal").style.display = "flex";
