@@ -2021,7 +2021,7 @@ text-decoration: none;
     </div>
         <footer style="text-align: center; justify-content: center; gap: 30px; padding: 10px 20px; background: rgb(26 26 26 / 68%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; box-shadow: 0 8px 32px rgb(0 0 0 / 20%); width: 97%;">
                 <h3>Версія додатка:</h3>
-                <p>4.1.0</p>
+                <p>5.0.0</p>
         </footer>
 <script src="i18n.js"></script>
 <script>
@@ -3156,28 +3156,6 @@ const videoElement = document.createElement("video");
         videoElement.dataset.author = videoData.author || "";
 
         // 🔹 3. Коментарі
-        const commentSection = document.createElement("div");
-        commentSection.classList.add("video-comment");
-
-        if (videoData.disabledComments === true) {
-            commentSection.innerHTML = `💬 Коментарі вимкнені для цього відео.`;
-        } else {
-            commentSection.innerHTML = `
-                <h3 style="color: white; text-align: left;">Коментарі:</h3>
-                <div id="comments-${videoKey}" class="comments">Ще немає коментарів...</div>
-                <input class="comment-liquid-glass" type="text" id="comment-input-${videoKey}" placeholder="Ваш коментар">
-                <button class="comment-button" onclick="uploadComment('${videoKey}', '${videoData.email}')">
-                    <i class="material-icons">send</i>
-                </button>
-                <div class="comment-section" id="comment-section-${videoKey}">
-                    <button id="random-comments-${videoKey}" onclick="insertRandomComment('${videoKey}')">🔁 Вставити випадковий текст</button>
-                    <label id="private-checkbox-${videoKey}" style="display: none;">
-                        <input type="checkbox" id="private-comment-${videoKey}">
-                        Приватний
-                    </label>
-                </div>
-            `;
-        }
 
         // 🔹 4. Клік по відео
         videoElement.onclick = () => {
@@ -3205,39 +3183,6 @@ const videoElement = document.createElement("video");
         // 🔹 5. Приватні коментарі
         // 🔹 5. Приватні коментарі
 // 🔹 5. Приватні коментарі
-const privateComment = commentSection.querySelector(`#private-checkbox-${videoKey}`);
-const privateCheckbox = commentSection.querySelector(`#private-comment-${videoKey}`);
-
-if (privateComment && privateCheckbox) {
-    const currentUser = firebase.auth().currentUser;
-    if (currentUser) {
-        database.ref(`users/${currentUser.uid}`).once("value")
-            .then(snapshot => {
-                const userData = snapshot.val();
-                const birthdateStr = userData?.birthdate;
-
-                // Функція для точного обчислення віку
-                function calculateAge(birthdate) {
-                    if (!birthdate) return null;
-                    const [day, month, year] = birthdate.split(".").map(Number);
-                    const today = new Date();
-                    let age = today.getFullYear() - year;
-                    if (today.getMonth() + 1 < month ||
-                        (today.getMonth() + 1 === month && today.getDate() < day)) {
-                        age--;
-                    }
-                    return age;
-                }
-
-                const userAge = calculateAge(birthdateStr);
-                const showPrivate = userAge !== null && userAge >= 16;
-
-                privateComment.style.display = showPrivate ? "block" : "none";
-                privateCheckbox.disabled = !showPrivate;
-            })
-            .catch(err => console.error("Помилка завантаження даних користувача:", err));
-    }
-}
         // 🔹 6. Інформація про відео
         const infoElement = document.createElement("div");
         infoElement.classList.add("video-info");
@@ -3321,7 +3266,6 @@ if (privateComment && privateCheckbox) {
         container.classList.add("video-container");
         container.dataset.id = videoKey; // для реального часу
         container.appendChild(infoElement);
-        container.appendChild(commentSection);
         container.appendChild(videoElement);
 
         videoGallery.appendChild(container);
@@ -3682,95 +3626,10 @@ function uploadVideo() {
 }
 
 
-// Генеруємо або отримуємо ключ для відео
-function getVideoKey(videoKey) {
-    let key = localStorage.getItem(`videoKey-${videoKey}`);
-    if (!key) {
-        key = crypto.randomUUID(); // простий ключ, можна замінити на сильніше шифрування
-        localStorage.setItem(`videoKey-${videoKey}`, key);
-    }
-    return key;
-}
 
 // Просте шифрування/дешифрування (можна замінити на AES)
-async function encryptText(text, key) {
-    const enc = new TextEncoder();
-    const encoded = enc.encode(text + key); // дуже базово
-    return btoa(String.fromCharCode(...encoded));
-}
 
-async function decryptText(cipher, key) {
-    const decoded = atob(cipher);
-    const arr = Uint8Array.from(decoded, c => c.charCodeAt(0));
-    const dec = new TextDecoder();
-    const text = dec.decode(arr);
-    return text.replace(key, ''); // віднімаємо ключ
-}
-async function loadComments(videoKey, videoOwnerEmail) { 
-    const commentsContainer = document.getElementById(`comments-${videoKey}`);
-    commentsContainer.innerHTML = "";
 
-    const snapshot = await database.ref("comments")
-        .orderByChild("videoKey")
-        .equalTo(videoKey)
-        .once("value");
-
-    if (!snapshot.exists()) {
-        commentsContainer.textContent = "Ще немає коментарів...";
-        return;
-    }
-
-    const videoKeyLocal = getVideoKey(videoKey);
-    const commentsArray = [];
-
-    snapshot.forEach(childSnapshot => {
-        commentsArray.push(childSnapshot.val());
-    });
-
-    for (const data of commentsArray) {
-        if (data.isPrivate && !(data.email === currentUserEmail || videoOwnerEmail === currentUserEmail)) {
-            continue; // Пропускаємо приватні коментарі, якщо користувач не автор або власник відео
-        }
-
-        const commentDiv = document.createElement("div");
-        commentDiv.className = "comments";
-const avatarComment = document.createElement("div");
-avatarComment.className = "avatar";
-avatarComment.title = data.commentAuthor;
-
-if (data.commentAuthor == "Видалений акаунт") {
- avatarComment.textContent = "👻";
- 
-} else {
-  avatarComment.textContent = getInitials(data.commentAuthor);
-}
-        const userEl = document.createElement("strong");
-        if (data.commentAuthor == "Видалений акаунт") {
- userEl.setAttribute('data-i18n', 'account-deleted');
-} else {
- userEl.textContent = data.commentAuthor;
-}
-
-        const textEl = document.createElement("span");
-        if (data.isPrivate) {
-            textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);
-        } else {
-            textEl.textContent = ": " + data.comment;
-        }
-
-        const br = document.createElement("br");
-        const dateEl = document.createElement("small");
-        dateEl.textContent = data.publishDate;
-
-        commentDiv.appendChild(avatarComment);
-        commentDiv.appendChild(userEl);
-        commentDiv.appendChild(textEl);
-        commentDiv.appendChild(br);
-        commentDiv.appendChild(dateEl);
-        applyTranslations();
-        commentsContainer.appendChild(commentDiv);
-    }
-}
 // Відкрити форму редагування імені
 function editName() {
   document.getElementById("form-edit-name").style.display = "block";
@@ -3899,42 +3758,7 @@ function getActivePhotoChannelData() {
 // Оновлення авторів у відео та коментарях
 
 // Відправка коментаря
-async function uploadComment(videoKey, videoOwnerEmail) {
-    const commentInput = document.getElementById(`comment-input-${videoKey}`);
-    const commentText = commentInput.value.trim();
-    const isPrivate = document.getElementById(`private-comment-${videoKey}`).checked;
 
-    if (!commentText) return showNotificationModal();
-    message.innerHTML = "Коментар не може бути порожнім.";
-
-    let commentData = commentText;
-    if (isPrivate) {
-        const videoKeyLocal = getVideoKey(videoKey);
-        commentData = await encryptText(commentText, videoKeyLocal);
-    }
-
-    const uid = firebase.auth().currentUser.uid;
-
-    // Беремо дані користувача з Firebase
-    const snapshot = await database.ref("users/" + uid).once("value");
-    const userData = snapshot.val();
-    const commentAuthor = `${userData.name} ${userData.supername}`;
-
-    // Додаємо коментар у базу
-    await database.ref("comments").push({
-        comment: commentData,
-        email: currentUserEmail,
-        commentAuthor: commentAuthor,
-        videoOwner: videoOwnerEmail,
-        isPrivate: isPrivate,
-        publishDate: new Date().toLocaleDateString(),
-        videoKey: videoKey
-    });
-
-    // Очищуємо поле та оновлюємо коментарі
-    commentInput.value = "";
-    await loadComments(videoKey, videoOwnerEmail);
-}
 
 
 function toggleUploadVisibility() {
