@@ -8,7 +8,7 @@
     <link rel="icon" href="VideoVortex_logo.ico">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-functions.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
@@ -1135,7 +1135,22 @@ transform: scale(0.95); /* легке стиснення */
   top: -4.66667px;
   left: 1px;
 }
-
+.notification-popup {
+  display: none;
+  width: 87%;
+  text-align: left;
+position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: black;
+      padding: 20px;
+      border-radius: 69px;
+      border: 1px solid rgba(0, 255, 255, .12);
+  box-shadow: 0 0 22px rgba(0, 255, 255, .07);
+      animation: fadeInOut 3s ease-out;
+      animation: fadeInOut 3s ease-out;
+    }
 .lightrope li:after {
   content: "";
   top: -14px;
@@ -1881,6 +1896,8 @@ text-decoration: none;
     </div>
   </div>
 </div>
+<div class="notification-popup">
+123</div>
       <ul id="girland">
   <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
 </ul>
