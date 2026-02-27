@@ -1328,50 +1328,121 @@ async function loadComments(videoKey, videoOwnerEmail) {
         const commentDiv = document.createElement("div");
         commentDiv.className = "comment";
 
+
+        // 🔹 Перевірка блокування
+        const blocked = await isUserBlockedByMe(data.authorUid);
+
+
+        // 🔹 Аватар
         const avatarComment = document.createElement("div");
         avatarComment.className = "avatar";
 
-        avatarComment.textContent =
-            data.commentAuthor == "Видалений акаунт"
-            ? "👻"
-            : getInitials(data.commentAuthor);
-
-        const userEl = document.createElement("strong");
-
-        if (data.commentAuthor == "Видалений акаунт") {
-
-            userEl.setAttribute('data-i18n','account-deleted');
-            userEl.textContent = "Видалений акаунт";
-
+        if (blocked) {
+            avatarComment.textContent = "❌";
         } else {
-
-            userEl.textContent = data.commentAuthor;
-
+            avatarComment.textContent =
+                data.commentAuthor == "Видалений акаунт"
+                ? "👻"
+                : getInitials(data.commentAuthor);
         }
 
+
+        // 🔹 Ім'я
+        const userEl = document.createElement("strong");
+
+        if (blocked) {
+            userEl.textContent = "Акаунт не знайдено";
+        }
+        else if (data.commentAuthor == "Видалений акаунт") {
+            userEl.setAttribute('data-i18n','account-deleted');
+            userEl.textContent = "Видалений акаунт";
+        }
+        else {
+            userEl.textContent = data.commentAuthor;
+        }
+
+
+        // 🔹 Текст коментаря
         const textEl = document.createElement("span");
 
         if (data.isPrivate) {
-
             textEl.textContent =
-              ": " + await decryptText(data.comment);
-
+              ": " + await decryptText(data.comment, videoKeyLocal);
         } else {
-
             textEl.textContent = ": " + data.comment;
-
         }
 
+
+        // 🔹 Меню три крапки
+        const more = document.createElement("a");
+        more.classList.add("moreBtn");
+        more.innerHTML = `<i class="material-icons">more_vert</i>`;
+
+
+        const actionMenu = document.createElement("div");
+        actionMenu.classList.add("action-menu");
+        actionMenu.style.display = "none";
+
+
+        const blockUser = document.createElement("button");
+        blockUser.classList.add("block-button");
+
+        blockUser.innerHTML = `
+        <span style="display:flex;align-items:center;gap:6px;">
+            <i class="material-icons">block</i>
+            Заблокувати
+        </span>`;
+
+
+        blockUser.addEventListener("click", () => {
+
+            blockedUserName =
+                blocked
+                ? "Акаунт не знайдено"
+                : data.commentAuthor || "Видалений акаунт";
+
+            blockedUserUid = data.authorUid;
+
+            showModalBlocked();
+        });
+
+
+        actionMenu.appendChild(blockUser);
+
+
+        more.addEventListener("click", () => {
+            actionMenu.style.display =
+                actionMenu.style.display === "inline-flex"
+                ? "none"
+                : "inline-flex";
+        });
+
+
+        // 🔹 Контейнер тексту + меню
+        const textContainer = document.createElement("div");
+
+        textContainer.style.display = "inline-flex";
+        textContainer.style.alignItems = "center";
+        textContainer.style.gap = "5px";
+
+        textContainer.appendChild(textEl);
+        textContainer.appendChild(more);
+
+
         const br = document.createElement("br");
+
 
         const dateEl = document.createElement("small");
         dateEl.textContent = data.publishDate || "";
 
+
         commentDiv.appendChild(avatarComment);
         commentDiv.appendChild(userEl);
-        commentDiv.appendChild(textEl);
+        commentDiv.appendChild(textContainer);
+        commentDiv.appendChild(actionMenu);
         commentDiv.appendChild(br);
         commentDiv.appendChild(dateEl);
+
 
         commentsContainer.appendChild(commentDiv);
     }
