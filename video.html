@@ -1116,6 +1116,7 @@ const publishDate = `${day}.${month}.${year}`; // Наприклад, "02.03.202
         comment: commentData,
         email: currentUserEmail,
         commentAuthor: commentAuthor,
+        authorUid: uid,   // ⭐ ГОЛОВНЕ
         videoOwner: videoOwnerEmail,
         isPrivate: isPrivate,
         publishDate: new Date().toLocaleDateString(),
@@ -1198,7 +1199,19 @@ database.ref("videos/" + videoKey).once("value").then(async snapshot => {
 
   const video = snapshot.val();
   currentVideo = video;
+if (video.authorUid) {
 
+      const blockedMe =
+      await didUserBlockMe(video.authorUid);
+
+      if (blockedMe) {
+
+          showNotFound();
+          return;
+
+      }
+
+  }
   // -------------------------------
   // Підготовка URL faststart з fallback
   // -------------------------------
@@ -1292,12 +1305,12 @@ function getVideoKey(videoKey) {
 
 // Просте шифрування/дешифрування (можна замінити на AES)
 async function loadComments(videoKey, videoOwnerEmail) { 
-
     const commentsContainer = document.getElementById(`comments-${videoKey}`);
     if (!commentsContainer) return;
 
     commentsContainer.innerHTML = "";
 
+    // Отримуємо всі коментарі для цього відео
     const snapshot = await database.ref("comments")
         .orderByChild("videoKey")
         .equalTo(videoKey)
@@ -1310,139 +1323,100 @@ async function loadComments(videoKey, videoOwnerEmail) {
     }
 
     const videoKeyLocal = getVideoKey(videoKey);
+    const children = Object.values(snapshot.val() || {});
 
-    const comments = [];
-
-    snapshot.forEach(child => {
-        comments.push(child.val());
-    });
-
-    for (const data of comments) {
-
+    for (const data of children) {
+        // 🔹 Приватні коментарі
         if (data.isPrivate &&
-            !(data.email === currentUserEmail ||
-              videoOwnerEmail === currentUserEmail)) {
+            !(data.email === currentUserEmail || videoOwnerEmail === currentUserEmail)) {
             continue;
         }
 
+        // 🔹 Блокування користувача
+        const blockedMeComments = didUserBlockMe(data.authorUid);
+
+        // 🔹 Контейнер коментаря
         const commentDiv = document.createElement("div");
         commentDiv.className = "comment";
-
-
-        // 🔹 Перевірка блокування
-        const blocked = await isUserBlockedByMe(data.authorUid);
-
 
         // 🔹 Аватар
         const avatarComment = document.createElement("div");
         avatarComment.className = "avatar";
+        avatarComment.textContent = blockedMeComments
+            ? "❌"
+            : (data.commentAuthor === "Видалений акаунт" ? "👻" : getInitials(data.commentAuthor));
 
-        if (blocked) {
-            avatarComment.textContent = "❌";
-        } else {
-            avatarComment.textContent =
-                data.commentAuthor == "Видалений акаунт"
-                ? "👻"
-                : getInitials(data.commentAuthor);
-        }
-
-
-        // 🔹 Ім'я
+        // 🔹 Ім'я користувача
         const userEl = document.createElement("strong");
-
-        if (blocked) {
-            userEl.textContent = "Акаунт не знайдено";
-        }
-        else if (data.commentAuthor == "Видалений акаунт") {
-            userEl.setAttribute('data-i18n','account-deleted');
-            userEl.textContent = "Видалений акаунт";
-        }
-        else {
-            userEl.textContent = data.commentAuthor;
-        }
-
+        userEl.textContent = blockedMeComments
+            ? "Акаунт не знайдено"
+            : (data.commentAuthor === "Видалений акаунт" ? "Видалений акаунт" : data.commentAuthor);
 
         // 🔹 Текст коментаря
         const textEl = document.createElement("span");
-
-        if (data.isPrivate) {
-            textEl.textContent =
-              ": " + await decryptText(data.comment, videoKeyLocal);
+        if (blockedMe) {
+            textEl.textContent = ": Коментар недоступний";
+        } else if (data.isPrivate) {
+            textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);
         } else {
             textEl.textContent = ": " + data.comment;
         }
 
-
-        // 🔹 Меню три крапки
+        // 🔹 Кнопка "три крапки" та меню дій
         const more = document.createElement("a");
         more.classList.add("moreBtn");
         more.innerHTML = `<i class="material-icons">more_vert</i>`;
-
 
         const actionMenu = document.createElement("div");
         actionMenu.classList.add("action-menu");
         actionMenu.style.display = "none";
 
-
+        // 🔹 Кнопка блокування
         const blockUser = document.createElement("button");
         blockUser.classList.add("block-button");
-
         blockUser.innerHTML = `
-        <span style="display:flex;align-items:center;gap:6px;">
-            <i class="material-icons">block</i>
-            Заблокувати
-        </span>`;
-
-
+            <span style="display:flex;align-items:center;gap:6px;">
+                <i class="material-icons">block</i>
+                Заблокувати
+            </span>`;
         blockUser.addEventListener("click", () => {
-
-            blockedUserName =
-                blocked
-                ? "Акаунт не знайдено"
-                : data.commentAuthor || "Видалений акаунт";
-
+            blockedUserName = data.commentAuthor || "Видалений акаунт";
             blockedUserUid = data.authorUid;
-
             showModalBlocked();
         });
-
-
         actionMenu.appendChild(blockUser);
 
-
-        more.addEventListener("click", () => {
+        // 🔹 Відкриття/закриття меню по кліку
+        more.addEventListener("click", (e) => {
+            e.stopPropagation();
             actionMenu.style.display =
-                actionMenu.style.display === "inline-flex"
-                ? "none"
-                : "inline-flex";
+                actionMenu.style.display === "inline-flex" ? "none" : "inline-flex";
         });
 
+        // Закриваємо всі меню при кліку поза ними
+        document.addEventListener("click", () => {
+            document.querySelectorAll(".action-menu").forEach(m => m.style.display = "none");
+        });
 
-        // 🔹 Контейнер тексту + меню
+        // 🔹 Контейнер тексту + кнопка
         const textContainer = document.createElement("div");
-
         textContainer.style.display = "inline-flex";
         textContainer.style.alignItems = "center";
         textContainer.style.gap = "5px";
-
         textContainer.appendChild(textEl);
         textContainer.appendChild(more);
 
-
-        const br = document.createElement("br");
-
-
+        // 🔹 Дата
         const dateEl = document.createElement("small");
         dateEl.textContent = data.publishDate || "";
 
-
+        // 🔹 Додаємо всі елементи в коментар
         commentDiv.appendChild(avatarComment);
         commentDiv.appendChild(userEl);
         commentDiv.appendChild(textContainer);
         commentDiv.appendChild(actionMenu);
-        commentDiv.appendChild(br);
+        commentDiv.appendChild(document.createElement("br"));
         commentDiv.appendChild(dateEl);
-
 
         commentsContainer.appendChild(commentDiv);
     }
@@ -1475,7 +1449,11 @@ async function confirmBlockUser() {
 
   await firebase.database()
     .ref(`users/${currentUser.uid}/blockedUsers/${blockedUserUid}`)
-    .set(true);
+    .set({
+        blocked: true,
+        uid: blockedUserUid,
+        userName: blockedUserName
+});
 
   closeBlockModal();
 
@@ -1515,11 +1493,8 @@ function loadSimilarVideos(currentVideo) {
       title.innerText = v.title;
       title.style.color = "white";
 
-      const vid = document.createElement("video");
-      vid.src = v.url;
-      vid.muted = true;
-      vid.loop = true;
-      vid.autoplay = false;
+      const vid = document.createElement("img");
+      vid.src = v.thumbnail || "default.jpg";
       vid.style.width = "100%";
       vid.onclick = () => location.href = `video.html?key=${child.key}`;
 
@@ -1539,14 +1514,49 @@ const dislikeCountEl = dislikeBtn.querySelector("p");
 
 let currentReaction = null;
 let currentUid = null;
+async function backfillAuthorUidForUser() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
+  const uid = user.uid;
+  const email = user.email;
+
+  const paths = ["videos", "photos", "comments"];
+
+  for (const path of paths) {
+    const snap = await database.ref(path).once("value");
+
+    const updates = [];
+
+    snap.forEach(child => {
+      const data = child.val();
+
+      // Знаходимо ТІЛЬКИ контент цього користувача
+      if (data.email === email) {
+        // Якщо ще нема authorUid — додаємо
+        if (!data.authorUid) {
+          updates.push(
+            database.ref(`${path}/${child.key}`).update({
+              authorUid: uid
+            })
+          );
+        }
+      }
+    });
+
+    if (updates.length > 0) {
+      await Promise.all(updates);
+      console.log(`Оновлено ${updates.length} записів у ${path}`);
+    }
+  }
+}
 /* ---------- AUTH ---------- */
 auth.onAuthStateChanged(user => {
   if (user) {
     currentUid = user.uid;
     currentUserEmail = user.email;
     listenUserReaction();
-    
+    backfillAuthorUidForUser();
     database.ref("users/" + currentUid).once("value").then(async snapshot => {
       const userData = snapshot.val();
       const birthStr = userData?.birthdate;
