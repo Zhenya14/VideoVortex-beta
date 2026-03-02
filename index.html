@@ -3308,7 +3308,7 @@ if (videoData.authorUid) {
   // 🔹 Статичне прев’ю через img
   videoElement = document.createElement("img");
   videoElement.classList.add("video-item");
-  videoElement.src = videoData.thumbnail;
+  videoElement.src = videoData.thumbnail || "default.jpg";
 
 
         videoElement.dataset.title = videoData.title || "";  
