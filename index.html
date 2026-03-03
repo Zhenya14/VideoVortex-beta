@@ -3312,7 +3312,7 @@ if (videoData.authorUid) {
         // 🔹 2. Прев’ю як IMG замість VIDEO
 
   // 🔹 Статичне прев’ю через img
-  videoElement = document.createElement("img");
+ const videoElement = document.createElement("img");
   videoElement.classList.add("video-item");
   videoElement.src = videoData.thumbnail || "default.jpg";
 
@@ -3320,7 +3320,11 @@ if (videoData.authorUid) {
         videoElement.dataset.title = videoData.title || "";  
         videoElement.dataset.description = videoData.description || "";  
         videoElement.dataset.author = videoData.author || "";
-
+if (videoData.nsfw) {
+    videoElement.style.filter = "blur(20px)";
+} else {
+    videoElement.style.filter = "none"; // reset if needed
+}
         // 🔹 3. Коментарі
 
         // 🔹 4. Клік по відео
