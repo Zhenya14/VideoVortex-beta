@@ -321,7 +321,11 @@ button:active {
     border-radius: 12px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.4);
 }
-
+img.video-item {
+  border-radius: 14px;
+  width: 100%;
+  height: auto;
+}
         .video-info { 
             text-align: left; 
             color: #b0bec5; 
@@ -1304,6 +1308,8 @@ function getVideoKey(videoKey) {
 }
 
 // Просте шифрування/дешифрування (можна замінити на AES)
+// =================== COMMENTS & BLOCKING ===================
+
 async function loadComments(videoKey, videoOwnerEmail) { 
     const commentsContainer = document.getElementById(`comments-${videoKey}`);
     if (!commentsContainer) return;
@@ -1332,8 +1338,8 @@ async function loadComments(videoKey, videoOwnerEmail) {
             continue;
         }
 
-        // 🔹 Блокування користувача
-        const blockedMeComments = didUserBlockMe(data.authorUid);
+        // 🔹 Перевірка блокування
+        const blockedMeComments = await didUserBlockMe(data.authorUid);
 
         // 🔹 Контейнер коментаря
         const commentDiv = document.createElement("div");
@@ -1354,7 +1360,7 @@ async function loadComments(videoKey, videoOwnerEmail) {
 
         // 🔹 Текст коментаря
         const textEl = document.createElement("span");
-        if (blockedMe) {
+        if (blockedMeComments) {
             textEl.textContent = ": Коментар недоступний";
         } else if (data.isPrivate) {
             textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);
@@ -1362,16 +1368,23 @@ async function loadComments(videoKey, videoOwnerEmail) {
             textEl.textContent = ": " + data.comment;
         }
 
-        // 🔹 Кнопка "три крапки" та меню дій
+        // 🔹 Контейнер тексту + кнопка "три крапки"
+        const textContainer = document.createElement("div");
+        textContainer.style.display = "inline-flex";
+        textContainer.style.alignItems = "center";
+        textContainer.style.gap = "5px";
+        textContainer.appendChild(textEl);
+
         const more = document.createElement("a");
         more.classList.add("moreBtn");
         more.innerHTML = `<i class="material-icons">more_vert</i>`;
+        textContainer.appendChild(more);
 
+        // 🔹 Action menu
         const actionMenu = document.createElement("div");
         actionMenu.classList.add("action-menu");
         actionMenu.style.display = "none";
 
-        // 🔹 Кнопка блокування
         const blockUser = document.createElement("button");
         blockUser.classList.add("block-button");
         blockUser.innerHTML = `
@@ -1385,6 +1398,7 @@ async function loadComments(videoKey, videoOwnerEmail) {
             showModalBlocked();
         });
         actionMenu.appendChild(blockUser);
+        textContainer.appendChild(actionMenu);
 
         // 🔹 Відкриття/закриття меню по кліку
         more.addEventListener("click", (e) => {
@@ -1398,35 +1412,46 @@ async function loadComments(videoKey, videoOwnerEmail) {
             document.querySelectorAll(".action-menu").forEach(m => m.style.display = "none");
         });
 
-        // 🔹 Контейнер тексту + кнопка
-        const textContainer = document.createElement("div");
-        textContainer.style.display = "inline-flex";
-        textContainer.style.alignItems = "center";
-        textContainer.style.gap = "5px";
-        textContainer.appendChild(textEl);
-        textContainer.appendChild(more);
-
-        // 🔹 Дата
-        const dateEl = document.createElement("small");
-        dateEl.textContent = data.publishDate || "";
-
-        // 🔹 Додаємо всі елементи в коментар
+        // 🔹 Додаємо елементи в DOM
         commentDiv.appendChild(avatarComment);
         commentDiv.appendChild(userEl);
         commentDiv.appendChild(textContainer);
-        commentDiv.appendChild(actionMenu);
-        commentDiv.appendChild(document.createElement("br"));
-        commentDiv.appendChild(dateEl);
 
         commentsContainer.appendChild(commentDiv);
     }
 
     applyTranslations();
 }
+
+// =================== BLOCK MODAL ===================
+
 function showModalBlocked() {
-  document.getElementById("block-user-modal").style.display = "flex";
-  document.getElementById("blocked-information").textContent =
-    `Ви впевнені, що хочете заблокувати користувача ${blockedUserName}?`;
+    const modal = document.getElementById("block-user-modal");
+    const info = document.getElementById("blocked-information");
+    info.textContent = `Ви впевнені, що хочете заблокувати користувача "${blockedUserName}"?`;
+    modal.style.display = "flex";
+}
+
+function closeBlockModal() {
+    const modal = document.getElementById("block-user-modal");
+    modal.style.display = "none";
+}
+
+async function confirmBlockUser() {
+    if (!blockedUserUid) return;
+
+    const me = firebase.auth().currentUser;
+    if (!me) return;
+
+    await database.ref(`users/${me.uid}/blockedUsers/${blockedUserUid}`).set(true);
+    closeBlockModal();
+    showNotificationModal();
+    message.textContent = `Користувач "${blockedUserName}" заблокований.`;
+
+    // Оновлюємо коментарі після блокування
+    if (currentVideo && currentVideo.email) {
+        await loadComments(videoKey, currentVideo.email);
+    }
 }
 
 function closeBlockModal() {
@@ -1467,43 +1492,87 @@ async function confirmBlockUser() {
 function loadSimilarVideos(currentVideo) {
   const container = document.getElementById("target-videos");
   const message = document.getElementById("similar-message");
-  container.innerHTML = "";
 
+  container.innerHTML = "";
   let found = false;
-  const currentTitleWords = currentVideo.title.toLowerCase().split(" ");
+
+  const currentTitleWords = (currentVideo.title || "")
+      .toLowerCase()
+      .split(" ");
 
   database.ref("videos").once("value").then(snapshot => {
+
     snapshot.forEach(child => {
+
       const v = child.val();
-      if (!v || v.nsfw) return;
-      if (v.title === currentVideo.title) return;
-      if (v.private && v.email !== currentUserEmail) return;
+      if (!v) return;
 
-      const similar = currentTitleWords.some(word => v.title.toLowerCase().includes(word));
+      // 🔞 НЕ показуємо 18+
+      if (v.nsfw === true || v.nsfw === "true" || v.nsfw === 1)
+        return;
+
+      // Не показуємо те саме відео
+      if (child.key === videoKey)
+        return;
+
+      // Приватні відео
+      if (v.private && v.email !== currentUserEmail)
+        return;
+
+      // Domain restrict
+      if (v.domainRestrict &&
+          (!currentUserEmail ||
+          !currentUserEmail.endsWith("@kfccte-nau.ukr.education")))
+        return;
+
+      // Пошук схожості
+      const similar = currentTitleWords.some(word =>
+        (v.title || "").toLowerCase().includes(word)
+      );
+
       if (!similar) return;
-
-      if (v.domainRestrict && (!currentUserEmail || !currentUserEmail.endsWith("@kfccte-nau.ukr.education"))) return;
 
       found = true;
 
       const wrap = document.createElement("div");
-      wrap.style.marginBottom = "20px";
 
-      const title = document.createElement("h3");
-      title.innerText = v.title;
-      title.style.color = "white";
+wrap.style.marginBottom = "25px";
 
-      const vid = document.createElement("img");
-      vid.src = v.thumbnail || "default.jpg";
-      vid.style.width = "100%";
-      vid.onclick = () => location.href = `video.html?key=${child.key}`;
+/* Картинка */
+const img = document.createElement("img");
+img.classList.add("video-item");
+img.src = v.thumbnail || "default.jpg";
 
-      wrap.appendChild(title);
-      wrap.appendChild(vid);
-      container.appendChild(wrap);
+img.onclick = () =>
+  location.href = `video.html?key=${child.key}`;
+
+/* Контейнер тексту */
+const info = document.createElement("div");
+info.style.padding = "5px";
+
+/* Назва */
+const title = document.createElement("div");
+title.style.fontWeight = "bold";
+title.innerText = v.title || "Без назви";
+
+/* Автор */
+const author = document.createElement("div");
+author.style.color = "#aaa";
+author.style.fontSize = "14px";
+author.innerText = v.author || "Анонім";
+
+/* Збірка */
+info.appendChild(title);
+info.appendChild(author);
+
+wrap.appendChild(img);
+wrap.appendChild(info);
+
+container.appendChild(wrap);
     });
 
-    if (!found && message) message.style.display = "block";
+    if (!found)
+      message.style.display = "block";
   });
 }
 /* ================= REACTIONS (LIKE / DISLIKE) ================= */
