@@ -3328,14 +3328,7 @@ async function loadVideos() {
             }
 
             const videoParams = new URLSearchParams({
-                key: videoKey,
-                url: videoData.url,
-                title: videoData.title,
-                author: videoData.author,
-                publishDate: videoData.publishDate,
-                description: videoData.description || "Без опису",
-                views: videoData.views || 0,
-                avatar: videoData.author ? videoData.author.charAt(0).toUpperCase() : "?"
+                key: videoKey
             });
             window.location.href = `video.html?${videoParams.toString()}`;
         };
