@@ -1288,13 +1288,26 @@ avatar.innerText = video.author ? video.author.charAt(0).toUpperCase() : "?";
     database.ref("videos/" + videoKey + "/views").transaction(v => (v || 0) + 1);
     localStorage.setItem(viewedKey, "1");
   }
-if (video.saveVideo) {
-  videoPlayer.controlsList = ""; // Дозволяємо стандартну поведінку
-    videoPlayer.oncontextmenu = null; // Повертаємо праву кнопку миші
+// ... після videoPlayer.load();
+
+// Перевірка дозволу на збереження з бази даних
+if (video.saveVideo === false) {
+    videoPlayer.removeAttribute('controlsList'); 
+    videoPlayer.oncontextmenu = null;
 } else {
-    videoPlayer.controlsList = "nodownload"; // Забороняємо завантаження
-    videoPlayer.oncontextmenu = () => false; // Блокуємо контекстне меню
+    // Встановлюємо атрибут для Chromium-браузерів
+    videoPlayer.setAttribute('controlsList', 'nodownload');
+    
+    // Додатково для мобільних пристроїв та деяких версій Edge
+    videoPlayer.disablePictureInPicture = true; 
+    
+    // Блокуємо контекстне меню (праву кнопку миші)
+    videoPlayer.oncontextmenu = (e) => {
+        e.preventDefault();
+        return false;
+    };
 }
+
   // -------------------------------
   // Коментарі та схожі відео
   // -------------------------------
