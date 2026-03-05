@@ -1291,21 +1291,23 @@ avatar.innerText = video.author ? video.author.charAt(0).toUpperCase() : "?";
 // ... після videoPlayer.load();
 
 // Перевірка дозволу на збереження з бази даних
-if (video.saveVideo === false) {
-    videoPlayer.removeAttribute('controlsList'); 
-    videoPlayer.oncontextmenu = null;
-} else {
-    // Встановлюємо атрибут для Chromium-браузерів
-    videoPlayer.setAttribute('controlsList', 'nodownload');
-    
-    // Додатково для мобільних пристроїв та деяких версій Edge
-    videoPlayer.disablePictureInPicture = true; 
-    
-    // Блокуємо контекстне меню (праву кнопку миші)
+if (video.saveVideo === true) {
+
+    // ❌ Забороняємо скачування
+    videoPlayer.setAttribute("controlsList", "nodownload");
+    videoPlayer.disablePictureInPicture = true;
+
     videoPlayer.oncontextmenu = (e) => {
         e.preventDefault();
-        return false;
     };
+
+} else {
+
+    // ✅ Дозволяємо скачування
+    videoPlayer.removeAttribute("controlsList");
+    videoPlayer.disablePictureInPicture = false;
+    videoPlayer.oncontextmenu = null;
+
 }
 
   // -------------------------------
