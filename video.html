@@ -1288,7 +1288,13 @@ avatar.innerText = video.author ? video.author.charAt(0).toUpperCase() : "?";
     database.ref("videos/" + videoKey + "/views").transaction(v => (v || 0) + 1);
     localStorage.setItem(viewedKey, "1");
   }
-
+if (video.saveVideo) {
+  videoPlayer.controlsList = ""; // Дозволяємо стандартну поведінку
+    videoPlayer.oncontextmenu = null; // Повертаємо праву кнопку миші
+} else {
+    videoPlayer.controlsList = "nodownload"; // Забороняємо завантаження
+    videoPlayer.oncontextmenu = () => false; // Блокуємо контекстне меню
+}
   // -------------------------------
   // Коментарі та схожі відео
   // -------------------------------
