@@ -1764,8 +1764,9 @@ text-decoration: none;
 <br>
 <span>Вимкнути коментарі <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
      <br>
-     <br>
+     <p style="text-align: center;">Налаштування приватності:</p>
    <span>Приватне відео</span><label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
+<span>Заборонити збереження відео</span><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
     <br>
         <span>Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
@@ -3680,6 +3681,7 @@ async function uploadVideo() {
   const videoDescription = document.getElementById("video-description").value;
   const videoFile = document.getElementById("video-file").files[0];
   const isNSFW = document.getElementById("nsfw").checked;
+  const safeVideo = document.getElementById("save-video-checkbox").checked;
   const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
   const privateVideo = document.getElementById("private-checkbox").checked;
   const domainRestrict = document.getElementById("domain-restrict-checkbox")?.checked || false;
@@ -3769,6 +3771,7 @@ async function uploadVideo() {
             url: downloadURL,
             thumbnail: thumbnailURL,
             description: videoDescription,
+            saveVideo: safeVideo,
             views: 0,
             private: privateVideo,
             domainRestrict: domainRestrict,
