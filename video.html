@@ -1414,7 +1414,8 @@ async function loadComments(videoKey, videoOwnerEmail) {
                 Заблокувати
             </span>`;
         blockUser.addEventListener("click", () => {
-            blockedUserName = data.commentAuthor || "Видалений акаунт";
+            blockedUserName = blockedMeComments
+        ? "Акаунт не знайдено" : (data.commentAuthor || "Видалений акаунт");
             blockedUserUid = data.authorUid;
             showModalBlocked();
         });
@@ -1527,7 +1528,17 @@ function loadSimilarVideos(currentVideo) {
 
       const v = child.val();
       if (!v) return;
+if (v.authorUid) {
 
+      const blockedMeSimilar =
+      await didUserBlockMe(video.authorUid);
+
+      if (blockedMeSimilar) {
+          return;
+
+      }
+
+  }
       // 🔞 НЕ показуємо 18+
       if (v.nsfw === true || v.nsfw === "true" || v.nsfw === 1)
         return;
@@ -1640,43 +1651,6 @@ async function backfillAuthorUidForUser() {
     }
   }
 }
-/* ---------- AUTH ---------- */
-auth.onAuthStateChanged(user => {
-  if (user) {
-    currentUid = user.uid;
-    currentUserEmail = user.email;
-    listenUserReaction();
-    backfillAuthorUidForUser();
-    database.ref("users/" + currentUid).once("value").then(async snapshot => {
-      const userData = snapshot.val();
-      const birthStr = userData?.birthdate;
-      
-      // 🔹 Обчислення віку
-      if (birthStr) {
-        let birthDate;
-        const match = birthStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-        if (match) {
-          const [, d, m, y] = match;
-          birthDate = new Date(`${y}-${m}-${d}`);
-        } else {
-          birthDate = new Date(birthStr);
-        }
-
-        if (!isNaN(birthDate)) {
-          const today = new Date();
-          let age = today.getFullYear() - birthDate.getFullYear();
-          const mm = today.getMonth() - birthDate.getMonth();
-          if (mm < 0 || (mm === 0 && today.getDate() < birthDate.getDate())) age--;
-          userAge = age;
-
-          updatePrivateCheckbox(videoKey);
-          if (currentVideo) loadComments(videoKey, currentVideo.email);
-        }
-      }
-    });
-  }
-});
-/* ---------- USER REACTION ---------- */
 function listenUserReaction() {
   const ref = database.ref(`reactions/${videoKey}/${currentUid}`);
   ref.on("value", snap => {
@@ -1720,6 +1694,44 @@ function updateReactionUI() {
   
   if (currentReaction === "dislike") dislikeBtn.classList.add("disliked");
 }
+/* ---------- AUTH ---------- */
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUid = user.uid;
+    currentUserEmail = user.email;
+    listenUserReaction();
+    backfillAuthorUidForUser();
+    database.ref("users/" + currentUid).once("value").then(async snapshot => {
+      const userData = snapshot.val();
+      const birthStr = userData?.birthdate;
+      
+      // 🔹 Обчислення віку
+      if (birthStr) {
+        let birthDate;
+        const match = birthStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+        if (match) {
+          const [, d, m, y] = match;
+          birthDate = new Date(`${y}-${m}-${d}`);
+        } else {
+          birthDate = new Date(birthStr);
+        }
+
+        if (!isNaN(birthDate)) {
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const mm = today.getMonth() - birthDate.getMonth();
+          if (mm < 0 || (mm === 0 && today.getDate() < birthDate.getDate())) age--;
+          userAge = age;
+
+          updatePrivateCheckbox(videoKey);
+          if (currentVideo) loadComments(videoKey, currentVideo.email);
+        }
+      }
+    });
+  }
+});
+/* ---------- USER REACTION ---------- */
+
 document.getElementById('shareBtn').addEventListener('click', async () => {
   if (!currentVideo) {
     alert('Відео ще не завантажене');
