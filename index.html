@@ -280,6 +280,78 @@ input:checked + .slider:before {
     height: 100%;
     width: 100%;
 }
+.march8-banner{
+position:fixed;
+top:-120px;
+left:0;
+width:100%;
+display:flex;
+justify-content:center;
+z-index:9999;
+transition:0.4s;
+}
+
+.march8-banner.show{
+top:0;
+}
+
+.march8-box{
+background:linear-gradient(90deg,#ff4da6,#ff80bf);
+color:white;
+padding:15px 20px;
+border-radius:0 0 12px 12px;
+font-size:16px;
+display:flex;
+gap:10px;
+align-items:center;
+box-shadow:0 6px 20px rgba(0,0,0,0.3);
+}
+
+.march8-box button{
+border:none;
+padding:6px 12px;
+border-radius:6px;
+cursor:pointer;
+}
+
+#march8-upload{
+background:white;
+color:#ff4da6;
+font-weight:bold;
+}
+
+#march8-close{
+background:transparent;
+color:white;
+font-size:18px;
+}
+#flowers-container{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+overflow:hidden;
+z-index:999;
+}
+
+.flower{
+position:absolute;
+font-size:22px;
+animation:fall linear infinite;
+}
+
+@keyframes fall{
+0%{
+transform:translateY(-50px);
+opacity:1;
+}
+100%{
+transform:translateY(100vh);
+opacity:0.7;
+}
+}
 .downloads-list {
     font-size: 30px;
     list-style: none;
@@ -1704,6 +1776,15 @@ text-decoration: none;
     <button id="agree-btn" onclick="closeNotificationModal()">ОК</button>
   </div>
 </div>
+<div id="march8-banner" class="march8-banner">
+  <div class="march8-box">
+    🌸 З 8 Березня!  
+    Поділіться святковим відео 💐
+
+    <button id="march8-upload">📹 Опублікувати відео</button>
+    <button id="march8-close">✖</button>
+  </div>
+</div>
 <div id="videoModal" class="ios-modal">
   <div class="modal-window">
     <h3>Вибір відео</h3>
@@ -1911,6 +1992,7 @@ text-decoration: none;
 </div>
 <div class="notification-popup">
 123</div>
+<div id="flowers-container"></div>
       <ul id="girland">
   <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
 </ul>
@@ -2084,6 +2166,70 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 }
+function march8Banner(){
+
+const d = new Date();
+const day = d.getDate();
+const month = d.getMonth()+1;
+
+if(day === 8 && month === 3){
+
+if(!localStorage.getItem("march8banner")){
+
+const banner = document.getElementById("march8-banner");
+
+setTimeout(()=>{
+banner.classList.add("show");
+},1500);
+
+localStorage.setItem("march8banner","shown");
+
+}
+
+}
+
+}
+
+march8Banner();
+
+document.getElementById("march8-close").onclick = () =>{
+document.getElementById("march8-banner").classList.remove("show");
+};
+
+document.getElementById("march8-upload").onclick = () =>{
+
+// відкриває форму завантаження відео
+document.querySelector("modal-window").style.display = "block";
+
+};
+function flowersEffect(){
+
+const d = new Date();
+
+if(d.getDate() === 8 && d.getMonth() === 2){
+
+const container = document.getElementById("flowers-container");
+
+setInterval(()=>{
+
+const flower = document.createElement("div");
+flower.className = "flower";
+flower.innerText = "🌸";
+
+flower.style.left = Math.random()*100 + "vw";
+flower.style.animationDuration = 3 + Math.random()*4 + "s";
+
+container.appendChild(flower);
+
+setTimeout(()=>flower.remove(),7000);
+
+},300);
+
+}
+
+}
+
+flowersEffect();
 function checkUpdateButton() {
 
     const lastVersion = localStorage.getItem("lastUpdateVersion") || "5.0.1";
@@ -3342,16 +3488,17 @@ async function loadVideos() {
         avatar.className = "avatar";
         avatar.title = videoData.author || "Анонім";
 
-        if (videoData.authorAvatar) {
-            firebase.storage().ref(`avatars/${videoData.authorAvatar}.webp`).getDownloadURL()
-                .then(url => {
-                    avatar.style.backgroundImage = `url(${url})`;
-                    avatar.classList.add("avatar-image");
-                });
-        } else {
-            avatar.innerText = getInitials(videoData.author);
-            avatar.style.backgroundColor = stringToColor(videoData.author || "?");
-        }
+        if (videoData.authorAvatarUrl) {
+
+    avatar.style.backgroundImage = `url(${videoData.authorAvatarUrl})`;
+    avatar.classList.add("avatar-image");
+
+} else {
+
+    avatar.innerText = getInitials(videoData.author);
+    avatar.style.backgroundColor = stringToColor(videoData.author || "?");
+
+}
 
         avatar.onclick = () => {
             const infoParams = new URLSearchParams({
@@ -3705,8 +3852,19 @@ async function uploadVideo() {
     const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val() || {};
     const authorName = `${userData.name || ""} ${userData.supername || ""}`.trim();
-    const authorAvatar = userData.avatarUrl || null;
+    const authorAvatar = userData.avatarId || null;
 
+  let authorAvatarUrl = null;
+
+if (authorAvatar) {
+  try {
+    authorAvatarUrl = await storage
+      .ref(`avatars/${authorAvatar}.webp`)
+      .getDownloadURL();
+  } catch (e) {
+    console.warn("Аватар не знайдено");
+  }
+}
     const storageRef = storage.ref(`videos/${Date.now()}_${videoFile.name}`);
     const uploadTask = storageRef.put(videoFile);
 
@@ -3764,7 +3922,7 @@ async function uploadVideo() {
           await database.ref("videos").push({
             title: videoTitle,
             author: authorName || "Анонім",
-            authorAvatar: authorAvatar,
+            authorAvatar: authorAvatarUrl,
             email: user.email,
             authorUid: uid,
             disabledComments: disabledComments,
