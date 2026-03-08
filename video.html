@@ -243,6 +243,20 @@ height: 10px;
         opacity: 0;
     }
 }
+.privacy-mode{
+  filter: blur(20px);
+  background:black;
+}
+
+.privacy-mode::after{
+  content:"🔒 Режим конфіденційності";
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  color:white;
+  font-size:20px;
+}
         .form, .upload-form, .auth-form, .register-form, .account-form, .upload-photo-form { 
             display: none; 
             background: rgba(255, 255, 255, 0.1); 
@@ -1531,7 +1545,7 @@ function loadSimilarVideos(currentVideo) {
 if (v.authorUid) {
 
       const blockedMeSimilar =
-      await didUserBlockMe(video.authorUid);
+      didUserBlockMe(video.authorUid);
 
       if (blockedMeSimilar) {
           return;
@@ -1754,6 +1768,63 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
   }
 });
 </script>
+<script>
+  let privacyActive = false;
+let video = document.querySelector("video");
 
+// Функція для увімкнення/вимкнення режиму конфіденційності
+function setPrivacyMode(active) {
+    if(active){
+        if(video) video.pause();
+        document.body.classList.add("privacy-mode");
+    } else {
+        document.body.classList.remove("privacy-mode");
+        if(video) video.play();
+    }
+    privacyActive = active;
+}
+
+// Debounce, щоб не спрацьовувало занадто часто
+let lastCheck = 0;
+
+// Основна логіка орієнтації
+function handleOrientation(event){
+    const now = Date.now();
+    if(now - lastCheck < 200) return; // не частіше ніж раз на 200ms
+    lastCheck = now;
+
+    const beta = event.beta;
+
+    if(beta > 150 || beta < -150){ // екраном вниз
+        if(!privacyActive) setPrivacyMode(true);
+    } else {
+        if(privacyActive) setPrivacyMode(false);
+    }
+}
+
+// Перевірка iOS: потрібен дозвіл
+function initDeviceOrientation(){
+    if(typeof DeviceOrientationEvent !== "undefined" &&
+       typeof DeviceOrientationEvent.requestPermission === "function") {
+        // iOS 13+ потребує запит дозволу
+        DeviceOrientationEvent.requestPermission()
+        .then(permissionState => {
+            if(permissionState === "granted"){
+                window.addEventListener("deviceorientation", handleOrientation);
+            }
+        })
+        .catch(console.error);
+    } else {
+        // Android та інші браузери
+        window.addEventListener("deviceorientation", handleOrientation);
+    }
+}
+
+// Ініціалізація після завантаження контенту
+document.addEventListener("DOMContentLoaded", () => {
+    video = document.querySelector("video"); // на всяк випадок
+    initDeviceOrientation();
+});
+</script>
 </body>
     </html>
