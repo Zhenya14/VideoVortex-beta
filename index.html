@@ -3473,7 +3473,7 @@ function loadLibrary(user) {
             };
       authorInfo.appendChild(editProfile);
       const historyText = document.createElement("p");
-      historyText.innerHTML = `<p data-i18n="history"></p>`;
+      historyText.setAttribute("data-i18n", "history");
       authorInfo.appendChild(historyText);
       library.appendChild(authorInfo);
     })
