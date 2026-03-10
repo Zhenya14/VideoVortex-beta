@@ -3474,6 +3474,7 @@ function loadLibrary(user) {
       authorInfo.appendChild(editProfile);
       const historyText = document.createElement("p");
       historyText.setAttribute("data-i18n", "history");
+      historyText.style.textAlign = "left";
       authorInfo.appendChild(historyText);
       library.appendChild(authorInfo);
       applyTranslations();
