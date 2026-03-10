@@ -3481,6 +3481,7 @@ function loadLibrary(user) {
     .catch(err => {
       console.error("Помилка завантаження даних користувача:", err);
     });
+    applyTranslations();
 }
 function showAccountModal() {
   document.getElementById("account-modal").style.display = "flex";
