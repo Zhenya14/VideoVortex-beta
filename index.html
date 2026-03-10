@@ -1093,6 +1093,16 @@ transform: scale(0.95); /* легке стиснення */
 #open-menu {
         display: none;
 }
+.author-info {
+  margin-left: 30%;
+  margin-top: 8px;
+  text-align: center;
+}
+.edit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .action-menu {
   position: absolute;
   bottom: 2%;
@@ -1175,7 +1185,6 @@ transform: scale(0.95); /* легке стиснення */
   -webkit-animation-duration: 2s;
   animation-duration: 2s;
 }
-
 .lightrope li:nth-child(2n+1) {
   background: cyan;
   box-shadow: 0px 4.66667px 24px 3px rgba(0, 255, 255, 0.5);
@@ -1632,6 +1641,9 @@ text-decoration: none;
   word-wrap: normal;
   direction: ltr;
   -webkit-font-smoothing: antialiased;
+}
+#library {
+  display: none;
 }
 #plus-button {
   max-width 600px;
@@ -2139,6 +2151,8 @@ text-decoration: none;
     <div class="container" id="photo-container">
         <div class="photo-container" id="photo-gallery"></div>
 
+    </div>
+        <div class="container" id="library">
     </div>
         <footer style="text-align: center; justify-content: center; gap: 30px; padding: 10px 20px; background: rgb(26 26 26 / 68%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; box-shadow: 0 8px 32px rgb(0 0 0 / 20%); width: 97%;">
                 <h3>Версія додатка:</h3>
@@ -2866,7 +2880,7 @@ const modal = document.getElementById("upload-modal");
 const accountModal = document.getElementById("account-modal");
 const message = document.getElementById("message");
 const notification = document.getElementById("notification-modal");
-const buttonAccountModal = document.getElementById("account-link");
+
 const buttonAccountDesktopModal = document.getElementById("account-desktop-link");
 const closeAccountModal = document.querySelector(".close-account-modal");
 const plus = document.getElementById("plus-button");
@@ -2874,6 +2888,7 @@ const plusDesktop = document.getElementById("plus-desktop-button");
 const closeBtn = document.querySelector(".close-modal");
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
+const editAccount = document.getElementById("edit-profile");
 function showNotificationModal() {
   notification.style.display = "flex";
 }
@@ -2900,10 +2915,6 @@ plusDesktop?.addEventListener("click", () => {
     modal.style.display = "flex";
 });
 
-buttonAccountModal?.addEventListener("click", () => {
-    if (!requireAuth()) return;
-    accountModal.style.display = "flex";
-});
 buttonAccountDesktopModal?.addEventListener("click", () => {
     if (!requireAuth()) return;
     accountModal.style.display = "flex";
@@ -3050,6 +3061,13 @@ messaging.onMessage((payload) => {
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.add("button-liquid-glass");
         document.getElementById("photo-container").style.display = 'flex';
+        }
+        document.getElementById("account-link").onclick = function() {
+           document.getElementById("video-container").style.display = 'none';
+           document.getElementById("smart-video").classList.remove("button-liquid-glass");
+          document.getElementById("smart-post").classList.remove("button-liquid-glass");
+          document.getElementById("account-link").classList.add("button-liquid-glass");
+        document.getElementById("library").style.display = 'flex';
         }
             document.getElementById("smart-video").onclick = function() {
               document.getElementById("smart-video").classList.add("button-liquid-glass");
@@ -3428,6 +3446,46 @@ function createThumbnail(file) {
 
  });
 }
+const avatarLibrary = document.getElementById("avatar-library");
+function loadLibrary(user) {
+  const library = document.getElementById("library");
+  library.innerHTML = "";
+  const uid = user.uid;
+
+  database.ref("users/" + uid).once("value")
+    .then(snapshot => {
+      const userData = snapshot.val() || {};
+      const authorInfo = document.createElement("div");
+      authorInfo.classList.add("author-info")
+      const avatarLibraryEl = document.createElement("div");
+      avatarLibraryEl.classList.add("avatar");
+      avatarLibraryEl.id = "avatar-library";
+      authorInfo.appendChild(avatarLibraryEl);
+      const fullNameLibrary = document.createElement("p");
+      fullNameLibrary.textContent = `${userData.name || ""} ${userData.supername || ""}`;
+      authorInfo.appendChild(fullNameLibrary);
+      const editProfile = document.createElement("button");
+      editProfile.classList.add("edit");
+      editProfile.innerHTML = `<i class="material-icons">edit</i>Змінити`;
+      editProfile.id = "edit-profile";
+      editProfile.onclick = () => {
+                showAccountModal();
+            };
+      authorInfo.appendChild(editProfile);
+      const historyText = document.createElement("p");
+      historyText.innerHTML = `<p data-i18n="history"></p>`;
+      library.appendChild(authorInfo);
+      library.appendChild(historyText);
+    })
+    
+    .catch(err => {
+      console.error("Помилка завантаження даних користувача:", err);
+    });
+}
+function showAccountModal() {
+  document.getElementById("account-modal").style.display = "flex";
+}
+
 const videosLoaded = new Set(); // зверху скрипта
 
 async function loadVideos() {
@@ -3435,7 +3493,6 @@ async function loadVideos() {
     if (!videoGallery) return;
 
     videoGallery.innerHTML = "";
-
     const showNSFWGlobal = showNSFW;
 
     // 🔹 Слухаємо нові відео в реальному часі
@@ -4103,6 +4160,7 @@ function toggleUploadVisibility() {
     const smartUpload = document.getElementById("smart-upload-link");
     const openMenu = document.getElementById("open-menu");
 const accountDesktopLink = document.getElementById("account-desktop-link");
+
     if (isMobile) {
         openMenu.style.display = "none";
         smartUpload.style.display = "grid";
@@ -4309,6 +4367,7 @@ auth.onAuthStateChanged(async (user) => {
     if (!user) return;
     loadPhotoChannelSelect();
     loadChannelSelect();
+    loadLibrary(user);
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
@@ -4398,25 +4457,50 @@ if (age !== null) {
         document.getElementById("name").innerHTML = `Ім'я: ${userData?.name || ""}`;
         document.getElementById("supername").innerHTML = `Прізвище: ${userData?.supername || ""}`;
 
-        // 🔹 Аватар
-        if (userData?.avatarId) {
-            try {
-                const url = await firebase.storage().ref(`avatars/${userData.avatarId}.webp`).getDownloadURL();
-                avatarEl.innerHTML = "";
-                navAvatar.innerHTML = "";
-                const img = document.createElement("img");
-                img.src = url;
-                img.alt = "Аватар користувача";
-                avatarEl.appendChild(img);
-                navAvatar.prepend(img.cloneNode(true));
-            } catch {
-                avatarEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
-                navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
-            }
-        } else {
-            avatarEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
-            navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+if (userData?.avatarId) {
+    try {
+        // Отримуємо URL аватара з Firebase Storage
+        const url = await firebase.storage().ref(`avatars/${userData.avatarId}.webp`).getDownloadURL();
+
+        // 🔹 avatarEl
+        avatarEl.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Аватар користувача";
+        avatarEl.appendChild(img);
+
+        // 🔹 navAvatar
+        navAvatar.innerHTML = "";
+        const imgNav = document.createElement("img");
+        imgNav.src = url;
+        imgNav.alt = "Аватар користувача";
+        navAvatar.prepend(imgNav);
+
+        // 🔹 avatarLibrary
+        let avatarLibraryEl = document.getElementById("avatar-library");
+        // якщо елемент ще не створений динамічно
+        if (!avatarLibraryEl) {
+            avatarLibraryEl = document.createElement("div");
+            avatarLibraryEl.classList.add("avatar");
+            avatarLibraryEl.id = "avatar-library";
+            const library = document.getElementById("library");
+            library.appendChild(avatarLibraryEl);
         }
+        avatarLibraryEl.innerHTML = "";
+        const imgLibrary = document.createElement("img");
+        imgLibrary.src = url;
+        imgLibrary.alt = "Аватар користувача";
+        avatarLibraryEl.appendChild(imgLibrary);
+
+    } catch (err) {
+        console.error("Помилка завантаження аватара:", err);
+        avatarEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+        navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+    }
+} else {
+    avatarEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+    navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+}
 
         loadVideos();
         enableBanduraUI(role);
@@ -4436,37 +4520,63 @@ input.onchange = async () => {
 
     let uploadFile = file;
 
-    // Перевіряємо HEIC
+    // Перевірка HEIC
     if (file.type === "image/heic" || file.name.endsWith(".heic")) {
         try {
             const blob = await heic2any({ blob: file, toType: "image/webp" });
             uploadFile = new File([blob], file.name.replace(/\.heic$/i, ".webp"), { type: "image/webp" });
         } catch (err) {
             console.error("Помилка конвертації HEIC:", err);
-            return showNotificationModal(); message.innerHTML = "Не вдалося конвертувати HEIC";
+            showNotificationModal();
+            message.innerHTML = "Не вдалося конвертувати HEIC";
+            return;
         }
     }
 
-    // Далі завантаження як раніше
     const user = firebase.auth().currentUser;
-    if (!user) return showNotificationModal();
-    message.innerHTML = "Не авторизований";
+    if (!user) {
+        showNotificationModal();
+        message.innerHTML = "Не авторизований";
+        return;
+    }
 
     try {
         const avatarId = `${user.uid}_${Date.now()}`;
         const ref = firebase.storage().ref(`avatars/${avatarId}.webp`);
         await ref.put(uploadFile);
-
         await database.ref("users/" + user.uid).update({ avatarId });
 
         const url = await ref.getDownloadURL();
+
+        // 🔹 avatarEl
         avatarEl.innerHTML = "";
-        navAvatar.innerHTML = "";
         const img = document.createElement("img");
         img.src = url;
         img.alt = "Аватар користувача";
         avatarEl.appendChild(img);
-        navAvatar.prepend(img.cloneNode(true));
+
+        // 🔹 navAvatar
+        navAvatar.innerHTML = "";
+        const imgNav = document.createElement("img");
+        imgNav.src = url;
+        imgNav.alt = "Аватар користувача";
+        navAvatar.prepend(imgNav);
+
+        // 🔹 avatarLibrary
+        let avatarLibraryEl = document.getElementById("avatar-library");
+        if (!avatarLibraryEl) {
+            avatarLibraryEl = document.createElement("div");
+            avatarLibraryEl.classList.add("avatar");
+            avatarLibraryEl.id = "avatar-library";
+            const library = document.getElementById("library");
+            library.appendChild(avatarLibraryEl);
+        }
+        avatarLibraryEl.innerHTML = "";
+        const imgLibrary = document.createElement("img");
+        imgLibrary.src = url;
+        imgLibrary.alt = "Аватар користувача";
+        avatarLibraryEl.appendChild(imgLibrary);
+
     } catch (err) {
         console.error(err);
         showNotificationModal();
@@ -4883,6 +4993,7 @@ window.onload = function() {
         loadSettings();
         loadVideos();
         loadPhotos();
+        loadLibrary();
     };
     </script>
     <!-- 🔰 РЕЖИМ ДЛЯ ЛЮДЕЙ ІЗ ЗМР -->
@@ -4894,7 +5005,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (accountForm && !document.getElementById("zmr-mode-toggle")) {
     const zmrToggleContainer = document.createElement("div");
     zmrToggleContainer.innerHTML = `
-      <label style="display:flex;align-items:center;gap:10px;margin-top:15px;">
+      <labelyle="display:flex;align-items:center;gap:10px;margin-top:15px;">
         <span>Режим для людей із ЗМР</span>
         <label class="switch">
           <input type="checkbox" id="zmr-mode-toggle">
