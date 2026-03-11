@@ -1473,23 +1473,6 @@ function closeBlockModal() {
     modal.style.display = "none";
 }
 
-async function confirmBlockUser() {
-    if (!blockedUserUid) return;
-
-    const me = firebase.auth().currentUser;
-    if (!me) return;
-
-    await database.ref(`users/${me.uid}/blockedUsers/${blockedUserUid}`).set(true);
-    closeBlockModal();
-    showNotificationModal();
-    message.textContent = `Користувач "${blockedUserName}" заблокований.`;
-
-    // Оновлюємо коментарі після блокування
-    if (currentVideo && currentVideo.email) {
-        await loadComments(videoKey, currentVideo.email);
-    }
-}
-
 function closeBlockModal() {
   document.getElementById("block-user-modal").style.display = "none";
 }
