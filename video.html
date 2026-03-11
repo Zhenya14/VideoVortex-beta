@@ -1728,7 +1728,30 @@ auth.onAuthStateChanged(user => {
   }
 });
 /* ---------- USER REACTION ---------- */
+videoPlayer.addEventListener("play", () => {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
 
+    const uid = user.uid;
+
+    // Припустимо, що currentVideo і videoKey визначені
+    const videoRef = database.ref("users/" + uid + "/history/" + videoKey);
+
+    // Перевіряємо, чи є запис
+    videoRef.once("value")
+        .then(snapshot => {
+            if (!snapshot.exists()) {
+                // Записуємо дані лише один раз
+                videoRef.set({
+                    author: currentVideo.author,
+                    title: currentVideo.title,
+                    lastPlayed: Date.now()
+                })
+                .catch(error => console.error("Помилка оновлення переглядів:", error));
+            }
+        })
+        .catch(error => console.error("Помилка отримання даних:", error));
+});
 document.getElementById('shareBtn').addEventListener('click', async () => {
   if (!currentVideo) {
     alert('Відео ще не завантажене');
