@@ -1745,6 +1745,7 @@ videoPlayer.addEventListener("play", () => {
                 videoRef.set({
                     author: currentVideo.author,
                     title: currentVideo.title,
+                    thumbnail: currentVideo.thumbnail,
                     lastPlayed: Date.now()
                 })
                 .catch(error => console.error("Помилка оновлення переглядів:", error));
