@@ -1098,23 +1098,24 @@ transform: scale(0.95); /* легке стиснення */
   margin-top: 8px;
   text-align: center;
 }
-.history-item {
-  flex: 0 0 auto; /* щоб не розтягувалося */
-  width: 120px;
-  display: block;
-  flex-direction: column;
+..history-item {
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  gap: 10px;
+  margin-top: 5px;
   cursor: pointer;
-  text-align: center;
-  font-size: 12px;
 }
-
 .history-item img {
-  width: 100%;
-  height: 70px;
+  width: 80px;
+  height: 45px;
   object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 5px;
+  border-radius: 5px;
+}
+.history-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #fff;
 }
 .history-info {
   text-align: left;
@@ -3465,6 +3466,15 @@ function loadLibrary(user) {
   const library = document.getElementById("library");
   library.innerHTML = "";
   const uid = user.uid;
+      const historyRef = database.ref("users/" + uid + "/history");
+
+    historyRef.once("value")
+        .then(snapshot => {
+            const historyData = snapshot.val() || {};
+            if (Object.keys(historyData).length === 0) {
+                library.innerHTML = "<p>Історія переглядів порожня</p>";
+                return;
+            }
   database.ref("users/" + uid).once("value")
     .then(snapshot => {
       const userData = snapshot.val() || {};
@@ -3485,38 +3495,15 @@ function loadLibrary(user) {
                 showAccountModal();
             };
       authorInfo.appendChild(editProfile);
+      
       const historyInfo = document.createElement("div");
       historyInfo.classList.add("history-info");
       const historyText = document.createElement("p");
       historyInfo.setAttribute("data-i18n", "history");
       authorInfo.appendChild(historyInfo);
-      library.appendChild(authorInfo);
-      
-      applyTranslations();
-    })
-    
-    .catch(err => {
-      console.error("Помилка завантаження даних користувача:", err);
-    });
-}
-function loadHistory(user) {
-    const library = document.getElementById("library");
-
-    const uid = user.uid;
-    const historyRef = database.ref("users/" + uid + "/history");
-
-    historyRef.once("value")
-        .then(snapshot => {
-            const historyData = snapshot.val() || {};
-            if (Object.keys(historyData).length === 0) {
-                library.innerHTML = "<p>Історія переглядів порожня</p>";
-                return;
-            }
-
-            Object.keys(historyData).forEach(videoKey => {
+      Object.keys(historyData).forEach(videoKey => {
                 const video = historyData[videoKey];
-const authorHistory = document.createElement("div");
-      authorHistory.classList.add("author-info");
+
                 const container = document.createElement("div");
                 container.classList.add("history-item");
                 // Прев’ю відео
@@ -3539,12 +3526,18 @@ const authorHistory = document.createElement("div");
                 container.onclick = () => {
                     window.location.href = `video.html?key=${videoKey}`;
                 };
-                authorHistory.appendChild(container);
-                library.appendChild(authorHistory);
+                authorInfo.appendChild(container);
+                library.appendChild(authorInfo);
             });
-        })
-        .catch(err => console.error("Помилка завантаження історії:", err));
+    })
+      applyTranslations();
+    })
+    
+    .catch(err => {
+      console.error("Помилка завантаження даних користувача:", err);
+    });
 }
+
 function showAccountModal() {
   document.getElementById("account-modal").style.display = "flex";
 }
@@ -4423,7 +4416,6 @@ auth.onAuthStateChanged(async (user) => {
     loadPhotoChannelSelect();
     loadChannelSelect();
     loadLibrary(user);
-    loadHistory(user);
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
