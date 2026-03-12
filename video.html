@@ -1896,32 +1896,45 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
+document.addEventListener("DOMContentLoaded", () => {
   const video = document.getElementById("video-player");
-const playPause = document.getElementById("playPause");
-const seek = document.getElementById("seek");
-const time = document.getElementById("time");
-const fullscreen = document.getElementById("fullscreen");
+  const playPause = document.getElementById("playPause");
+  const seek = document.getElementById("seek");
+  const time = document.getElementById("time");
+  const fullscreen = document.getElementById("fullscreen");
 
-playPause.onclick = () => video.paused ? video.play() : video.pause();
-video.onplay = () => playPause.textContent = "❚❚";
-video.onpause = () => playPause.textContent = "►";
+  // Відео з Firebase
+  const videoKey = new URLSearchParams(window.location.search).get("key");
+  firebase.database().ref("videos/" + videoKey).once("value")
+    .then(snapshot => {
+      const data = snapshot.val();
+      if (data && data.url) {
+        video.src = data.url;  // підставляємо реальний URL з Firebase
+      }
+    });
 
-video.ontimeupdate = () => {
-  const progress = (video.currentTime / video.duration) * 100;
-  seek.value = progress;
-  time.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-};
-seek.oninput = () => video.currentTime = (seek.value/100) * video.duration;
+  // Кнопки
+  playPause.onclick = () => video.paused ? video.play() : video.pause();
+  video.onplay = () => playPause.textContent = "❚❚";
+  video.onpause = () => playPause.textContent = "►";
 
-fullscreen.onclick = () => {
-  if(!document.fullscreenElement) video.parentElement.requestFullscreen();
-  else document.exitFullscreen();
-};
+  video.ontimeupdate = () => {
+    const progress = (video.currentTime / video.duration) * 100;
+    seek.value = progress;
+    time.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+  };
+  seek.oninput = () => video.currentTime = (seek.value/100) * video.duration;
 
-function formatTime(s) {
-  const m = Math.floor(s/60), sec = Math.floor(s%60);
-  return `${m}:${sec.toString().padStart(2,"0")}`;
-}
+  fullscreen.onclick = () => {
+    if(!document.fullscreenElement) video.parentElement.requestFullscreen();
+    else document.exitFullscreen();
+  };
+
+  function formatTime(s) {
+    const m = Math.floor(s/60), sec = Math.floor(s%60);
+    return `${m}:${sec.toString().padStart(2,"0")}`;
+  }
+});
 </script>
 </body>
     </html>
