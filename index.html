@@ -3501,7 +3501,6 @@ function loadLibrary(user) {
 }
 function loadHistory(user) {
     const library = document.getElementById("library");
-    library.innerHTML = ""; // очищаємо бібліотеку
 
     const uid = user.uid;
     const historyRef = database.ref("users/" + uid + "/history");
@@ -3516,7 +3515,8 @@ function loadHistory(user) {
 
             Object.keys(historyData).forEach(videoKey => {
                 const video = historyData[videoKey];
-
+const authorHistory = document.createElement("div");
+      authorHistory.classList.add("author-info");
                 const container = document.createElement("div");
                 container.classList.add("history-item");
                 // Прев’ю відео
@@ -3539,8 +3539,8 @@ function loadHistory(user) {
                 container.onclick = () => {
                     window.location.href = `video.html?key=${videoKey}`;
                 };
-
-                library.appendChild(container);
+                authorHistory.appendChild(container);
+                library.appendChild(authorHistory);
             });
         })
         .catch(err => console.error("Помилка завантаження історії:", err));
