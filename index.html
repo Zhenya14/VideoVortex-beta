@@ -3049,19 +3049,7 @@ messaging.onMessage((payload) => {
   new Notification(title, { body,  });
 });
 
-         document.getElementById("auth-link").onclick = function() {
-            const authForm = document.getElementById("auth-form");
-            authForm.style.display = authForm.style.display === "none" ? "block" : "none";
-            document.getElementById("register-form").style.display = "none";
-        };
-
-        document.getElementById("register-link").onclick = function() {
-            const registerForm = document.getElementById("register-form");
-            registerForm.style.display = registerForm.style.display === "none" ? "block" : "none";
-            document.getElementById("auth-form").style.display = "none";
-        };
-
-
+    
         document.getElementById("post").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
         document.getElementById("photo-container").style.display = 'flex';
@@ -4229,30 +4217,25 @@ function getActivePhotoChannelData() {
 
 function toggleUploadVisibility() {
     const isMobile = window.innerWidth <= 968;
-    const upload = document.getElementById("upload-link");
-    const photoUpload = document.getElementById("upload-link-photo");
-    const smartPhotoUpload = document.getElementById("smart-upload-link-photo");
-    const smartUpload = document.getElementById("smart-upload-link");
+
+    const plusPost = document.getElementById("plus-button");
+    const plusDesktopPost = document.getElementById("plus-desktop-button");
     const openMenu = document.getElementById("open-menu");
-const accountDesktopLink = document.getElementById("auth-link");
+    const accountDesktopLink = document.getElementById("account-desktop-link");
+
+    // Перевірка на null, щоб уникнути помилок
+    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) return;
+
     if (isMobile) {
         openMenu.style.display = "none";
-        smartUpload.style.display = "grid";
+        plusPost.style.display = "grid";
+        plusDesktopPost.style.display = "none";
         accountDesktopLink.style.display = "none";
-        smartPhotoUpload.style.display = "grid";
-        if (auth.currentUser) {
-            upload.style.display = "none";
-            photoUpload.style.display = "none";
-        }
     } else {
-      accountDesktopLink.style.display = "flex";
         openMenu.style.display = "flex";
-        smartUpload.style.display = "none";
-        smartPhotoUpload.style.display = "none";
-        if (auth.currentUser) {
-            upload.style.display = "flex";
-            photoUpload.style.display = "flex";
-        }
+        plusPost.style.display = "none";
+        plusDesktopPost.style.display = "flex";
+        accountDesktopLink.style.display = "flex";
     }
 }
 
@@ -4269,7 +4252,6 @@ function updateUI(user) {
     if (userInfoEl) userInfoEl.textContent = `Ви увійшли як: ${user.email}`;
 
     // Кнопки/посилання
-    document.getElementById("signup")?.style?.setProperty("display", "none");
     document.getElementById("auth-link")?.style?.setProperty("display", "none");
     document.getElementById("register-link")?.style?.setProperty("display", "none");
     document.getElementById("logout-link")?.style?.setProperty("display", "flex");
@@ -4302,7 +4284,6 @@ function updateUI(user) {
     if (userInfoEl) userInfoEl.textContent = "";
 
     // Кнопки/посилання
-    document.getElementById("signup")?.style?.setProperty("display", "flex");
     document.getElementById("auth-link")?.style?.setProperty("display", "none");
     document.getElementById("register-link")?.style?.setProperty("display", "none");
     document.getElementById("logout-link")?.style?.setProperty("display", "none");
