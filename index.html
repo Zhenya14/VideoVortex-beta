@@ -38,7 +38,7 @@
       .catch(err => console.error("❌ Помилка SW:", err));
   }
 </script>
-        <script>
+        <script defer>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -204,7 +204,7 @@ width: 80%;  /* Ширина поля вводу */
         }
     }
 </style>
-        <script>
+        <script defer>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
@@ -2181,12 +2181,12 @@ text-decoration: none;
                 <p>5.1.0 beta</p>
         </footer>
 <script src="i18n.js"></script>
-<script>
+<script defer>
 document.addEventListener("DOMContentLoaded", () => {
     initLanguageSwitcher("language-select");
 });
 </script>
-<script>
+<script defer>
   let APP_VERSION = "5.1.0"; // Поточна версія VideoVortex
  function clearLocalStorageExceptAuth() {
     const keepPrefixes = [
@@ -2334,7 +2334,7 @@ function hideUpdateButton() {
     location.reload(true);
 });
 </script>
-<script>
+<script defer>
 const banner = document.getElementById("cookieBanner");
 const consent = localStorage.getItem("cookieConsent");
 
@@ -2380,7 +2380,7 @@ function disableAnalytics(){
   console.log("analytics disabled");
 }
 </script>
-<script>
+<script defer>
 let selectedPhotos = [];
 let selectedVideos = [];
 
@@ -2470,7 +2470,7 @@ function removeVideo(i) {
   renderVideoPreviews();
 }
 </script>
-        <script>
+        <script defer>
           const searchBox = document.getElementById("search-box");
 const closeSearch = document.getElementById("close-search");
 const searchInput = document.getElementById("search-input");
@@ -2503,7 +2503,7 @@ function searchVideos() {
     });
 }
         </script>
-        <script>
+        <script defer>
 const fileInput = document.getElementById("photo-file");
 const fileName = document.getElementById("file-name");
 
@@ -2512,7 +2512,7 @@ fileInput.addEventListener("change", () => {
   fileName.textContent = "📸 " + name;
 });
 </script>
-        <script>
+        <script defer>
 const videoInput = document.getElementById("video-file");
 const videofileName = document.getElementById("video-file-name");
 
@@ -2522,7 +2522,7 @@ videoInput.addEventListener("change", () => {
 });
 
 </script>
-<script>
+<script defer>
 function isMobile() {
   return window.innerWidth <= 968;
 }
@@ -2542,7 +2542,7 @@ window.addEventListener("load", () => {
   setTimeout(showTgPopup, 1500);
 });
 </script>
-<script>
+<script defer>
 let logoClickCount = 0;
 let logoClickTimer = null;
 let easterEggTimeout = null;
@@ -2860,7 +2860,7 @@ function resetButtonColors() {
   });
 }
 </script>
-  <script>
+  <script defer>
           let deferredPrompt;
 const installBtn = document.getElementById('installBtn');
 
@@ -2897,7 +2897,7 @@ function acceptRulesUpdate() {
 window.addEventListener("load", showRulesModal);
   </script>
 
-    <script>
+    <script defer>
 const modal = document.getElementById("upload-modal");
 const accountModal = document.getElementById("account-modal");
 const message = document.getElementById("message");
@@ -5045,7 +5045,7 @@ window.onload = function() {
     };
     </script>
     <!-- 🔰 РЕЖИМ ДЛЯ ЛЮДЕЙ ІЗ ЗМР -->
-<script>
+<script defer>
 // === Надійна заміна текстів (вузли + атрибути) для ЗМР-режиму ===
 document.addEventListener("DOMContentLoaded", () => {
   // 🔘 Додаємо перемикач у налаштування акаунта
@@ -5160,7 +5160,7 @@ function restoreAttributes(el) {
 function processTextNodes(root, fn) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode: node => {
-      // пропускаємо текст у <script> та <style>
+      // пропускаємо текст у <script defer> та <style>
       const parent = node.parentElement;
       if (!parent) return NodeFilter.FILTER_REJECT;
       const tag = parent.tagName && parent.tagName.toLowerCase();
