@@ -2901,8 +2901,6 @@ const modal = document.getElementById("upload-modal");
 const accountModal = document.getElementById("account-modal");
 const message = document.getElementById("message");
 const notification = document.getElementById("notification-modal");
-
-const buttonAccountDesktopModal = document.getElementById("account-desktop-link");
 const closeAccountModal = document.querySelector(".close-account-modal");
 const plus = document.getElementById("plus-button");
 const plusDesktop = document.getElementById("plus-desktop-button");
@@ -2934,11 +2932,6 @@ plus?.addEventListener("click", () => {
 plusDesktop?.addEventListener("click", () => {
     if (!requireAuth()) return;
     modal.style.display = "flex";
-});
-
-buttonAccountDesktopModal?.addEventListener("click", () => {
-    if (!requireAuth()) return;
-    accountModal.style.display = "flex";
 });
 
 // Закриття модалок
@@ -3072,19 +3065,29 @@ messaging.onMessage((payload) => {
         document.getElementById("post").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
         document.getElementById("photo-container").style.display = 'flex';
+        document.getElementById("library").style.display = 'none';
         }
             document.getElementById("video").onclick = function() {
            document.getElementById("video-container").style.display = 'flex';
         document.getElementById("photo-container").style.display = 'none';
+        document.getElementById("library").style.display = 'none';
         }
         document.getElementById("smart-post").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
+           document.getElementById("library").style.display = 'none';
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
+           document.getElementById("account-link").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.add("button-liquid-glass");
         document.getElementById("photo-container").style.display = 'flex';
         }
+        document.getElementById("account-desktop-link").onclick = function() {
+          document.getElementById("video-container").style.display = 'none';
+           document.getElementById("photo-container").style.display = 'none';
+           document.getElementById("library").style.display = 'flex';
+        }
         document.getElementById("account-link").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
+           document.getElementById("photo-container").style.display = 'none';
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.remove("button-liquid-glass");
           document.getElementById("account-link").classList.add("button-liquid-glass");
@@ -3093,8 +3096,10 @@ messaging.onMessage((payload) => {
             document.getElementById("smart-video").onclick = function() {
               document.getElementById("smart-video").classList.add("button-liquid-glass");
               document.getElementById("smart-post").classList.remove("button-liquid-glass");
+              document.getElementById("account-link").classList.remove("button-liquid-glass");
            document.getElementById("video-container").style.display = 'flex';
         document.getElementById("photo-container").style.display = 'none';
+        document.getElementById("library").style.display = 'none';
         }
 
             function blockScreenForVerification() {
@@ -4229,8 +4234,7 @@ function toggleUploadVisibility() {
     const smartPhotoUpload = document.getElementById("smart-upload-link-photo");
     const smartUpload = document.getElementById("smart-upload-link");
     const openMenu = document.getElementById("open-menu");
-const accountDesktopLink = document.getElementById("account-desktop-link");
-
+const accountDesktopLink = document.getElementById("auth-link");
     if (isMobile) {
         openMenu.style.display = "none";
         smartUpload.style.display = "grid";
