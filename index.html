@@ -3545,12 +3545,13 @@ function loadLibrary(user) {
 
                 const blockedUsersBtn = document.createElement("button");
                 blockedUsersBtn.innerHTML = `<i class="material-icons">blocked</i><p data-i18n="blocked-users">Заблоковані користувачі</p>`;
-                authorInfo.appendChild(blockedUsersBtn);
                 blockedUsersBtn.onclick = () => {
     const user = firebase.auth().currentUser;
     if (!user) return alert("Спочатку увійдіть у акаунт");
     showBlockedUsersModal();
 };
+                authorInfo.appendChild(blockedUsersBtn);
+                
       const historyInfo = document.createElement("div");
       historyInfo.classList.add("history-info");
       const historyText = document.createElement("p");
@@ -4522,7 +4523,6 @@ auth.onAuthStateChanged(async (user) => {
     loadPhotoChannelSelect();
     loadChannelSelect();
     loadLibrary(user);
-    showBlockedUsersModal();
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
