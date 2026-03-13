@@ -3511,17 +3511,12 @@ function createThumbnail(file) {
 const avatarLibrary = document.getElementById("avatar-library");
 function loadLibrary(user) {
   const library = document.getElementById("library");
+
   library.innerHTML = "";
   const uid = user.uid;
       const historyRef = database.ref("users/" + uid + "/history");
 
-    historyRef.once("value")
-        .then(snapshot => {
-            const historyData = snapshot.val() || {};
-            if (Object.keys(historyData).length === 0) {
-                library.innerHTML = "<p>Історія переглядів порожня</p>";
-                return;
-            }
+
   database.ref("users/" + uid).once("value")
     .then(snapshot => {
       const userData = snapshot.val() || {};
@@ -3557,6 +3552,15 @@ function loadLibrary(user) {
       const historyText = document.createElement("p");
       historyInfo.setAttribute("data-i18n", "history");
       authorInfo.appendChild(historyInfo);
+      library.appendChild(authorInfo);
+
+          historyRef.once("value")
+        .then(snapshot => {
+            const historyData = snapshot.val() || {};
+            if (Object.keys(historyData).length === 0) {
+                historyInfo.innerHTML = "<p>Історія переглядів порожня</p>";
+                return;
+            }
       Object.keys(historyData).forEach(videoKey => {
                 const video = historyData[videoKey];
 
@@ -3583,8 +3587,7 @@ function loadLibrary(user) {
                     window.location.href = `video.html?key=${videoKey}`;
                 };
                 
-                authorInfo.appendChild(container);
-                library.appendChild(authorInfo);
+                library.appendChild(container);
                 
                 
             });
