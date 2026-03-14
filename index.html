@@ -1701,9 +1701,11 @@ transform: scale(0.95); /* легке стиснення */
 }
 .modal-blocked p {
   display: flex;
-  text-align: center;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  overflow-y: auto;        /* вертикальний скрол */
+    max-height: 100%;        /* повна висота */
+    padding-right: 10px;    
 }
 .modal-content {
   background: white;
@@ -2126,7 +2128,7 @@ text-decoration: none;
             <span class="close-blocked-modal">✖</span>
     </div>
     <div class="modal-blocked-body">
-      <p style="color: gray;" data-i18n="information-blocked">
+      <p style="color: gray; text-align: left;" data-i18n="information-blocked">
         Від заблокованих користувачів приховано відео, дописи та коментарі.
       </p>
       <div id="blockedUsersList" class="modal-blocked">
