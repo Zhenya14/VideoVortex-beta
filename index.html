@@ -1505,7 +1505,7 @@ display: none;
   border: none;
   cursor: pointer;
 }
-.modal-overlay, .modal-account-overlay, .modal-blocked-overlay {
+.modal-blocked-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -1515,7 +1515,29 @@ display: none;
   align-items: center;
   z-index: 99999;
 }
-
+.modal-overlay, .modal-account-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+}
+.modal-blocked-window {
+  width: 90%;
+  max-width: 450px;
+  background: rgba(255,255,255,0.1);
+  padding: 0;
+  border-radius: 18px;
+  max-height: 90vh;        /* щоб не виходила за екран */
+    overflow: hidden;        /* ховаємо зовнішній скрол */
+    display: flex;
+    flex-direction: column;
+  border: 1px solid rgba(255,255,255,0.25);
+  animation: scaleIn .3s ease;
+}
 .modal-window, .modal-account-window {
   width: 90%;
   max-width: 450px;
@@ -1529,7 +1551,12 @@ display: none;
   border: 1px solid rgba(255,255,255,0.25);
   animation: scaleIn .3s ease;
 }
-.modal-account-body, .modal-body {
+.modal-blocked-body {
+  overflow-y: auto;        /* вертикальний скрол */
+    max-height: 100%;        /* повна висота */
+    padding-right: 10px;
+}
+.modal-account-body {
     overflow-y: auto;        /* вертикальний скрол */
     max-height: 100%;        /* повна висота */
     padding-right: 10px;     /* щоб скрол не перекривав контент */
@@ -1537,10 +1564,16 @@ display: none;
 /* Робимо фіксовану модалку */
 
 /* Прокрутка тільки всередині контенту */
-.modal-header, .modal-blocked-header {
+.modal-header {
   display: flex;
   justify-content: space-between;
   padding: 12px 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.modal-blocked-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 .modal-account-header {
@@ -1559,7 +1592,11 @@ display: none;
   color: #fff;
   border-bottom: 2px solid #fff;
 }
-
+.close-blocked-modal {
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+}
 .close-modal, .close-account-modal {
 
   cursor: pointer;
@@ -1654,8 +1691,21 @@ transform: scale(0.95); /* легке стиснення */
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
 }
-
-.modal-content, .modal-blocked-content {
+.modal-blocked {
+  width: 100%;
+  display: flex;
+  text-align: center;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+}
+.modal-blocked p {
+  display: flex;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
   background: white;
   padding: 20px;
   margin: 20% auto;
@@ -2070,16 +2120,16 @@ text-decoration: none;
   </div>
 </div>
 <div id="blocked-users-modal" class="modal-blocked-overlay">
-  <div class="modal-window">
+  <div class="modal-blocked-window">
     <div class="modal-blocked-header">
-      <span id="closeBlockedModal" class="close-modal" style="cursor:pointer;">✖</span>
       <h2>Заблоковані користувачі</h2>
+            <span class="close-blocked-modal">✖</span>
     </div>
-    <div class="modal-account-body">
+    <div class="modal-blocked-body">
       <p style="color: gray;" data-i18n="information-blocked">
         Від заблокованих користувачів приховано відео, дописи та коментарі.
       </p>
-      <div id="blockedUsersList" class="modal-blocked-content">
+      <div id="blockedUsersList" class="modal-blocked">
         <!-- Тут динамічно будуть вставлятися заблоковані користувачі -->
       </div>
     </div>
@@ -3614,24 +3664,26 @@ function showBlockedUsersModal() {
     .then(snapshot => {
       const blockedData = snapshot.val() || {};
       if (!Object.keys(blockedData).length) {
-        const li = document.createElement("li");
-        li.textContent = "Список порожній";
-        list.appendChild(li);
+        const p = document.createElement("p");
+        p.classList.add("modal-blocked");
+        p.textContent = "Список порожній";
+        list.appendChild(p);
       } else {
         Object.keys(blockedData).forEach(blockedUid => {
-          const li = document.createElement("li");
-          li.textContent = blockedData[blockedUid].userName || "Анонім";
+          const p = document.createElement("p");
+          p.classList.add("modal-blocked");
+          p.textContent = blockedData[blockedUid].userName || "Анонім";
 
           const unblockBtn = document.createElement("button");
           unblockBtn.textContent = "Розблокувати";
           unblockBtn.onclick = () => {
             database.ref(`users/${uid}/blockedUsers/${blockedUid}`).remove()
-              .then(() => li.remove())
+              .then(() => p.remove())
               .catch(console.error);
           };
 
-          li.appendChild(unblockBtn);
-          list.appendChild(li);
+          p.appendChild(unblockBtn);
+          list.appendChild(p);
         });
       }
       modal.style.display = "flex";
@@ -3639,7 +3691,7 @@ function showBlockedUsersModal() {
     .catch(console.error);
 
   // Закриття модалки по X
-  document.getElementById("closeBlockedModal")?.addEventListener("click", () => {
+  document.querySelector(".close-blocked-modal")?.addEventListener("click", () => {
     modal.style.display = "none";
   });
 
