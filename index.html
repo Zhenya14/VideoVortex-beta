@@ -3562,94 +3562,110 @@ function createThumbnail(file) {
 }
 const avatarLibrary = document.getElementById("avatar-library");
 function loadLibrary(user) {
-  const library = document.getElementById("library");
+    const library = document.getElementById("library");
+    library.innerHTML = "";
+    const uid = user.uid;
+    const userRef = database.ref("users/" + uid);
+    const historyRef = database.ref("users/" + uid + "/history");
 
-  library.innerHTML = "";
-  const uid = user.uid;
-      const historyRef = database.ref("users/" + uid + "/history");
-
-
-  database.ref("users/" + uid).once("value")
-    .then(snapshot => {
-      const userData = snapshot.val() || {};
-      const authorInfo = document.createElement("div");
-      authorInfo.classList.add("author-info");
-      const avatarLibraryEl = document.createElement("div");
-      avatarLibraryEl.classList.add("avatar");
-      avatarLibraryEl.id = "avatar-library";
-      authorInfo.appendChild(avatarLibraryEl);
-      const fullNameLibrary = document.createElement("p");
-      fullNameLibrary.textContent = `${userData.name || ""} ${userData.supername || ""}`;
-      authorInfo.appendChild(fullNameLibrary);
-      const editProfile = document.createElement("button");
-      editProfile.classList.add("edit");
-      editProfile.innerHTML = `<i class="material-icons">edit</i>Змінити`;
-      editProfile.id = "edit-profile";
-      editProfile.onclick = () => {
-                showAccountModal();
-            };
-      authorInfo.appendChild(editProfile);
-
-                const blockedUsersBtn = document.createElement("button");
-                blockedUsersBtn.innerHTML = `<i class="material-icons">blocked</i><p data-i18n="blocked-users">Заблоковані користувачі</p>`;
-                blockedUsersBtn.onclick = () => {
-    const user = firebase.auth().currentUser;
-    if (!user) return alert("Спочатку увійдіть у акаунт");
-    showBlockedUsersModal();
-};
-                authorInfo.appendChild(blockedUsersBtn);
-                
-      const historyInfo = document.createElement("div");
-      historyInfo.classList.add("history-info");
-      const historyText = document.createElement("p");
-      historyInfo.setAttribute("data-i18n", "history");
-      authorInfo.appendChild(historyInfo);
-      library.appendChild(authorInfo);
-
-          historyRef.once("value")
+    userRef.once("value")
         .then(snapshot => {
-            const historyData = snapshot.val() || {};
-            if (Object.keys(historyData).length === 0) {
-                historyInfo.innerHTML = "<p>Історія переглядів порожня</p>";
-                return;
-            }
-      Object.keys(historyData).forEach(videoKey => {
-                const video = historyData[videoKey];
+            const userData = snapshot.val() || {};
 
-                const container = document.createElement("div");
-                container.classList.add("history-item");
-                // Прев’ю відео
-                const thumbnail = document.createElement("img");
-                thumbnail.src = video.thumbnail || "default.jpg";
-                thumbnail.alt = video.title;
-                container.appendChild(thumbnail);
+            // ▸ Основна панель автора
+            const authorInfo = document.createElement("div");
+            authorInfo.classList.add("author-info");
 
-                // Інформація
-                const info = document.createElement("div");
-                info.classList.add("history-info");
-                info.innerHTML = `
-                    <p>${video.title}</p>
-                    <p>Автор: ${video.author}</p>
-                    <p>Останній перегляд: ${new Date(video.lastPlayed).toLocaleString()}</p>
-                `;
-                container.appendChild(info);
+            const avatarLibraryEl = document.createElement("div");
+            avatarLibraryEl.classList.add("avatar");
+            avatarLibraryEl.id = "avatar-library";
+            authorInfo.appendChild(avatarLibraryEl);
 
-                // Клік на відео відкриває його
-                container.onclick = () => {
-                    window.location.href = `video.html?key=${videoKey}`;
-                };
-                
-                library.appendChild(container);
-                
-                
-            });
-    })
-      applyTranslations();
-    })
-    
-    .catch(err => {
-      console.error("Помилка завантаження даних користувача:", err);
-    });
+            const fullNameLibrary = document.createElement("p");
+            fullNameLibrary.textContent = `${userData.name || ""} ${userData.supername || ""}`;
+            authorInfo.appendChild(fullNameLibrary);
+
+            const editProfile = document.createElement("button");
+            editProfile.classList.add("edit");
+            editProfile.innerHTML = `<i class="material-icons">edit</i>Змінити`;
+            editProfile.onclick = showAccountModal;
+            authorInfo.appendChild(editProfile);
+
+            const blockedUsersBtn = document.createElement("button");
+            blockedUsersBtn.innerHTML = `<i class="material-icons">blocked</i><p data-i18n="blocked-users">Заблоковані користувачі</p>`;
+            blockedUsersBtn.onclick = () => {
+                const user = firebase.auth().currentUser;
+                if (!user) return alert("Спочатку увійдіть у акаунт");
+                showBlockedUsersModal();
+            };
+            authorInfo.appendChild(blockedUsersBtn);
+
+            // ▸ Контейнер для історії
+            const historyInfo = document.createElement("div");
+            historyInfo.classList.add("history-info");
+            const historyTitle = document.createElement("p");
+            historyTitle.setAttribute("data-i18n", "history");
+            historyTitle.textContent = "Історія переглядів";
+            historyInfo.appendChild(historyTitle);
+
+            authorInfo.appendChild(historyInfo);
+            library.appendChild(authorInfo);
+
+            // ▸ Завантаження історії
+            historyRef.once("value")
+                .then(snapshot => {
+                    const historyData = snapshot.val() || {};
+                    if (Object.keys(historyData).length === 0) {
+                        const emptyMsg = document.createElement("p");
+                        emptyMsg.textContent = "Історія переглядів порожня";
+                        historyInfo.appendChild(emptyMsg);
+                        return;
+                    }
+
+                    Object.keys(historyData).forEach(videoKey => {
+                        const video = historyData[videoKey];
+
+                        // ▸ Контейнер одного відео в історії
+                        const videoContainer = document.createElement("div");
+                        videoContainer.classList.add("history-item");
+                        videoContainer.style.display = "flex";
+                        videoContainer.style.alignItems = "center";
+                        videoContainer.style.marginBottom = "8px";
+                        videoContainer.style.cursor = "pointer";
+
+                        // ▸ Прев’ю
+                        const thumbnail = document.createElement("img");
+                        thumbnail.src = video.thumbnail || "default.jpg";
+                        thumbnail.alt = video.title;
+                        thumbnail.style.width = "80px";
+                        thumbnail.style.height = "45px";
+                        thumbnail.style.objectFit = "cover";
+                        thumbnail.style.borderRadius = "6px";
+                        thumbnail.style.marginRight = "10px";
+                        videoContainer.appendChild(thumbnail);
+
+                        // ▸ Текстова інформація
+                        const info = document.createElement("div");
+                        info.innerHTML = `
+                            <p style="margin:0;font-weight:bold;">${video.title}</p>
+                            <p style="margin:0;font-size:0.9em;color:#ccc;">Автор: ${video.author}</p>
+                            <p style="margin:0;font-size:0.8em;color:#999;">Останній перегляд: ${new Date(video.lastPlayed).toLocaleString()}</p>
+                        `;
+                        videoContainer.appendChild(info);
+
+                        // ▸ Клік на відео
+                        videoContainer.onclick = () => {
+                            window.location.href = `video.html?key=${videoKey}`;
+                        };
+
+                        historyInfo.appendChild(videoContainer);
+                    });
+                })
+                .catch(err => console.error("Помилка завантаження історії:", err));
+
+            applyTranslations();
+        })
+        .catch(err => console.error("Помилка завантаження даних користувача:", err));
 }
 function showBlockedUsersModal() {
   const modal = document.getElementById("blocked-users-modal");
