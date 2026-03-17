@@ -4894,16 +4894,19 @@ document.getElementById("logout-link").onclick = function() {
                 location.reload();
             });
         };
-function loadPhotos() {
+async function loadPhotos() {
     const photoGallery = document.getElementById("photo-gallery");
     if (!photoGallery) return;
     photoGallery.innerHTML = "";
 
     // 🔹 Слухаємо нові фото у реальному часі
-    database.ref("photos").on("child_added", snapshot => {
+    database.ref("photos").on("child_added", async snapshot => {
         const photoData = snapshot.val();
         const photoKey = snapshot.key;
-
+if (photoData.authorUid) {
+            const blockedMe = await didUserBlockMe(photoData.authorUid);
+            if (blockedMe) return;
+        }
         // 🔹 Фото елемент
         const photoElement = document.createElement("img");
         photoElement.src = photoData.url;
