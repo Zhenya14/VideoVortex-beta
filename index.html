@@ -4144,20 +4144,38 @@ async function uploadVideo() {
   try {
     const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val() || {};
-    const authorName = `${userData.name || ""} ${userData.supername || ""}`.trim();
-    const authorAvatar = userData.avatarId || null;
 
-  let authorAvatarUrl = null;
+    // Вибір каналу через селект
+    const selectedChannel = document.getElementById("video-channel-select").value || "main";
 
-if (authorAvatar) {
-  try {
-    authorAvatarUrl = await storage
-      .ref(`avatars/${authorAvatar}.webp`)
-      .getDownloadURL();
-  } catch (e) {
-    console.warn("Аватар не знайдено");
-  }
-}
+    let authorName;
+    let authorAvatarUrl = null;
+
+    if (selectedChannel === "second" && userData.channels && userData.channels.second) {
+      // Другий канал
+      authorName = userData.channels.second.name || "Другий канал";
+      const secondAvatar = userData.channels.second.avatarId || null;
+      if (secondAvatar) {
+        try {
+          authorAvatarUrl = await storage.ref(`avatars/${secondAvatar}.webp`).getDownloadURL();
+        } catch (e) {
+          console.warn("Аватар другого каналу не знайдено");
+        }
+      }
+    } else {
+      // Основний канал
+      authorName = `${userData.name || ""} ${userData.supername || ""}`.trim() || "Основний канал";
+      const mainAvatar = userData.avatarId || null;
+      if (mainAvatar) {
+        try {
+          authorAvatarUrl = await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
+        } catch (e) {
+          console.warn("Аватар основного каналу не знайдено");
+        }
+      }
+    }
+
+    // Завантаження відео
     const storageRef = storage.ref(`videos/${Date.now()}_${videoFile.name}`);
     const uploadTask = storageRef.put(videoFile);
 
@@ -4203,21 +4221,22 @@ if (authorAvatar) {
         try {
           const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
 
-          // Створюємо та завантажуємо мініатюру
+          // Створення мініатюри
           const thumbnailBlob = await createThumbnail(videoFile);
           const thumbRef = storage.ref(`thumbnails/${Date.now()}_${videoFile.name}.jpg`);
           await thumbRef.put(thumbnailBlob);
           const thumbnailURL = await thumbRef.getDownloadURL();
 
           const now = new Date();
-          const currentDate = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()}`;
+          const currentDate = `${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}.${now.getFullYear()}`;
 
+          // Додаємо відео в базу
           await database.ref("videos").push({
             title: videoTitle,
-            author: authorName || "Анонім",
+            author: authorName,
             authorAvatar: authorAvatarUrl,
-            email: user.email,
             authorUid: uid,
+            email: user.email,
             disabledComments: disabledComments,
             url: downloadURL,
             thumbnail: thumbnailURL,
