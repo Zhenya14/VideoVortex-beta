@@ -4748,7 +4748,7 @@ if (userData?.avatarId) {
     navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
 }
 
-        loadVideos();
+        
         enableBanduraUI(role);
 
     } catch (err) {
@@ -5054,14 +5054,13 @@ function loadPhotoChannelSelect() {
     });
 }
     // Example of how video data might be stored with an 'nsfw' attribute
-function uploadPhoto() {
+async function uploadPhoto() {
     const user = firebase.auth().currentUser;
-    if (!user) return showNotificationModal();
-    message.innerHTML = "Увійдіть в акаунт";
-
-    const channel = getActiveChannelData();
-    if (!channel) return showNotificationModal();
-    message.innerHTML = "Не вибрано канал";
+    if (!user) {
+        showNotificationModal();
+        message.innerHTML = "Увійдіть в акаунт";
+        return;
+    }
 
     const photoDescription = document.getElementById("photo-description")?.value || "";
     const photoTitle = document.getElementById("photo-title")?.value || "";
@@ -5072,55 +5071,95 @@ function uploadPhoto() {
     const progressContainer = document.getElementById("progress-photo-container");
 
     if (!photoTitle || !photoFile) {
-      showNotificationModal();
+        showNotificationModal();
         message.innerHTML = "Будь ласка, заповніть всі поля!";
         return;
     }
+    
+    const uid = user.uid;
 
-    const storageRef = storage.ref(`photos/${Date.now()}_${photoFile.name}`);
-    const uploadTask = storageRef.put(photoFile);
+    try {
+        const snapshot = await database.ref("users/" + uid).once("value");
+        const userData = snapshot.val() || {};
 
-    uploadTask.on("state_changed",
-        (snapshot) => {
-            if (uploadProgress) {
-                const progress = snapshot.bytesTransferred / snapshot.totalBytes * 100;
-                uploadProgress.value = progress;
-                if (progressText) progressText.innerText = `${Math.round(progress)}%`;
-                if (progressContainer) progressContainer.style.display = "block";
+        const selectedPhotoChannel = document.getElementById("photo-channel-select").value || "main";
+
+        let authorName;
+        let authorAvatarUrl = null;
+
+        if (selectedPhotoChannel === "second" && userData.channels && userData.channels.second) {
+            // Другий канал
+            authorName = userData.channels.second.name || "Другий канал";
+            const secondAvatar = userData.channels.second.avatarId || null;
+
+            if (secondAvatar) {
+                try {
+                    authorAvatarUrl = await storage.ref(`avatars/${secondAvatar}.webp`).getDownloadURL();
+                } catch (e) {
+                    console.warn("Аватар другого каналу не знайдено");
+                }
             }
-        },
-        (error) => {
-          showNotificationModal();
-            message.innerHTML = "Помилка завантаження фото: " + error.message;
-        },
-        () => {
-            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                const now = new Date();
-const day = now.getDate().toString().padStart(2, '0');
-const month = (now.getMonth() + 1).toString().padStart(2, '0');
-const year = now.getFullYear();
 
-const currentDate = `${day}.${month}.${year}`; // Наприклад, "02.03.2026"
+        } else {
+            // Основний канал ✅ ВИПРАВЛЕНО
+            authorName = `${userData.name || ""} ${userData.supername || ""}`.trim() || "Основний канал";
 
-                database.ref("photos").push({
-                    title: photoTitle,
-                    description: photoDescription,
-                    url: downloadURL,
-                    author: channel.name,
-                    authorAvatar: channel.avatar,
-                    channelKey: channel.key,
-                    email: user.email,
-                    authorUid: user.uid, // ← ОБОВ'ЯЗКОВО
-                    publishDate: currentDate
-                }).then(() => {
-                  showNotificationModal();
-                    message.innerHTML = "Фото завантажено!";
-                    document.getElementById("upload-photo-form")?.reset();
-                    if (progressContainer) progressContainer.style.display = "none";
-                });
-            });
+            const mainAvatar = userData.avatarId || null;
+            if (mainAvatar) {
+                try {
+                    authorAvatarUrl = await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
+                } catch (e) {
+                    console.warn("Аватар основного каналу не знайдено");
+                }
+            }
         }
-    );
+
+        const storageRef = storage.ref(`photos/${Date.now()}_${photoFile.name}`);
+        const uploadTask = storageRef.put(photoFile);
+
+        uploadTask.on("state_changed",
+            (snapshot) => {
+                if (uploadProgress) {
+                    const progress = snapshot.bytesTransferred / snapshot.totalBytes * 100;
+                    uploadProgress.value = progress;
+                    if (progressText) progressText.innerText = `${Math.round(progress)}%`;
+                    if (progressContainer) progressContainer.style.display = "block";
+                }
+            },
+            (error) => {
+                showNotificationModal();
+                message.innerHTML = "Помилка завантаження фото: " + error.message;
+            },
+            () => {
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+
+                    const now = new Date();
+                    const currentDate = `${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}.${now.getFullYear()}`;
+
+                    database.ref("photos").push({
+                        title: photoTitle,
+                        description: photoDescription,
+                        url: downloadURL,
+                        author: authorName, // ✅ тепер працює
+                        authorAvatar: authorAvatarUrl,
+                        email: user.email,
+                        authorUid: user.uid,
+                        publishDate: currentDate
+                    }).then(() => {
+                        showNotificationModal();
+                        message.innerHTML = "Фото завантажено!";
+                        document.getElementById("upload-photo-form")?.reset();
+                        if (progressContainer) progressContainer.style.display = "none";
+                    });
+                });
+            }
+        );
+
+    } catch (err) {
+        console.error(err);
+        showNotificationModal();
+        message.innerHTML = "Помилка отримання профілю";
+    }
 }
 // Завантаження налаштувань
 function loadSettings() {
