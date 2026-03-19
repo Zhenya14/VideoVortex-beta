@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <title></title>
-    <link rel="icon" href="VideoVortex_logo.ico">
     <svg style="display: none">
     <filter id="displacementFilter">
         <feImage
@@ -1803,7 +1802,6 @@ videoPlayer.addEventListener("play", () => {
     // Перевіряємо, чи є запис
     videoRef.once("value")
         .then(snapshot => {
-            if (!snapshot.exists()) {
                 // Записуємо дані лише один раз
                 videoRef.update({
                     author: currentVideo.author,
@@ -1812,7 +1810,6 @@ videoPlayer.addEventListener("play", () => {
                     lastPlayed: Date.now()
                 })
                 .catch(error => console.error("Помилка оновлення переглядів:", error));
-            }
         })
         .catch(error => console.error("Помилка отримання даних:", error));
 });
