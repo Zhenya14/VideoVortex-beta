@@ -3796,7 +3796,8 @@ async function loadVideos() {
         avatar.onclick = () => {
             const infoParams = new URLSearchParams({
                 avatar: videoData.author ? videoData.author.charAt(0).toUpperCase() : "?",
-                author: videoData.author
+                author: videoData.author,
+                uid: videoData.authorUid
             });
             window.location.href = `profile.html?${infoParams.toString()}`;
         };
