@@ -418,11 +418,11 @@ async function didUserBlockMe(targetUid) {
 document.getElementById("blockUserBtn").addEventListener("click", () => {
     showModalBlocked();
 });
-
+let blockedUserName = author;
 function showModalBlocked() {
     const modal = document.getElementById("block-user-modal");
     const info = document.getElementById("blocked-information");
-    info.textContent = `Ви впевнені, що хочете заблокувати користувача "${author}"?`;
+    info.textContent = `Ви впевнені, що хочете заблокувати користувача "${blockedUserName}"?`;
     modal.style.display = "flex";
 }
 
@@ -453,10 +453,6 @@ async function confirmBlockUser() {
       });
 
     closeBlockModal();
-
-    // Очищаємо профіль і відео
-  
-
     alert("Користувача заблоковано");
 }
 async function loadVideos() {
