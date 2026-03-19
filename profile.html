@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Профіль користувача</title>
 <link rel="icon" href="VideoVortex_logo.ico">
-
+     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <!-- Firebase v8 SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -65,6 +65,131 @@ nav a:active {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+}
+ios-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.ios-modal-window {
+  width: 90%;
+  max-width: 380px;
+  background: rgba(30,30,30,0.85);
+  border-radius: 20px;
+  overflow: hidden;
+  color: white;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  animation: scaleIn 0.25s ease;
+}
+.ios-modal-content {
+  width: 90%;
+max-width: 420px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+  animation: popIn 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.ios-modal-header {
+  padding: 16px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.ios-modal-body {
+  padding: 16px;
+  font-size: 14px;
+}
+
+.ios-modal-body select,
+.ios-modal-body textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  outline: none;
+}
+
+.ios-modal-footer {
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.ios-modal-footer button {
+  background: transparent;
+  border: none;
+padding: 14px;
+  border-radius: 0 0 20px 20px;
+margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.ios-modal-footer button.danger {
+  color: #ff453a;
+  border-radius: 0 0 20px 0;
+  font-weight: bold;
+}
+.ios-modal-footer button.cancel {
+  border-radius: 0 0 0 20px;
+}
+.ios-modal-footer button.cancel:hover {
+            border-color: #f472b6; /* підсвічування рамки блакитним */
+border-radius: 0 0 0 20px;
+box-shadow: 0 0 15px #f472b6; /* світіння */
+
+transform: translateY(-2px); /* легке підняття */
+        }
+        .ios-modal-footer button.cancel:active {
+border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
+border-radius: 0 0 0 20px;
+box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
+
+transform: scale(0.95); /* легке стиснення */
+}
+.ios-modal-footer button.danger:hover {
+            border-color: #ff453a; /* підсвічування рамки блакитним */
+border-radius: 0 0 20px 0;
+box-shadow: 0 0 15px #ff453a; /* світіння */
+
+transform: translateY(-2px); /* легке підняття */
+        }
+        .ios-modal-footer button.danger:active {
+border-color: #ff453a; /* рамка рожевого кольору при натисканні */
+border-radius: 0 0 20px 0;
+box-shadow: 0 0 10px #ff453a; /* світіння при натисканні */
+
+transform: scale(0.95); /* легке стиснення */
+}
+.ios-modal-footer button:not(:last-child) {
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 .avatar {
   width: 40px;
@@ -142,11 +267,51 @@ nav a:active {
     <sup style="margin-left:3px;font-size:0.6em;">beta</sup>
   </a>
 </nav>
+    <ios-modal id="block-user-modal">
+  <div class="ios-modal-window">
+    <div class="ios-modal-header">
+      Заблокувати користувача
+    </div>
 
+    <div class="ios-modal-body">
+      <p id="blocked-information">Ви впевнені, що хочете заблокувати цього користувача?</p>
+
+      <select id="block-reason">
+        <option value="spam">Спам</option>
+        <option value="abuse">Образи / токсична поведінка</option>
+        <option value="nsfw">Заборонений контент</option>
+        <option value="other">Інше</option>
+      </select>
+
+      <textarea id="block-comment" placeholder="Коментар (необовʼязково)"></textarea>
+    </div>
+
+    <div class="ios-modal-footer">
+      <button class="cancel" onclick="closeBlockModal()">Скасувати</button>
+      <button class="danger" onclick="confirmBlockUser()">Заблокувати</button>
+    </div>
+  </div>
+</ios-modal>
 <div class="profile-header">
   <div class="avatar" id="avatar">?</div>
   <div>
     <h2 id="userName">Завантаження...</h2>
+     <button id="blockUserBtn" style="
+    margin-left: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  ">
+    <i class="material-icons">block</i>
+    Заблокувати
+  </button>
   </div>
 </div>
 
@@ -192,11 +357,12 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 const urlParams = new URLSearchParams(window.location.search);
+let blockedUserUid = urlParams.get("uid"); // UID користувач
 const avatar = urlParams.get("avatar") || "?";
 const author = urlParams.get("author") || "Невідомий автор";
 
-document.getElementById("avatar").textContent = avatar;
 document.getElementById("userName").textContent = author;
+document.getElementById("avatar").textContent = avatar;
 
 function showNotFound() {
   document.getElementById("video-gallery").innerHTML = `<h3>🎬 Публікації відсутні</h3>`;
@@ -248,6 +414,51 @@ async function didUserBlockMe(targetUid) {
   }
 
 }
+
+document.getElementById("blockUserBtn").addEventListener("click", () => {
+    showModalBlocked();
+});
+
+function showModalBlocked() {
+    const modal = document.getElementById("block-user-modal");
+    const info = document.getElementById("blocked-information");
+    info.textContent = `Ви впевнені, що хочете заблокувати користувача "${author}"?`;
+    modal.style.display = "flex";
+}
+
+function closeBlockModal() {
+    document.getElementById("block-user-modal").style.display = "none";
+}
+
+async function confirmBlockUser() {
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) return;
+
+    if (!blockedUserUid) {
+        alert("Не вдалося визначити користувача");
+        return;
+    }
+
+    if (currentUser.uid === blockedUserUid) {
+        alert("Не можна заблокувати самого себе");
+        return;
+    }
+
+    await firebase.database()
+      .ref(`users/${currentUser.uid}/blockedUsers/${blockedUserUid}`)
+      .set({
+          blocked: true,
+          uid: blockedUserUid,
+          userName: blockedUserName
+      });
+
+    closeBlockModal();
+
+    // Очищаємо профіль і відео
+  
+
+    alert("Користувача заблоковано");
+}
 async function loadVideos() {
   const videoGallery = document.getElementById("video-gallery");
   videoGallery.innerHTML = "";
@@ -269,18 +480,15 @@ async function loadVideos() {
 
     if (videoData.authorUid) {
 
-      const blockedMe =
-      await didUserBlockMe(videoData.authorUid);
+  const blockedMe = await didUserBlockMe(videoData.authorUid);
 
-      if (blockedMe) {
-document.getElementById("avatar").textContent = "❌";
-document.getElementById("userName").textContent = "Акаунт не знайдено";
-          showNotFound();
-          return;
-
-      }
-
+  if (blockedMe) {
+    document.getElementById("avatar").textContent = "❌";
+    document.getElementById("userName").textContent = "Акаунт не знайдено";
+    showNotFound();
+    return;
   }
+}
 
     hasVideos = true;
 
@@ -299,22 +507,43 @@ document.getElementById("userName").textContent = "Акаунт не знайд�
   if (!hasVideos) showNotFound();
 }
 
-function loadPosts() {
+ async function loadPosts() {
   const photoGallery = document.getElementById("photo-gallery");
   photoGallery.innerHTML = "";
 
-  firebase.database().ref("posts").once("value", snapshot => {
-    if (!snapshot.exists()) return;
-    snapshot.forEach(child => {
-      const postData = child.val();
-      if (postData.author !== author) return;
-
-      const container = document.createElement("div");
-      container.className = "post";
-      container.textContent = postData.text || "(Порожній допис)";
-      photoGallery.appendChild(container);
-    });
+  const snapshot = await firebase.database().ref("photos").once("value");
+  if (!snapshot.exists()) return;
+let hasPosts = false;
+  const postsArray = [];
+  snapshot.forEach(child => {
+    postsArray.push(child.val());
   });
+
+  for (const photoData of postsArray) {
+
+    if (photoData.author !== author) continue;
+
+    if (photoData.authorUid) {
+      const blockedMePhoto = await didUserBlockMe(photoData.authorUid);
+
+      if (blockedMePhoto) {
+        showNotFound();
+        return;
+      }
+    }
+hasPosts = true;
+    const container = document.createElement("div");
+    container.className = "post";
+
+    const img = document.createElement("img");
+    img.src = photoData.url || "default.jpg";
+
+    container.textContent = photoData.title || "(Порожній допис)";
+    container.appendChild(img);
+
+    photoGallery.appendChild(container);
+  }
+  if (!hasPosts) showNotFound();
 }
 
 loadVideos();
@@ -322,4 +551,6 @@ loadPosts();
 </script>
 
 </body>
+</html>
+</html>
 </html>
