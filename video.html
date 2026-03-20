@@ -1502,7 +1502,7 @@ async function loadComments(videoKey, videoOwnerEmail) {
                 Заблокувати
             </span>`;  
         blockUser.addEventListener("click", () => {  
-            const realBlockedUserName = data.commentAuthor || "Видалений акаунт";  
+            realBlockedUserName = data.commentAuthor || "Видалений акаунт";  
             blockedUserName = blockedMeComments ? "Акаунт не знайдено" : realBlockedUserName;  
             blockedUserUid = data.authorUid;  
             showModalBlocked();  
@@ -1543,9 +1543,6 @@ function closeBlockModal() {
     modal.style.display = "none";
 }
 
-function closeBlockModal() {
-  document.getElementById("block-user-modal").style.display = "none";
-}
 
 async function confirmBlockUser() {
   const currentUser = firebase.auth().currentUser;
