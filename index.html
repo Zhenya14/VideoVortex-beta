@@ -280,6 +280,22 @@ input:checked + .slider:before {
     height: 100%;
     width: 100%;
 }
+.secure-item {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+}
+
+.secure-item input {
+  margin-top: 5px;
+  padding: 5px;
+}
+
+.secure-item button {
+  margin-left: 5px;
+  padding: 5px 10px;
+}
 .march8-banner{
 position:fixed;
 top:-120px;
@@ -1155,6 +1171,11 @@ transform: scale(0.95); /* легке стиснення */
   justify-content: center;
   align-items: center;
 }
+.archive {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .action-menu {
   position: absolute;
   bottom: 2%;
@@ -1469,7 +1490,9 @@ display: none;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
-
+#upload {
+  display: none;
+}
 /* Коли відкритий */
 .search-box.open {
   width: 100%; 
@@ -1515,7 +1538,7 @@ display: none;
   align-items: center;
   z-index: 99999;
 }
-.modal-overlay, .modal-account-overlay {
+.modal-overlay, .modal-account-overlay, .modal-archive-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -1525,7 +1548,7 @@ display: none;
   align-items: center;
   z-index: 99999;
 }
-.modal-blocked-window {
+.modal-blocked-window, .modal-archive-window{
   width: 90%;
   max-width: 450px;
   background: rgba(255,255,255,0.1);
@@ -1551,12 +1574,12 @@ display: none;
   border: 1px solid rgba(255,255,255,0.25);
   animation: scaleIn .3s ease;
 }
-.modal-blocked-body {
+.modal-blocked-body, .modal-archive-body {
   overflow-y: auto;        /* вертикальний скрол */
     max-height: 100%;        /* повна висота */
     padding-right: 10px;
 }
-.modal-account-body, .modal-body {
+.modal-account-body, .modal-body, .modal-archive-body {
     overflow-y: auto;        /* вертикальний скрол */
     max-height: 100%;        /* повна висота */
     padding-right: 10px;     /* щоб скрол не перекривав контент */
@@ -1570,7 +1593,7 @@ display: none;
   padding: 12px 15px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-.modal-blocked-header {
+.modal-blocked-header, .modal-archive-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1597,7 +1620,7 @@ display: none;
   color: #fff;
   font-size: 20px;
 }
-.close-modal, .close-account-modal {
+.close-modal, .close-account-modal, .close-archive-modal {
 
   cursor: pointer;
   color: #fff;
@@ -1964,8 +1987,7 @@ text-decoration: none;
      <br>
      <p style="text-align: center;">Налаштування приватності:</p>
    <span>Приватне відео</span><label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
-<br>
-<span>Заборонити збереження відео<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
+<span>Заборонити збереження відео</span><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
     <br>
         <span>Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
@@ -2195,6 +2217,24 @@ text-decoration: none;
     </div>
   </div>
 </div>
+<div id="archive-modal" class="modal-archive-overlay">
+  <div class="modal-window">
+    <div class="modal-archive-header">
+            <h2>Архів</h2>
+      <span class="close-archive-modal">✖</span>
+    </div>
+    <div class="modal-archive-body">
+      <button id="add"><i class="material-icons">add</i></button>
+      <div id="upload">
+        <input type="file" id="zip-file" accept=".zip">
+<input type="password" id="zip-password" placeholder="Пароль">
+
+<button onclick="encryptAndUpload()">Зашифрувати і завантажити</button>
+      </div>
+      <div id="secure-files"></div>
+      </div>
+    </div>
+  </div>
 <div class="edit-form" id="edit-form" style="display: none;">
             <h2>Редагувати відео</h2>
             <input type="text" id="edit-video-title" placeholder="Назва відео">
@@ -2999,6 +3039,8 @@ window.addEventListener("load", showRulesModal);
     <script defer>
 const modal = document.getElementById("upload-modal");
 const accountModal = document.getElementById("account-modal");
+const archiveModal = document.getElementById("archive-modal");
+const closeArchiveModal = document.querySelector(".close-archive-modal");
 const message = document.getElementById("message");
 const notification = document.getElementById("notification-modal");
 const closeAccountModal = document.querySelector(".close-account-modal");
@@ -3037,9 +3079,10 @@ plusDesktop?.addEventListener("click", () => {
 // Закриття модалок
 closeAccountModal?.addEventListener("click", () => accountModal.style.display = "none");
 closeBtn?.addEventListener("click", () => modal.style.display = "none");
-
+closeArchiveModal?.addEventListener("click", () => archiveModal.style.display = "none");
+closeBtn?.addEventListener("click", () => modal.style.display = "none");
 // Закриття при кліку поза модалкою
-[modal, accountModal].forEach(m => {
+[modal, accountModal, archiveModal].forEach(m => {
     m?.addEventListener("click", e => {
         if (e.target === m) m.style.display = "none";
     });
@@ -3149,7 +3192,45 @@ messaging.onMessage((payload) => {
   new Notification(title, { body,  });
 });
 
-    
+ const addButton = document.getElementById("add");
+const addIcon = addButton.querySelector("i");
+const uploadDiv = document.getElementById("upload");
+
+let isOpen = false;
+
+// Задаємо transition один раз
+uploadDiv.style.transition = "opacity 0.3s ease";
+uploadDiv.style.opacity = 0;
+uploadDiv.style.display = "none";
+
+addIcon.style.transition = "transform 0.3s ease";
+
+addButton.onclick = function() {
+    if (!isOpen) {
+        // Показати блок
+        uploadDiv.style.display = "block";
+        // Плавне з'явлення
+        setTimeout(() => {
+            uploadDiv.style.opacity = 1;
+        }, 10);
+
+        // Повернути іконку +
+        addIcon.style.transform = "rotate(45deg)";
+
+        isOpen = true;
+    } else {
+        // Плавне зникнення блоку
+        uploadDiv.style.opacity = 0;
+        addIcon.style.transform = "rotate(0deg)";
+
+        // Сховати блок після завершення анімації
+        setTimeout(() => {
+            uploadDiv.style.display = "none";
+        }, 300);
+
+        isOpen = false;
+    }
+};
         document.getElementById("post").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
         document.getElementById("photo-container").style.display = 'flex';
@@ -3584,13 +3665,23 @@ function loadLibrary(user) {
             const fullNameLibrary = document.createElement("p");
             fullNameLibrary.textContent = `${userData.name || ""} ${userData.supername || ""}`;
             authorInfo.appendChild(fullNameLibrary);
-
+const brEdit = document.createElement("br");
             const editProfile = document.createElement("button");
             editProfile.classList.add("edit");
-            editProfile.innerHTML = `<i class="material-icons">edit</i>Змінити`;
+            editProfile.innerHTML = `<i class="material-icons">edit</i><p data-i18n="edit-profile">Змінити</p>`;
             editProfile.onclick = showAccountModal;
+            authorInfo.prepend(brEdit);
             authorInfo.appendChild(editProfile);
-
+            const brArchive = document.createElement("br");
+           const archive = document.createElement("button");
+           archive.classList.add("archive");
+           archive.innerHTML = `<i class="material-icons">archive</i><p data-i18n="archive">Архів</p>`;
+           archive.onclick = () => {
+             showArchiveModal();
+           };
+           authorInfo.appendChild(brArchive);
+           authorInfo.appendChild(archive);
+           const brBlockedUsersBtn = document.createElement("br");
             const blockedUsersBtn = document.createElement("button");
             blockedUsersBtn.innerHTML = `<i class="material-icons">blocked</i><p data-i18n="blocked-users">Заблоковані користувачі</p>`;
             blockedUsersBtn.onclick = () => {
@@ -3598,6 +3689,7 @@ function loadLibrary(user) {
                 if (!user) return alert("Спочатку увійдіть у акаунт");
                 showBlockedUsersModal();
             };
+            authorInfo.appendChild(brBlockedUsersBtn);
             authorInfo.appendChild(blockedUsersBtn);
 
             // ▸ Контейнер для історії
@@ -3607,7 +3699,6 @@ function loadLibrary(user) {
             historyTitle.setAttribute("data-i18n", "history");
             historyTitle.innerHTML = `Історія переглядів<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>`;
             historyInfo.appendChild(historyTitle);
-
             authorInfo.appendChild(historyInfo);
             library.appendChild(authorInfo);
 
@@ -3720,6 +3811,9 @@ function showBlockedUsersModal() {
 }
 function showAccountModal() {
   document.getElementById("account-modal").style.display = "flex";
+}
+function showArchiveModal() {
+  document.getElementById("archive-modal").style.display = "flex";
 }
 
 const videosLoaded = new Set(); // зверху скрипта
@@ -4544,6 +4638,7 @@ document.getElementById("nsfw").onclick = function(event) {
     
   }
   }
+  
   function configureAgeUI(age) {
 
     const nsfwCheckbox = document.getElementById('show-nsfw-videos');
@@ -4599,6 +4694,160 @@ document.getElementById("nsfw").onclick = function(event) {
         nsfwCheckbox.dataset.listenerAdded = "true";
     }
 }
+async function getKeyFromPassword(password, salt) {
+  const enc = new TextEncoder();
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+async function encryptAndUpload() {
+
+  const file = document.getElementById("zip-file").files[0];
+  const password = document.getElementById("zip-password").value;
+
+  if (!file || !password) {
+    alert("Вибери файл і введи пароль");
+    return;
+  }
+
+  const fileBuffer = await file.arrayBuffer();
+
+  // 🔐 Генеруємо salt і iv
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  const key = await getKeyFromPassword(password, salt);
+
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    fileBuffer
+  );
+
+  // Об'єднуємо salt + iv + encrypted
+  const result = new Uint8Array(
+    salt.length + iv.length + encrypted.byteLength
+  );
+
+  result.set(salt, 0);
+  result.set(iv, salt.length);
+  result.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+  const blob = new Blob([result], { type: "application/octet-stream" });
+
+  const ref = firebase.storage().ref(`secure/${Date.now()}_${file.name}.enc`);
+
+  await ref.put(blob);
+
+  const url = await ref.getDownloadURL();
+
+  await firebase.database().ref("secureFiles").push({
+    url: url,
+    name: file.name,
+    createdAt: Date.now()
+  });
+
+  alert("Зашифровано і завантажено!");
+}
+
+async function downloadAndDecrypt(url, password) {
+
+  const res = await fetch(url);
+  const file = await res.blob();
+
+  const decryptedBlob = await decryptFile(file, password);
+
+  if (!decryptedBlob) return;
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(decryptedBlob);
+  link.download = "archive.zip";
+  link.click();
+}
+async function decryptFile(file, password) {
+  const buffer = await file.arrayBuffer();
+  const data = new Uint8Array(buffer);
+
+  // Виділяємо salt, iv, encrypted
+  const salt = data.slice(0, 16);
+  const iv = data.slice(16, 28);
+  const encrypted = data.slice(28);
+
+  // Копіюємо в нові ArrayBuffer
+  const saltBuffer = new Uint8Array(salt).buffer;
+  const ivBuffer = new Uint8Array(iv).buffer;
+  const encryptedBuffer = new Uint8Array(encrypted).buffer;
+
+  const key = await getKeyFromPassword(password, saltBuffer);
+
+  try {
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: ivBuffer },
+      key,
+      encryptedBuffer
+    );
+
+    return new Blob([decrypted], { type: "application/zip" });
+  } catch (e) {
+    console.error(e);
+    alert("Неправильний пароль або пошкоджений файл");
+    return null;
+  }
+}
+async function loadSecureFiles() {
+
+  const container = document.getElementById("secure-files");
+  container.innerHTML = "";
+
+  const snapshot = await firebase.database().ref("secureFiles").once("value");
+
+  snapshot.forEach(child => {
+    const data = child.val();
+
+    const item = document.createElement("div");
+    item.classList.add("secure-item");
+
+    item.innerHTML = `
+      <b>${data.name}</b><br>
+      <input type="password" placeholder="Пароль" class="pass-input">
+      <button>🔓 Відкрити</button>
+    `;
+
+    const button = item.querySelector("button");
+    const input = item.querySelector(".pass-input");
+
+    button.onclick = async () => {
+      const password = input.value;
+
+      if (!password) {
+        alert("Введи пароль");
+        return;
+      }
+
+      await downloadAndDecrypt(data.url, password);
+    };
+
+    container.appendChild(item);
+  });
+}
 function calculateAge(birthdate) {
             if (!birthdate) return null;
             const [day, month, year] = birthdate.split(".").map(Number);
@@ -4615,6 +4864,7 @@ auth.onAuthStateChanged(async (user) => {
     if (!user) return;
     loadPhotoChannelSelect();
     loadChannelSelect();
+    loadSecureFiles();
     loadLibrary(user);
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
@@ -5163,6 +5413,7 @@ async function uploadPhoto() {
         message.innerHTML = "Помилка отримання профілю";
     }
 }
+
 // Завантаження налаштувань
 function loadSettings() {
     const savedMaxTime = localStorage.getItem('maxTimeInMinutes');
