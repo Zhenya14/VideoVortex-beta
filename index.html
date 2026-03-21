@@ -4791,18 +4791,17 @@ async function decryptFile(file, password) {
   const iv = data.slice(16, 28);
   const encrypted = data.slice(28);
 
-  // Копіюємо в нові ArrayBuffer
-  const saltBuffer = new Uint8Array(salt).buffer;
-  const ivBuffer = new Uint8Array(iv).buffer;
-  const encryptedBuffer = new Uint8Array(encrypted).buffer;
+  // Функція для коректного ArrayBuffer
+  const toArrayBuffer = (u8arr) =>
+    u8arr.buffer.slice(u8arr.byteOffset, u8arr.byteOffset + u8arr.byteLength);
 
-  const key = await getKeyFromPassword(password, saltBuffer);
+  const key = await getKeyFromPassword(password, toArrayBuffer(salt));
 
   try {
     const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: ivBuffer },
+      { name: "AES-GCM", iv: toArrayBuffer(iv) },
       key,
-      encryptedBuffer
+      toArrayBuffer(encrypted)
     );
 
     return new Blob([decrypted], { type: "application/zip" });
