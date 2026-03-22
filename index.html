@@ -4188,7 +4188,7 @@ document.getElementById("video-file").addEventListener("change", async (e) => {
     dt.items.add(converted);
     e.target.files = dt.files;
 
-    statusEl.innerText = "Готово до завантаження ✔";
+    statusEl.innerText = "Готово до  ✔";
   } catch (err) {
     console.error("❌ Конвертація не вдалася:", err);
    showNotificationModal();
@@ -4705,10 +4705,10 @@ async function getKeyFromPassword(password, salt) {
     ["deriveKey"]
   );
 
-  return crypto.subtle.deriveKey(
+  return await crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: salt,
+      salt: salt, // Uint8Array ✔
       iterations: 100000,
       hash: "SHA-256"
     },
@@ -4719,7 +4719,6 @@ async function getKeyFromPassword(password, salt) {
   );
 }
 async function encryptAndUpload() {
-
   const file = document.getElementById("zip-file").files[0];
   const password = document.getElementById("zip-password").value;
 
@@ -4730,7 +4729,7 @@ async function encryptAndUpload() {
 
   const fileBuffer = await file.arrayBuffer();
 
-  // 🔐 Генеруємо salt і iv
+  // 🔐 salt + iv
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
@@ -4742,20 +4741,26 @@ async function encryptAndUpload() {
     fileBuffer
   );
 
-  // Об'єднуємо salt + iv + encrypted
-  const result = new Uint8Array(
-    salt.length + iv.length + encrypted.byteLength
-  );
+  // 🔥 правильне об'єднання
+  const result = new Uint8Array(16 + 12 + encrypted.byteLength);
 
   result.set(salt, 0);
-  result.set(iv, salt.length);
-  result.set(new Uint8Array(encrypted), salt.length + iv.length);
+  result.set(iv, 16);
+  result.set(new Uint8Array(encrypted), 28);
 
-  const blob = new Blob([result], { type: "application/octet-stream" });
+  // ❗ важливо: buffer
+  const blob = new Blob([result.buffer], {
+    type: "application/octet-stream"
+  });
+
+  console.log("Encrypted size:", blob.size);
 
   const ref = firebase.storage().ref(`secure/${Date.now()}_${file.name}.enc`);
 
-  await ref.put(blob);
+  // ❗ важливо: contentType
+  await ref.put(blob, {
+    contentType: "application/octet-stream"
+  });
 
   const url = await ref.getDownloadURL();
 
@@ -4767,47 +4772,70 @@ async function encryptAndUpload() {
 
   alert("Зашифровано і завантажено!");
 }
-
 async function downloadAndDecrypt(url, password) {
+  try {
+    const res = await fetch(url);
 
-  const res = await fetch(url);
-  const file = await res.blob();
+    if (!res.ok) {
+      alert("Помилка завантаження файлу");
+      return;
+    }
 
-  const decryptedBlob = await decryptFile(file, password);
+    // ❗ arrayBuffer замість blob
+    const buffer = await res.arrayBuffer();
+    const file = new Blob([buffer]);
 
-  if (!decryptedBlob) return;
+    console.log("Downloaded size:", file.size);
 
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(decryptedBlob);
-  link.download = "archive.zip";
-  link.click();
+    const decryptedBlob = await decryptFile(file, password);
+
+    if (!decryptedBlob) return;
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(decryptedBlob);
+    link.download = "archive.zip";
+    link.click();
+
+  } catch (e) {
+    console.error(e);
+    alert("Помилка при завантаженні");
+  }
 }
 async function decryptFile(file, password) {
   const buffer = await file.arrayBuffer();
   const data = new Uint8Array(buffer);
 
-  // Виділяємо salt, iv, encrypted
+  // ❗ перевірка
+  if (data.length < 28) {
+    alert("Файл пошкоджений");
+    return null;
+  }
+
   const salt = data.slice(0, 16);
   const iv = data.slice(16, 28);
   const encrypted = data.slice(28);
 
-  // Функція для коректного ArrayBuffer
-  const toArrayBuffer = (u8arr) =>
-    u8arr.buffer.slice(u8arr.byteOffset, u8arr.byteOffset + u8arr.byteLength);
+  console.log("Salt:", salt.length);
+  console.log("IV:", iv.length);
+  console.log("Encrypted:", encrypted.length);
 
-  const key = await getKeyFromPassword(password, toArrayBuffer(salt));
+  const key = await getKeyFromPassword(password, salt);
 
   try {
     const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: toArrayBuffer(iv) },
+      {
+        name: "AES-GCM",
+        iv: iv
+      },
       key,
-      toArrayBuffer(encrypted)
+      encrypted
     );
 
     return new Blob([decrypted], { type: "application/zip" });
+
   } catch (e) {
-    console.error(e);
-    alert("Неправильний пароль або пошкоджений файл");
+    console.error("Decrypt error:", e);
+    alert("Неправильний пароль або файл пошкоджений");
     return null;
   }
 }
