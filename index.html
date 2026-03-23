@@ -2329,17 +2329,31 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 // /api/generate.js
 async function generateDescription() {
-  const title = document.getElementById("video-title").value.trim();
-  if (!title) return alert("Введіть текст");
+    const title = document.getElementById("video-title").value.trim();
+    if (!title) return alert("Введіть текст");
 
-  const response = await fetch("https://video-vortex1.vercel.app/api", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title }),
-  });
+    const descriptionEl = document.getElementById("video-description");
 
-  const data = await response.json();
-  document.getElementById("video-description").innerText = data.result;
+    // ✅ Показати прогрес
+    descriptionEl.innerText = "Генеруємо опис… ⏳";
+
+    try {
+        const response = await fetch("https://video-vortex1.vercel.app/api", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title }),
+        });
+
+        if (!response.ok) throw new Error("Помилка сервера");
+
+        const data = await response.json();
+        
+        // ✅ Відобразити результат
+        descriptionEl.innerText = data.result || "Не вдалося згенерувати опис";
+    } catch (err) {
+        console.error(err);
+        descriptionEl.innerText = "Сталася помилка при генерації опису ❌";
+    }
 }
 </script>
 <script defer>
