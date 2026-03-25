@@ -618,6 +618,30 @@ box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
 }
+.speakBtn  {
+  
+  padding: 0;
+  border-radius: 50px;
+ 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  background: #111;
+  border: 2px solid #333;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: 
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.15s ease,
+    border-color 0.3s ease;
+}
 .moreBtn {
   
   padding: 0;
@@ -641,6 +665,20 @@ transform: scale(0.95); /* легке стиснення */
     box-shadow 0.3s ease,
     transform 0.15s ease,
     border-color 0.3s ease;
+}
+ .speakBtn:hover {
+            border-color: #f472b6; /* підсвічування рамки блакитним */
+
+box-shadow: 0 0 15px #f472b6; /* світіння */
+
+transform: translateY(-2px); /* легке підняття */
+        }
+.speakBtn:active {
+border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
+
+box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
+
+transform: scale(0.95); /* легке стиснення */
 }
         .moreBtn:hover {
             border-color: #f472b6; /* підсвічування рамки блакитним */
@@ -1405,7 +1443,23 @@ function getVideoKey(videoKey) {
     }
     return key;
 }
+function speakText(text) {
+    if (!window.speechSynthesis) {
+        alert("Ваш браузер не підтримує озвучку.");
+        return;
+    }
 
+    // Створюємо об'єкт голосу
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Можна налаштувати голос, мову, швидкість
+    utterance.lang = 'uk-UA';  // українська
+    utterance.pitch = 1;       // тон
+    utterance.rate = 1;        // швидкість
+
+    // Відтворення
+    window.speechSynthesis.speak(utterance);
+}
 // Просте шифрування/дешифрування (можна замінити на AES)
 // =================== COMMENTS & BLOCKING ===================
 
@@ -1479,7 +1533,17 @@ async function loadComments(videoKey, videoOwnerEmail) {
         textContainer.style.alignItems = "center";  
         textContainer.style.gap = "5px";  
         textContainer.appendChild(textEl);  
-
+const speakBtn = document.createElement("a");
+speakBtn.classList.add("speakBtn");  
+speakBtn.innerHTML = `<i class="material-icons">micro</i>`;
+speakBtn.title = "Озвучити коментар";
+speakBtn.onclick = () => {
+    const profileToSpeak = blockedMeComments ? "Акаунт не знайдено" : data.commentAuthor;
+    const textToSpeak = blockedMeComments ? "Коментар недоступний" : data.comment;
+    speakText(profileToSpeak);
+    speakText(textToSpeak);
+};
+textContainer.appendChild(speakBtn);  
         const actionMenu = document.createElement("div");  
         actionMenu.classList.add("action-menu");  
         actionMenu.style.display = "none";  
