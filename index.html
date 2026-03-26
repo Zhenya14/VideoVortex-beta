@@ -66,8 +66,8 @@
 <style>
 .btn-liquid-glass {
   position: fixed;
-  bottom: 30px;
-  left: 92%;
+  bottom: 20px;
+  left: 94%;
   transform: translateX(-70%);
   width: 15%;
   height: 8%;
@@ -87,9 +87,9 @@
     .bg-liquid-glass {
   position: fixed;
   bottom: 10px;
-  left: 38%;
+  left: 41%;
   transform: translateX(-52%);
-  width: 70%;
+  width: 78%;
   max-width: 600px;
   display: flex;
   justify-content: space-around;
@@ -180,9 +180,8 @@ width: 80%;  /* Ширина поля вводу */
     .button-liquid-glass {
       display: grid;
     transition: 0.3s;
-    width: 30%;
+    width: 100%;
     height: 100%;
-    justify-content: space-around;
     margin: 0px 0px 0px 0px;
     border-radius: 56px;
     text-decoration: none;
@@ -1185,9 +1184,9 @@ transform: scale(0.95); /* легке стиснення */
 display: none;
 }
 .smart-menu a {
-  width: 30%;
+  width: 100%;
     height: 100%;
-    padding: 10px 0px;
+    padding: 10px 10px;
     text-decoration: none;
     color: white;
     display: grid;
@@ -1890,7 +1889,7 @@ text-decoration: none;
   bottom: 10px;
   left: 52%;
   transform: translateX(-50%);
-  width: 97%;
+  width: 93%;
   max-width: 600px;
   display: flex;
   justify-content: space-around;
@@ -2624,7 +2623,7 @@ function checkUpdateButton() {
     if (!updateBtn || !btnGlass || !smartMenu || !bgGlass || !plusBtn) return;
 
     if (updateBtn.style.display !== "none") {
-        // Кнопка видима → підняти меню
+        // Кнопка видима →  меню
         smartMenu.style.bottom = "30px";
         bgGlass.style.bottom = "30px";
         btnGlass.style.bottom = "60px";
@@ -3443,6 +3442,16 @@ addButton.onclick = function() {
            document.getElementById("account-link").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.add("button-liquid-glass");
         document.getElementById("photo-container").style.display = 'flex';
+        }
+document.getElementById("smart-settings").onclick = function() {
+           document.getElementById("video-container").style.display = 'none';
+           document.getElementById("library").style.display = 'none';
+           document.getElementById("photo-container").style.display = 'none';
+           document.getElementById("smart-video").classList.remove("button-liquid-glass");
+           document.getElementById("account-link").classList.remove("button-liquid-glass");
+          document.getElementById("smart-post").classList.remove("button-liquid-glass");
+          document.getElementById("smart-settings").classList.add("button-liquid-glass");
+        document.querySelector(".settings-page").style.display = 'block';
         }
         document.getElementById("account-desktop-link").onclick = function() {
           document.getElementById("video-container").style.display = 'none';
