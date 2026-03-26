@@ -3892,7 +3892,7 @@ const brEdit = document.createElement("br");
             historyInfo.classList.add("history-info");
             const historyTitle = document.createElement("p");
             historyTitle.setAttribute("data-i18n", "history");
-            historyTitle.innerHTML = `Історія переглядів<sup class="badge-new">NEW</sup>:`;
+            historyTitle.innerHTML = `Історія переглядів<sup class="badge-new" data-i18n="new">NEW</sup>:`;
             historyInfo.appendChild(historyTitle);
             authorInfo.appendChild(historyInfo);
             library.appendChild(authorInfo);
