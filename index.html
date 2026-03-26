@@ -66,11 +66,11 @@
 <style>
 .btn-liquid-glass {
   position: fixed;
-  bottom: 20px;
+  bottom: 30px;
   left: 92%;
-  transform: translateX(-80%);
-  width: 20%;
-  max-width: 600px;
+  transform: translateX(-70%);
+  width: 15%;
+  height: 8%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -353,7 +353,6 @@ pointer-events:none;
 overflow:hidden;
 z-index:999;
 }
-
 .flower{
 position:absolute;
 font-size:22px;
@@ -772,7 +771,94 @@ transform: scale(0.95); /* легке стиснення */
   position: relative;
   z-index: 1;
 }
+.settings-page {
+  display: none;
+  background: rgba(8, 12, 20, 0.9);
+  border-radius: 18px;
+  padding: 12px;
+  border: 1px solid rgba(0, 255, 255, .12);
+  box-shadow: 0 0 22px rgba(0, 255, 255, .07);
+  transition: transform .2s ease, box-shadow .25s ease;
+  position: relative;
+  z-index: 1;
+}
+.settings-page:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 26px rgba(0, 255, 255, .18);
+}
+.settings-header {
+  margin-bottom: 16px;
+}
 
+.settings-card {
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.settings-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* PROFILE */
+.profile-row {
+  display: block;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* BUTTONS */
+.settings-item {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  background: #222;
+  border: none;
+  color: white;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-item:hover {
+  background: #2a2a2a;
+}
+
+.settings-item.danger {
+  color: #ff453a;
+}
+
+/* TOGGLE */
+.settings-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.settings-toggle:last-child {
+  border-bottom: none;
+}
+
+/* SWITCH */
+input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+}
 .photo-container:hover {
   transform: translateY(-4px);
   box-shadow: 0 0 26px rgba(0, 255, 255, .18);
@@ -957,12 +1043,15 @@ img.photo-item {
   cursor: pointer;
 }
 .smart-menu .avatar {
-  width: 40px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   overflow: hidden;
+  margin-left: 35%;
   display: flex;
-  margin-left: 32%;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .smart-menu .avatar img {
@@ -1773,17 +1862,10 @@ text-decoration: none;
   display: none;
 }
 #plus-button {
-  max-width 600px;
   border-radius: 89px;
-  width: 10%;
- height: 10%;
  bottom: 10px;
- display: flex;
- justify-content: center;
- align-items: center;
+
  text-decoration: none;
- 
- padding: 30px 2px;
   font-size: 32px;
   z-index: 1000;
   color: white;
@@ -1801,9 +1883,9 @@ text-decoration: none;
       .smart-menu {
   position: fixed;
   bottom: 10px;
-  left: 50%;
+  left: 52%;
   transform: translateX(-50%);
-  width: 90%;
+  width: 97%;
   max-width: 600px;
   display: flex;
   justify-content: space-around;
@@ -1812,6 +1894,12 @@ text-decoration: none;
   border-radius: 65px;
   isolation: isolate;
   z-index: 1000;
+}
+.settings-item, .settings-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 5px;
 }
 #timer {
             font-size: 20px;
@@ -1889,6 +1977,9 @@ text-decoration: none;
                     <button data-i18n="installBtn" id="installBtn" style="display:none; width: 128px; right: 152px; position: fixed; top: 82px;">Встановити додаток</button>
         </div>
     </nav>
+
+
+</div>
     <div id="search-box" class="search-box">
   <input type="text" id="search-input" placeholder="Пошук..." oninput="searchVideos()">
   <button id="close-search" class="search-close">
@@ -2247,13 +2338,16 @@ text-decoration: none;
         <div  class="smart-menu">
           <div class="bg-liquid-glass">
  <a class="button-liquid-glass" href="#" id="smart-video" onclick="video()">
-        <i class="material-icons">movie</i><span>Відео</span>
+        <i class="material-icons">movie</i><span data-i18n="video">Відео</span>
     </a>
        <a href="#" id="smart-post" onclick="post()">
-        <i class="material-icons">photo</i><span>Дописи</span>
+        <i class="material-icons">photo</i><span data-i18n="post">Дописи</span>
         </a>
-        <a href="#" id="account-link" onclick="openAccountModal()">
-<i class="avatar" id="nav-avatar"></i><span>Ви</span>
+      <a href="#" id="smart-settings" onclick="settings()">
+        <i class="material-icons">settings</i><span data-i18n="settings">Налаштування</span>
+        </a>
+        <a href="#" id="account-link">
+<i class="avatar" id="nav-avatar"></i><span data-i18n="you">Ви</span>
     </a>
 </div>
 </div>
@@ -2268,7 +2362,7 @@ text-decoration: none;
     <a href="#" id="post" onclick="post()">
         <i class="material-icons">photo</i><span style="margin-left: 5px">Дописи</span>
     </a>
-    <a href="#" id="account-link" onclick="openAccountModal()">
+    <a href="#" id="account-link">
 <i class="avatar" id="nav-avatar"></i><span>Ви</span>
     </a>
     <a href="#" id="video" onclick="video()">
@@ -2316,6 +2410,70 @@ text-decoration: none;
     </div>
         <div class="container" id="library">
     </div>
+        <div class="settings-page">
+
+  <!-- HEADER -->
+  <div class="settings-header">
+    <h2>Налаштування</h2>
+  </div>
+
+  <!-- PROFILE BLOCK -->
+  <div class="settings-card">
+    <div class="profile-row">
+      <div class="avatar" id="settingsAvatar"></div>
+      <div>
+      <br>
+        <div class="name" id="settingsName"></div>
+        <div class="email" id="settingsEmail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="settings-card">
+    <h3>Акаунт</h3>
+
+    <button class="settings-item"><i class="material-icons">edit</i>Редагувати профіль</button>
+    <button class="settings-item"><i class="material-icons">password</i>Змінити пароль</button>
+    <button class="settings-item danger"><i class="material-icons">logout</i>Вийти з акаунта</button>
+  </div>
+
+  <!-- PRIVACY -->
+  <div class="settings-card">
+    <h3>Приватність</h3>
+
+    <div class="settings-toggle">
+      <span><i class="material-icons">lock</i>Приватний профіль</span>
+      <input type="checkbox" id="privateProfile">
+    </div>
+
+    <button class="settings-item" style="display: none;">Спадкоємець акаунта</button>
+    <button class="settings-item"><i class="material-icons">block</i>Заблоковані користувачі</button>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="settings-card" style="display: none;">
+    <h3>Відео</h3>
+
+    <div class="settings-toggle">
+      <span>Заборона скачування</span>
+      <input type="checkbox" id="disableDownload">
+    </div>
+
+    <div class="settings-toggle">
+      <span>Автовідтворення</span>
+      <input type="checkbox" id="autoplay">
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="settings-card danger-zone">
+    <h3>Небезпечна зона</h3>
+
+    <button class="settings-item danger"><i class="material-icons">person_remove</i>
+      Видалити акаунт
+    </button>
+  </div>
         <footer style="text-align: center; justify-content: center; gap: 30px; padding: 10px 20px; background: rgb(26 26 26 / 68%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 16px; box-shadow: 0 8px 32px rgb(0 0 0 / 20%); width: 97%;">
                 <h3>Версія додатка:</h3>
                 <p>5.2.0 beta</p>
@@ -4643,6 +4801,9 @@ async function backfillAuthorUidForUser() {
 
 const avatarEl = document.querySelector(".avatar");
 const navAvatar = document.getElementById("nav-avatar");
+const settingsAvatar = document.getElementById("settingsAvatar");
+const settingsName = document.getElementById("settingsName");
+const settingsEmail = document.getElementById("settingsEmail");
 const input = document.getElementById("avatar-input");
 const btn = document.getElementById("change-avatar");
 
@@ -4995,7 +5156,8 @@ if (age !== null) {
 
         const emailEl = document.getElementById("email");
         if (emailEl) emailEl.innerHTML = `${userData?.name || ""} ${userData?.supername || ""}`;
-
+document.getElementById("settingsName").innerHTML = `${userData?.name || ""} ${userData?.supername || ""}`;
+document.getElementById("settingsEmail").innerHTML = `${userData?.email || ""}`;
         document.getElementById("name").innerHTML = `Ім'я: ${userData?.name || ""}`;
         document.getElementById("supername").innerHTML = `Прізвище: ${userData?.supername || ""}`;
 
@@ -5017,7 +5179,11 @@ if (userData?.avatarId) {
         imgNav.src = url;
         imgNav.alt = "Аватар користувача";
         navAvatar.prepend(imgNav);
-
+        settingsAvatar.innerHTML = "";
+        const imgSettings = document.createElement("img");
+        imgSettings.src = url;
+        imgSettings.alt = "Аватар користувача";
+        settingsAvatar.prepend(imgSettings);
         // 🔹 avatarLibrary
         let avatarLibraryEl = document.getElementById("avatar-library");
         // якщо елемент ще не створений динамічно
@@ -5037,10 +5203,12 @@ if (userData?.avatarId) {
     } catch (err) {
         console.error("Помилка завантаження аватара:", err);
         avatarEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+        avatarLibraryEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
         navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
     }
 } else {
     avatarEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
+    avatarLibraryEl.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
     navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
 }
 
