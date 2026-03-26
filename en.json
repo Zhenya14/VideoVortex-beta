@@ -9,7 +9,7 @@
   "save": "Save",
   "main-channel": "Main channel",
   "account-deleted": "Deleted Account",
-  "history": "Viewing history<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>:",
+  "history": `Viewing history<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>:`,
   "information-blocked": "Videos, posts, and comments are hidden from blocked users.",
   "video": "Video",
   "post": "Posts",
