@@ -9,5 +9,6 @@
   "save": "Save",
   "main-channel": "Main channel",
   "account-deleted": "Deleted Account",
-  "history": "Viewing history:"
+  "history": "Viewing history:",
+  "information-blocked": "Videos, posts, and comments are hidden from blocked users."
 }
