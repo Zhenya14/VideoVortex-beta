@@ -124,63 +124,59 @@ max-width: 420px;
   outline: none;
 }
 
-.ios-modal-footer {
-  display: flex;
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
 
 .ios-modal-footer button {
   background: transparent;
   border: none;
 padding: 14px;
-  border-radius: 0 0 20px 20px;
+  border-radius: 20px;
 margin: 0;
   font-size: 17px;
   font-weight: 600;
-  width: 100%;
+  width: 95%;
   height: 100%;
   cursor: pointer;
   transition: background 0.3s;
 }
-
-.ios-modal-footer button.danger {
-  color: #ff453a;
-  border-radius: 0 0 20px 0;
+button.danger {
+  color: #e9735a;
+  background: #5c3531;
+  border-radius: 60px;
   font-weight: bold;
 }
-.ios-modal-footer button.cancel {
-  border-radius: 0 0 0 20px;
+button.cancel {
+  border-radius: 60px;
+  margin-top: 10px;
+  color: white;
+  background-color: #4a4a4a;
 }
-.ios-modal-footer button.cancel:hover {
+button.cancel:hover {
             border-color: #f472b6; /* підсвічування рамки блакитним */
-border-radius: 0 0 0 20px;
-box-shadow: 0 0 15px #f472b6; /* світіння */
+border-radius: 60px;
+box-shadow: 15px #f472b6; /* світіння */
 
 transform: translateY(-2px); /* легке підняття */
         }
-        .ios-modal-footer button.cancel:active {
+button.cancel:active {
 border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
-border-radius: 0 0 0 20px;
-box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
+border-radius: 60px;
+box-shadow: 10px #06b6d4; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
 }
-.ios-modal-footer button.danger:hover {
+ button.danger:hover {
             border-color: #ff453a; /* підсвічування рамки блакитним */
-border-radius: 0 0 20px 0;
-box-shadow: 0 0 15px #ff453a; /* світіння */
+border-radius: 60px;
+box-shadow: 15px #ff453a; /* світіння */
 
 transform: translateY(-2px); /* легке підняття */
         }
-        .ios-modal-footer button.danger:active {
+ button.danger:active {
 border-color: #ff453a; /* рамка рожевого кольору при натисканні */
-border-radius: 0 0 20px 0;
-box-shadow: 0 0 10px #ff453a; /* світіння при натисканні */
+border-radius: 60px;
+box-shadow: 10px #ff453a; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
-}
-.ios-modal-footer button:not(:last-child) {
-  border-right: 1px solid rgba(255,255,255,0.1);
 }
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -287,8 +283,8 @@ transform: scale(0.95); /* легке стиснення */
     </div>
 
     <div class="ios-modal-footer">
-      <button class="cancel" onclick="closeBlockModal()">Скасувати</button>
       <button class="danger" onclick="confirmBlockUser()">Заблокувати</button>
+      <button class="cancel" onclick="closeBlockModal()">Скасувати</button>
     </div>
   </div>
 </ios-modal>
