@@ -127,7 +127,7 @@ max-width: 420px;
 
 .ios-modal-footer button {
   background: transparent;
-  border: none;
+ border: 1px solid transparent; /* ВАЖЛИВО */
 padding: 14px;
   border-radius: 20px;
 margin: 0;
@@ -150,33 +150,27 @@ button.cancel {
   color: white;
   background-color: #4a4a4a;
 }
-button.cancel:hover {
-            border-color: #f472b6; /* підсвічування рамки блакитним */
-border-radius: 60px;
-box-shadow: 15px #f472b6; /* світіння */
-
-transform: translateY(-2px); /* легке підняття */
-        }
-button.cancel:active {
-border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
-border-radius: 60px;
-box-shadow: 10px #06b6d4; /* світіння при натисканні */
-
-transform: scale(0.95); /* легке стиснення */
+button.danger:hover {
+  border-color: #ff453a;
+  box-shadow: 0 0 15px #ff453a;
+  transform: translateY(-2px);
 }
- button.danger:hover {
-            border-color: #ff453a; /* підсвічування рамки блакитним */
-border-radius: 60px;
-box-shadow: 15px #ff453a; /* світіння */
 
-transform: translateY(-2px); /* легке підняття */
-        }
- button.danger:active {
-border-color: #ff453a; /* рамка рожевого кольору при натисканні */
-border-radius: 60px;
-box-shadow: 10px #ff453a; /* світіння при натисканні */
+button.danger:active {
+  border-color: #ff0000;
+  box-shadow: 0 0 10px #ff0000;
+  transform: scale(0.95);
+}
+button.cancel:hover {
+  border-color: #f472b6;
+  box-shadow: 0 0 15px #f472b6;
+  transform: translateY(-2px);
+}
 
-transform: scale(0.95); /* легке стиснення */
+button.cancel:active {
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px #06b6d4;
+  transform: scale(0.95);
 }
 @keyframes fadeIn {
   from { opacity: 0; }
