@@ -348,9 +348,9 @@ const auth = firebase.auth();
 const database = firebase.database();
 const urlParams = new URLSearchParams(window.location.search);
 let blockedUserUid = urlParams.get("uid"); // UID користувач
-const avatar = urlParams.get("avatar") || "?";
+const withoutAvatar = urlParams.get("avatar") || "?";
 const author = urlParams.get("author") || "Невідомий автор";
-
+const authorAvatar = urlParams.get("authorAvatar") || "?";
 
 
 function showNotFound() {
@@ -435,8 +435,19 @@ async function loadVideos() {
     return;
   }
 }
+const avatarEl = document.getElementById("avatar");
+
 document.getElementById("userName").textContent = author;
-document.getElementById("avatar").textContent = avatar;
+
+if (authorAvatar && authorAvatar !== "?") {
+  avatarEl.style.backgroundImage = `url(${authorAvatar})`;
+  avatarEl.style.backgroundSize = "cover";
+  avatarEl.style.backgroundPosition = "center";
+  avatarEl.textContent = ""; // прибрати букву
+} else {
+  avatarEl.style.backgroundImage = "none";
+  avatarEl.textContent = withoutAvatar;
+}
     hasVideos = true;
 
     const container = document.createElement("div");
