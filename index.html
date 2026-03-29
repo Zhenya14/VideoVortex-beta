@@ -3442,6 +3442,8 @@ addButton.onclick = function() {
            document.getElementById("account-link").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.add("button-liquid-glass");
         document.getElementById("photo-container").style.display = 'flex';
+                  document.getElementById("smart-settings").classList.remove("button-liquid-glass");
+        document.querySelector(".settings-page").style.display = 'none';
         }
 document.getElementById("smart-settings").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
@@ -3461,6 +3463,8 @@ document.getElementById("smart-settings").onclick = function() {
         document.getElementById("account-link").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
+           document.getElementById("smart-settings").classList.remove("button-liquid-glass");
+        document.querySelector(".settings-page").style.display = 'none';
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.remove("button-liquid-glass");
           document.getElementById("account-link").classList.add("button-liquid-glass");
@@ -3471,6 +3475,8 @@ document.getElementById("smart-settings").onclick = function() {
               document.getElementById("smart-post").classList.remove("button-liquid-glass");
               document.getElementById("account-link").classList.remove("button-liquid-glass");
            document.getElementById("video-container").style.display = 'flex';
+           document.getElementById("smart-settings").classList.remove("button-liquid-glass");
+        document.querySelector(".settings-page").style.display = 'none';
         document.getElementById("photo-container").style.display = 'none';
         document.getElementById("library").style.display = 'none';
         }
