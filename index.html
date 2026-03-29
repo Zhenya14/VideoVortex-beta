@@ -5406,9 +5406,9 @@ async function updatePhotosAuthor() {
     photoSnap.forEach(child => {
       const photo = child.val();
 
-      if (video.authorUid === user.uid) {
+      if (photo.authorUid === user.uid) {
         updates.push(
-          database.ref("videos/" + child.key).update({
+          database.ref("photos/" + child.key).update({
             author: fullName || "Анонім",
             authorAvatar: authorAvatarUrl
           })
@@ -5516,15 +5516,11 @@ if (photoData.authorUid) {
         avatar.title = photoData.author || "Анонім";
 
         if (photoData.authorAvatar) {
-            // Отримуємо URL аватара з Firebase Storage
-            firebase.storage().ref(`avatars/${photoData.authorAvatar}.webp`).getDownloadURL()
-                .then(url => {
-                    avatar.style.backgroundImage = `url(${url})`;
+                   avatar.style.backgroundImage = `url(${photoData.authorAvatar})`;
                     avatar.classList.add("avatar-image");
-                });
         } else {
-            avatar.innerText = photoData.author ? photoData.author.charAt(0).toUpperCase() : "?";
-            avatar.style.backgroundColor = stringToColor(photoData.author || "?");
+            avatar.innerText = getInitials(photoData.author);
+    avatar.style.backgroundColor = stringToColor(photoData.author || "?");
         }
 
         const detailsphotoElement = document.createElement("div");
