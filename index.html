@@ -5091,6 +5091,7 @@ auth.onAuthStateChanged(async (user) => {
     loadChannelSelect();
     loadSecureFiles();
     loadLibrary(user);
+    updateVideosAuthor();
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
@@ -5355,40 +5356,54 @@ function calculateAge(birthdate) {
     }
     return age;
 }
-function updateVideosAuthor() {
+async function updateVideosAuthor() {
   const user = firebase.auth().currentUser;
   if (!user) return;
 
   const uid = user.uid;
 
-  database.ref("users/" + uid).once("value").then(snapshot => {
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val() || {};
 
     const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
-    const avatarUrl = userData.avatarUrl || "";
 
-    const videoUpdates = [];
+    let authorAvatarUrl = null;
 
-    return database.ref("videos").once("value").then(videoSnap => {
-      videoSnap.forEach(child => {
-        const video = child.val();
-        if (video.email === user.email) {
-          videoUpdates.push(
-            database.ref("videos/" + child.key).update({
-              author: fullName || "Анонім",
-              authorAvatar: avatarUrl
-            })
-          );
-        }
-      });
-      return Promise.all(videoUpdates);
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {
+        console.warn("Аватар не знайдено");
+      }
+    }
+
+    const videoSnap = await database.ref("videos").once("value");
+
+    const updates = [];
+
+    videoSnap.forEach(child => {
+      const video = child.val();
+
+      if (video.email === user.email) {
+        updates.push(
+          database.ref("videos/" + child.key).update({
+            author: fullName || "Анонім",
+            authorAvatar: authorAvatarUrl
+          })
+        );
+      }
     });
-  }).then(() => {
+
+    await Promise.all(updates);
+
     console.log("Відео оновлено");
-    location.reload();
-  }).catch(err => {
+
+  } catch (err) {
     console.error("Помилка оновлення:", err);
-  });
+  }
 }
 document.getElementById("logout-link").onclick = function() {
             auth.signOut().then(() => {
