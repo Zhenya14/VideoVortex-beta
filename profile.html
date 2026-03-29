@@ -348,9 +348,9 @@ const auth = firebase.auth();
 const database = firebase.database();
 const urlParams = new URLSearchParams(window.location.search);
 let blockedUserUid = urlParams.get("uid"); // UID користувач
-const withoutAvatar = urlParams.get("avatar") || "?";
 const author = urlParams.get("author") || "Невідомий автор";
-const authorAvatar = urlParams.get("authorAvatar") || "?";
+const authorAvatar = urlParams.get("authorAvatar");
+const authorInitial = urlParams.get("authorInitial") || "?";
 
 
 function showNotFound() {
@@ -404,7 +404,10 @@ async function didUserBlockMe(targetUid) {
 
 }
 
-
+function getInitials(name) {
+  if (!name) return "?";
+  return name.trim().charAt(0).toUpperCase();
+}
 async function loadVideos() {
   const videoGallery = document.getElementById("video-gallery");
   videoGallery.innerHTML = "";
@@ -418,6 +421,18 @@ async function loadVideos() {
   snapshot.forEach(child => {
     videosArray.push({ key: child.key, val: child.val() });
   });
+
+if (authorAvatar) {
+  const imgAvatar = document.createElement("img");
+  imgAvatar.classList.add("avatar");
+  imgAvatar.style.backgroundImage = `url(${authorAvatar})`;
+  imgAvatar.textContent = "";
+  imgAvatar.style.backgroundSize = "cover";
+  imgAvatar.style.backgroundPosition = "center";
+} else {
+document.getElementById("avatar").textContent = authorInitial;
+}
+document.getElementById("userName").textContent = author;
 
   for (const child of videosArray) {
     const videoData = child.val;
@@ -435,20 +450,6 @@ async function loadVideos() {
     return;
   }
 }
-const avatarEl = document.getElementById("avatar");
-
-document.getElementById("userName").textContent = author;
-
-if (authorAvatar && authorAvatar !== "?") {
-  avatarEl.style.backgroundImage = `url(${authorAvatar})`;
-  avatarEl.style.backgroundSize = "cover";
-  avatarEl.style.backgroundPosition = "center";
-  avatarEl.textContent = ""; // прибрати букву
-} else {
-  avatarEl.style.backgroundImage = "none";
-  avatarEl.textContent = withoutAvatar;
-}
-    hasVideos = true;
 
     const container = document.createElement("div");
     container.className = "video";
