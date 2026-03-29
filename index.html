@@ -4113,10 +4113,12 @@ avatar.classList.add("avatar-image");
 
         avatar.onclick = () => {
             const infoParams = new URLSearchParams({
-                avatar: videoData.author ? videoData.author.charAt(0).toUpperCase() : "?",
-                author: videoData.author,
-                uid: videoData.authorUid,
-                authorAvatar: videoData.authorAvatar
+  author: videoData.author,
+  uid: videoData.authorUid,
+  authorAvatar: videoData.authorAvatar || "",
+  authorInitial: videoData.author
+    ? videoData.author.charAt(0).toUpperCase()
+    : "?"
             });
             window.location.href = `profile.html?${infoParams.toString()}`;
         };
