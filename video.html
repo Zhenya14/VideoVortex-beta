@@ -486,7 +486,22 @@ img.photo-item {
 .content.active {
   margin-left: 240px;
 }
-
+#avatar-placeholder {
+  width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 8px;
+      /* 🔥 для картинки */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 nav {
     display: flex;
     justify-content: left;
@@ -1361,18 +1376,7 @@ const gradient = randomGradient();
     color: white;
     box-shadow: 0 6px 20px rgba(0,0,0,0.4);
   ">
-    <div id="avatar-placeholder" style="
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 1.2em;
-      margin-bottom: 8px;
-    "></div>
+    <div id="avatar-placeholder"></div>
     <h2>${sanitize(video.title)}</h2>
     <p><strong>Автор:</strong> ${sanitize(video.author || "Анонім")}</p>
     <p><strong>Дата:</strong> ${sanitize(video.publishDate || "—")}</p>
@@ -1383,7 +1387,14 @@ const gradient = randomGradient();
 
 // Now safely set avatar text
 const avatar = detailsEl.querySelector("#avatar-placeholder");
-avatar.innerText = video.author ? video.author.charAt(0).toUpperCase() : "?";
+if (video.authorAvatar) {
+
+    avatar.style.backgroundImage = `url(${video.authorAvatar})`;
+} else {
+
+    avatar.innerText = getInitials(video.author);
+
+}
 
   // -------------------------------
   // Лічильник переглядів
