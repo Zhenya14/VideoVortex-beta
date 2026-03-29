@@ -969,7 +969,21 @@ img.photo-item {
     transition: background 0.5s ease, transform 0.3s ease;
     overflow: hidden; /* щоб img не виходило за межі круга */
 }
+.avatar-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-weight: bold;
 
+  /* 🔥 ВАЖЛИВО */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 .avatar:hover {
     transform: scale(1.1); /* легке збільшення при наведенні */
 }
@@ -4086,11 +4100,10 @@ async function loadVideos() {
         avatar.className = "avatar";
         avatar.title = videoData.author || "Анонім";
 
-        if (videoData.authorAvatarUrl) {
+        if (videoData.authorAvatar) {
 
-    avatar.style.backgroundImage = `url(${videoData.authorAvatarUrl})`;
-    avatar.classList.add("avatar-image");
-
+    avatar.style.backgroundImage = `url(${videoData.authorAvatar})`;
+avatar.classList.add("avatar-image");
 } else {
 
     avatar.innerText = getInitials(videoData.author);
@@ -4607,6 +4620,7 @@ function saveEditName() {
       document.getElementById("button-name").style.display = "block";
       document.getElementById("name").textContent = "Ім'я: " + newName;
       updateVideosAuthor();
+      updatePhotosAuthor();
     })
     .catch(err => {
       showNotificationModal();
@@ -4635,6 +4649,7 @@ function saveEditSuperName() {
       document.getElementById("button-supername").style.display = "block";
       document.getElementById("supername").textContent = "Прізвище: " + newSuperName;
       updateVideosAuthor();
+      updatePhotosAuthor();
     })
     .catch(err => {
       showNotificationModal();
@@ -5092,6 +5107,7 @@ auth.onAuthStateChanged(async (user) => {
     loadSecureFiles();
     loadLibrary(user);
     updateVideosAuthor();
+    updatePhotosAuthor();
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
@@ -5233,7 +5249,8 @@ if (userData?.avatarId) {
     navAvatar.innerText = userData?.name ? userData.name.charAt(0).toUpperCase() : "?";
 }
 
-        
+        updateVideosAuthor();
+        updatePhotosAuthor();
         enableBanduraUI(role);
 
     } catch (err) {
@@ -5315,6 +5332,7 @@ input.onchange = async () => {
     }
 };
 updateVideosAuthor();
+updatePhotosAuthor();
 function submitBirthdate() {
     const user = firebase.auth().currentUser;
     const input = document.getElementById("birthdate-input").value; // "YYYY-MM-DD"
@@ -5341,6 +5359,7 @@ function submitBirthdate() {
         message.innerHTML = "Дата збережена.";
         if (age !== null) configureAgeUI(age);
         updateVideosAuthor();
+        updatePhotosAuthor();
     }).catch(err => console.error("Помилка збереження даних:", err));
 }
 
@@ -5355,6 +5374,55 @@ function calculateAge(birthdate) {
         age--;
     }
     return age;
+}
+async function updatePhotosAuthor() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {
+        console.warn("Аватар не знайдено");
+      }
+    }
+
+    const photoSnap = await database.ref("photos").once("value");
+
+    const updates = [];
+
+    photoSnap.forEach(child => {
+      const photo = child.val();
+
+      if (video.authorUid === user.uid) {
+        updates.push(
+          database.ref("videos/" + child.key).update({
+            author: fullName || "Анонім",
+            authorAvatar: authorAvatarUrl
+          })
+        );
+      }
+    });
+
+    await Promise.all(updates);
+
+    console.log("Відео оновлено");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
 }
 async function updateVideosAuthor() {
   const user = firebase.auth().currentUser;
@@ -5387,7 +5455,7 @@ async function updateVideosAuthor() {
     videoSnap.forEach(child => {
       const video = child.val();
 
-      if (video.email === user.email) {
+      if (video.authorUid === user.uid) {
         updates.push(
           database.ref("videos/" + child.key).update({
             author: fullName || "Анонім",
