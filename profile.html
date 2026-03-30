@@ -408,6 +408,7 @@ function getInitials(name) {
   if (!name) return "?";
   return name.trim().charAt(0).toUpperCase();
 }
+let isHiddenAccount = false;
 async function loadVideos() {
   const videoGallery = document.getElementById("video-gallery");
   videoGallery.innerHTML = "";
@@ -437,6 +438,7 @@ async function loadVideos() {
  document.getElementById("avatar").textContent = "❌";
  document.getElementById("userName").textContent = "Акаунт не знайдено";
     showNotFound();
+    isHiddenAccount = true;
     return;
   }
 }
@@ -473,7 +475,7 @@ document.getElementById("blockUserBtn").addEventListener("click", () => {
 });
 const realUserName = author; // справжнє ім'я
 let blockedUserName = realUserName;
-let isHiddenAccount = false;
+
 function showModalBlocked() {
     const modal = document.getElementById("block-user-modal");
     const info = document.getElementById("blocked-information");
