@@ -415,24 +415,14 @@ async function loadVideos() {
   const snapshot = await firebase.database().ref("videos").once("value");
   if (!snapshot.exists()) return showNotFound();
 
-  let hasVideos = false;
+  hasVideos = true;
   const videosArray = [];
 
   snapshot.forEach(child => {
     videosArray.push({ key: child.key, val: child.val() });
   });
 
-if (authorAvatar) {
-  const imgAvatar = document.createElement("img");
-  imgAvatar.classList.add("avatar");
-  imgAvatar.style.backgroundImage = `url(${authorAvatar})`;
-  imgAvatar.textContent = "";
-  imgAvatar.style.backgroundSize = "cover";
-  imgAvatar.style.backgroundPosition = "center";
-} else {
-document.getElementById("avatar").textContent = authorInitial;
-}
-document.getElementById("userName").textContent = author;
+
 
   for (const child of videosArray) {
     const videoData = child.val;
@@ -450,7 +440,20 @@ document.getElementById("userName").textContent = author;
     return;
   }
 }
+const avatarEl = document.getElementById("avatar");
+const userNameEl = document.getElementById("userName");
 
+if (authorAvatar && authorAvatar !== "" && authorAvatar !== "?") {
+  avatarEl.style.backgroundImage = `url(${authorAvatar})`;
+  avatarEl.style.backgroundSize = "cover";
+  avatarEl.style.backgroundPosition = "center";
+  avatarEl.textContent = "";
+} else {
+  avatarEl.style.backgroundImage = "";
+  avatarEl.textContent = authorInitial || (author ? author.charAt(0).toUpperCase() : "?");
+}
+
+userNameEl.textContent = author;
     const container = document.createElement("div");
     container.className = "video";
 
