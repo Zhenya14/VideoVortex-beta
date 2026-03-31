@@ -2900,56 +2900,66 @@ document.addEventListener("DOMContentLoaded", () => {
   const month = today.getMonth() + 1;
   const day = today.getDate();
 
-  const logo = document.getElementById("logo"); // Отримуємо логотип
+  const logo = document.getElementById("logo");
 
-  // 🎃 HALLOWEEN: 30-31 жовтня
+  /* ================= HALLOWEEN ================= */
   if (month === 10 && (day === 30 || day === 31)) {
     activateHalloweenMode();
     applyIcons(halloweenIcons);
   }
 
-  // Вимкнення Halloween 1 листопада
   if (month === 11 && day === 1) {
     deactivateHalloweenMode();
     restoreIcons();
   }
 
-  // 🎄 NEW YEAR: 25 грудня → 14 січня
+  /* ================= NEW YEAR ================= */
+  const isNewYear =
+    (month === 12 && day >= 15) ||
+    (month === 1 && day <= 25);
 
-  const isNewYear = (month === 12 && day >= 15) || (month === 1 && day <= 25);
   if (isNewYear) {
     activateGirland();
     activateNewYearMode();
     applyIcons(newyearIcons);
-  } else {
-    deactivateGirland();
-    deactivateNewYearMode();
-   if (!(month === 2 && (day === 13 || day === 14))) {
-      restoreIcons();
-   }
-  }
-if (month === 2 && (day === 13 || day === 14)) {
-    applyIcons(valentineIcons);
-  }
-  // 🔔 Easter egg по потрійному кліку на логотип
-  if (logo) {
-    logo.addEventListener("click", () => {
-      logoClickCount++;
 
-      if (logoClickCount === 1) {
+    if (logo && !logo.dataset.easterBound) {
+      logo.dataset.easterBound = "true";
+
+      let logoClickCount = 0;
+      let logoClickTimer = null;
+
+      logo.addEventListener("click", () => {
+        logoClickCount++;
+
+        clearTimeout(logoClickTimer);
+
         logoClickTimer = setTimeout(() => {
           logoClickCount = 0;
         }, 1200);
-      }
 
-      if (logoClickCount === 3) {
-        clearTimeout(logoClickTimer);
-        logoClickCount = 0;
-        launchNewYearEasterEgg();
-      }
-    });
+        if (logoClickCount === 3) {
+          logoClickCount = 0;
+          launchNewYearEasterEgg();
+        }
+      });
+    }
+
+  } else {
+    deactivateGirland();
+    deactivateNewYearMode();
+    restoreIcons();
+  }
+
+  /* ================= VALENTINE (OVERRIDE LAYER) ================= */
+  const isValentine = month === 2 && (day === 13 || day === 14);
+
+  if (isValentine) {
+    applyIcons(valentineIcons);
   }
 });
+  // 🔔 Easter egg по потрійному кліку на логотип
+  
 /* ================================
    🎃 HALLOWEEN
    ================================ */
@@ -3025,7 +3035,7 @@ function activateNewYearMode() {
 function deactivateNewYearMode() {
   document.body.classList.remove("newyear");
   stopSnow();
-
+closeNewYearPopup();
   const logo = document.getElementById("logo");
   if (logo && logo.dataset.originalSrc) logo.src = logo.dataset.originalSrc;
 
@@ -3091,6 +3101,7 @@ const halloweenIcons = {
   "auth-link": "🚪",
   "smart-post": "👻<span>Дописи</span>",
   "smart-video": "🦇<span>Відео</span>",
+  "smart-settings": "🧪<span>Налаштування</span>",
   "": "👻<span>Дописи</span>",
   "video": "🦇<span>Відео</span>",
   "plus-button": `<i class="icon">🎃</i>`,
@@ -3104,6 +3115,7 @@ const newyearIcons = {
   "auth-link": "🚪",
   "smart-post": "❄️<span>Дописи</span>",
   "smart-video": "🎬<span>Відео</span>",
+  "smart-settings": "🎁<span>Налаштування</span>",
   "post": "❄️<span>Дописи</span>",
   "video": "🎬<span>Відео</span>",
   "plus-button": `<i class="icon">🎄</i>`,
@@ -3117,6 +3129,7 @@ const valentineIcons = {
   "auth-link": "💘",
   "smart-post": "💌<span>Дописи</span>",
   "smart-video": "💞<span>Відео</span>",
+  "smart-settings": "💌<span>Налаштування</span>",
   "post": "💌<span>Дописи</span>",
   "video": "💞<span>Відео</span>",
   "plus-button": `<i class="icon">💝</i>`,
@@ -3130,6 +3143,7 @@ const easterIcons = {
   "auth-link": "🐰",
   "smart-post": "🌸<span>Дописи</span>",
   "smart-video": "🐥<span>Відео</span>",
+  "smart-settings": "🐣<span>Налаштування</span>",
   "post": "🌸<span>Дописи</span>",
   "video": "🐥<span>Відео</span>",
   "plus-button": `<i class="icon">🧺</i>`,
@@ -3143,6 +3157,7 @@ const vyshyvankaIcons = {
   "auth-link": "🧶",
   "smart-post": "🪢<span>Дописи</span>",
   "smart-video": "📽️<span>Відео</span>",
+  "smart-settings": "🧵🪡<span>Налаштування</span>",
   "post": "🪢<span>Дописи</span>",
   "video": "📽️<span>Відео</span>",
   "plus-button": `<i class="icon">🧿</i>`,
@@ -3156,6 +3171,7 @@ const independenceIcons = {
   "auth-link": "🕊️",
   "smart-post": "📝<span>Дописи</span>",
   "smart-video": "📹<span>Відео</span>",
+  "smart-settings": "💙💛🕊️<span>Налаштування</span>",
   "post": "📝<span>Дописи</span>",
   "video": "📹<span>Відео</span>",
   "plus-button": `<i class="icon">🌾</i>`,
@@ -4238,6 +4254,7 @@ function deleteVideo(videoKey, videoURL) {
         storageRef.delete()
         .then(() => {
             return database.ref(`videos/${videoKey}`).remove();
+            database.ref(`comments/${videoKey}`).remove();
         })
         .then(() => {
           showNotificationModal();
