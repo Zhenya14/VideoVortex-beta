@@ -836,7 +836,16 @@ transform: scale(0.95); /* легке стиснення */
   text-align: left;
   cursor: pointer;
 }
-
+.stories-timer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 10px;
+}
 .settings-item:hover {
   background: #2a2a2a;
 }
@@ -1420,6 +1429,10 @@ position: fixed;
       animation: fadeInOut 3s ease-out;
       animation: fadeInOut 3s ease-out;
     }
+    .video-thumb-wrapper {
+  position: relative;
+}
+
 .lightrope li:after {
   content: "";
   top: -14px;
@@ -2096,6 +2109,10 @@ text-decoration: none;
 <span>Вимкнути коментарі <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
      <br>
      <p style="text-align: center;">Налаштування приватності:</p>
+     <label>
+  <input type="checkbox" id="auto-delete-24h">
+  Видалити через 24 години
+</label>
    <span>Приватне відео</span><label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
 <span>Заборонити збереження відео</span><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
@@ -2505,32 +2522,40 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 // /api/generate.js
 async function generateDescription() {
-    const title = document.getElementById("video-title").value.trim();
-    const descriptionEl = document.getElementById("video-description");
+  const textarea = document.getElementById("video-description");
+  const text = textarea.value.trim();
 
-    if (!title) return alert("Введіть текст");
+  if (!text) {
+    alert("Введи опис");
+    return;
+  }
 
-    descriptionEl.innerText = "Генеруємо опис... ⏳";
+  textarea.value = "⏳ Генерується...";
 
-    try {
-        const response = await fetch("https://video-vortex1.vercel.app/api/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title }),
-        });
+  try {
+    const response = await fetch(
+      "https://us-central1-videovortex-235cd.cloudfunctions.net/generateDescription",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      }
+    );
 
-        if (!response.ok) throw new Error(`HTTP помилка: ${response.status}`);
-
-        const data = await response.json();
-
-        if (!data.result) throw new Error("Результат відсутній");
-
-        descriptionEl.innerText = data.result;
-
-    } catch (err) {
-        console.error(err);
-        descriptionEl.innerText = "Сталася помилка при генерації опису ❌";
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errText}`);
     }
+
+    const data = await response.json();
+
+    textarea.value = data?.result || "❌ Порожня відповідь від сервера";
+  } catch (err) {
+  console.error("FULL ERROR:", err);
+  textarea.value = "❌ " + err.message;
+}
 }
 </script>
 <script defer>
@@ -4069,7 +4094,12 @@ async function loadVideos() {
     database.ref("videos").on("child_added", async snapshot => {
         const videoData = snapshot.val();
         const videoKey = snapshot.key;
+const isExpired =
+  videoData.autoDelete24h &&
+  videoData.expiresAt &&
+  Date.now() > videoData.expiresAt;
 
+if (isExpired) return;
         // 🔹 Запобігання дублюванню
 
         // 🔹 1. Фільтри
@@ -4082,7 +4112,8 @@ async function loadVideos() {
 
         if (videoData.private && videoData.email !== currentUserEmail) return;
         if (videoData.domainRestrict && (!currentUserEmail || !currentUserEmail.endsWith("@kfccte-nau.ukr.education"))) return;
-
+const videoWrapper = document.createElement("div");
+videoWrapper.className = "video-thumb-wrapper";
         // 🔹 2. Відео елемент (IMG для прев’ю)
         const videoElement = document.createElement("img");
         videoElement.classList.add("video-item");
@@ -4091,7 +4122,40 @@ async function loadVideos() {
         videoElement.dataset.description = videoData.description || "";
         videoElement.dataset.author = videoData.author || "";
         videoElement.style.filter = videoData.nsfw ? "blur(20px)" : "none";
+if (videoData.autoDelete24h && videoData.expiresAt) {
+    const timer = document.createElement("div");
+    timer.className = "stories-timer";
 
+    const timeSpan = document.createElement("span");
+    timer.appendChild(timeSpan);
+
+    const total = 24 * 60 * 60 * 1000;
+
+    const update = () => {
+        const diff = videoData.expiresAt - Date.now();
+
+        if (diff <= 0) {
+            container.style.opacity = "0";
+            container.style.transform = "scale(0.9)";
+            setTimeout(() => container.remove(), 500);
+            return;
+        }
+
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+
+        timeSpan.textContent =
+            `${String(h).padStart(2,"0")}:` +
+            `${String(m).padStart(2,"0")}:` +
+            `${String(s).padStart(2,"0")}`;
+    };
+
+    update();
+    setInterval(update, 1000);
+
+    videoWrapper.appendChild(timer);
+}
         // 🔹 4. Клік по відео
         videoElement.onclick = () => {
             const viewedKey = `viewed_${videoKey}`;
@@ -4208,11 +4272,25 @@ avatar.classList.add("avatar-image");
         container.classList.add("video-container");
         container.dataset.id = videoKey;
         container.appendChild(infoElement);
-        container.appendChild(videoElement);
+        videoWrapper.appendChild(videoElement);
+container.appendChild(videoWrapper);
 
         videoGallery.appendChild(container);
     });
 }
+function cleanupExpiredVideos() {
+    database.ref("videos").once("value", snap => {
+        snap.forEach(child => {
+            const v = child.val();
+
+            if (v.autoDelete24h && v.expiresAt && Date.now() > v.expiresAt) {
+                child.ref.remove();
+            }
+        });
+    });
+}
+
+
 const randomComments = [
   "Класне відео! 🎬👍",
   "Дуже цікаво 🤓✨",
@@ -4427,7 +4505,7 @@ document.getElementById("video-file").addEventListener("change", async (e) => {
 async function uploadVideo() {
   const startTime = Date.now();
   const isBandura = document.getElementById("bandura-video")?.checked || false;
-
+const autoDelete24h = document.getElementById("auto-delete-24h")?.checked || false;
   const banduraExtra = isBandura ? {
     style: document.getElementById("bandura-style").value || "Соло",
     key: document.getElementById("bandura-key").value || "",
@@ -4570,8 +4648,11 @@ async function uploadVideo() {
             private: privateVideo,
             domainRestrict: domainRestrict,
             nsfw: isNSFW,
+            createdAt: Date.now(),
+  autoDelete24h: autoDelete24h,
             publishDate: currentDate,
-            banduraExtra
+            banduraExtra,
+            expiresAt: autoDelete24h ? Date.now() + 86400000 : null
           });
 
           localStorage.removeItem("activeUpload");
@@ -5126,6 +5207,7 @@ auth.onAuthStateChanged(async (user) => {
     loadChannelSelect();
     loadSecureFiles();
     loadLibrary(user);
+    cleanupExpiredVideos();
     updateVideosAuthor();
     updatePhotosAuthor();
     backfillAuthorUidForUser();
