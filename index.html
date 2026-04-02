@@ -4120,90 +4120,118 @@ async function loadVideos() {
     videoGallery.innerHTML = "";
     const showNSFWGlobal = showNSFW;
 
-    // 🔹 Слухаємо нові відео в реальному часі
     database.ref("videos").on("child_added", async snapshot => {
         const videoData = snapshot.val();
         const videoKey = snapshot.key;
-const isExpired =
-  videoData.autoDelete24h &&
-  videoData.expiresAt &&
-  Date.now() > videoData.expiresAt;
 
-if (isExpired) return;
-        // 🔹 Запобігання дублюванню
-let videoDataRaw = videoMemoryCache[videoKey];
+        const isExpired =
+            videoData.autoDelete24h &&
+            videoData.expiresAt &&
+            Date.now() > videoData.expiresAt;
 
-    if (!videoDataRaw) {
-      videoDataRaw = getVideoCache(videoKey);
+        if (isExpired) return;
 
-      if (!videoDataRaw) {
-        videoDataRaw = videoData;
-        setVideoCache(videoKey, videoData);
-      }
+        // =====================
+        // FIXED CACHE LOGIC
+        // =====================
 
-      videoMemoryCache[videoKey] = videoDataRaw;
-    }
+        let videoDataRaw = videoMemoryCache[videoKey];
+
+        if (!videoDataRaw) {
+            const local = getVideoCache(videoKey);
+
+            if (local) {
+                videoDataRaw = local;
+            } else {
+                videoDataRaw = videoData;
+                setVideoCache(videoKey, videoData);
+            }
+
+            videoMemoryCache[videoKey] = videoDataRaw;
+        } else {
+            // sync update fix
+            videoDataRaw = videoData;
+            videoMemoryCache[videoKey] = videoData;
+            setVideoCache(videoKey, videoData);
+        }
+
         // 🔹 1. Фільтри
-        if (videoData.nsfw && !showNSFWGlobal) return;
+        if (videoDataRaw.nsfw && !showNSFWGlobal) return;
 
-        if (videoData.authorUid) {
-            const blockedMe = await didUserBlockMe(videoData.authorUid);
+        if (videoDataRaw.authorUid) {
+            const blockedMe = await didUserBlockMe(videoDataRaw.authorUid);
             if (blockedMe) return;
         }
 
-        if (videoData.private && videoData.email !== currentUserEmail) return;
-        if (videoData.domainRestrict && (!currentUserEmail || !currentUserEmail.endsWith("@kfccte-nau.ukr.education"))) return;
-const videoWrapper = document.createElement("div");
-videoWrapper.className = "video-thumb-wrapper";
-        // 🔹 2. Відео елемент (IMG для прев’ю)
+        if (videoDataRaw.private && videoDataRaw.email !== currentUserEmail) return;
+
+        if (
+            videoDataRaw.domainRestrict &&
+            (!currentUserEmail ||
+                !currentUserEmail.endsWith("@kfccte-nau.ukr.education"))
+        ) return;
+
+        // 🔹 2. Запобігання дублюванню
+        if (document.querySelector(`[data-id="${videoKey}"]`)) return;
+
+        const videoWrapper = document.createElement("div");
+        videoWrapper.className = "video-thumb-wrapper";
+
         const videoElement = document.createElement("img");
         videoElement.classList.add("video-item");
-        videoElement.src = videoData.thumbnail || "default.jpg";
-        videoElement.dataset.title = videoData.title || "";
-        videoElement.dataset.description = videoData.description || "";
-        videoElement.dataset.author = videoData.author || "";
-        videoElement.style.filter = videoData.nsfw ? "blur(20px)" : "none";
+        videoElement.src = videoDataRaw.thumbnail || "default.jpg";
+        videoElement.dataset.title = videoDataRaw.title || "";
+        videoElement.dataset.description = videoDataRaw.description || "";
+        videoElement.dataset.author = videoDataRaw.author || "";
+        videoElement.style.filter = videoDataRaw.nsfw ? "blur(20px)" : "none";
+
         cacheImage(videoElement.src);
 
-if (videoData.autoDelete24h && videoData.expiresAt) {
-    const timer = document.createElement("div");
-    timer.className = "stories-timer";
+        // =====================
+        // FIXED TIMER (NO LEAK)
+        // =====================
 
-    const timeSpan = document.createElement("span");
-    timer.appendChild(timeSpan);
+        if (videoDataRaw.autoDelete24h && videoDataRaw.expiresAt) {
+            const timer = document.createElement("div");
+            timer.className = "stories-timer";
 
-    const total = 24 * 60 * 60 * 1000;
+            const timeSpan = document.createElement("span");
+            timer.appendChild(timeSpan);
 
-    const update = () => {
-        const diff = videoData.expiresAt - Date.now();
+            let interval;
 
-        if (diff <= 0) {
-            container.style.opacity = "0";
-            container.style.transform = "scale(0.9)";
-            setTimeout(() => container.remove(), 500);
-            return;
+            const update = () => {
+                const diff = videoDataRaw.expiresAt - Date.now();
+
+                if (diff <= 0) {
+                    clearInterval(interval);
+                    videoWrapper.remove();
+                    return;
+                }
+
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+
+                timeSpan.textContent =
+                    `${String(h).padStart(2, "0")}:` +
+                    `${String(m).padStart(2, "0")}:` +
+                    `${String(s).padStart(2, "0")}`;
+            };
+
+            update();
+            interval = setInterval(update, 1000);
+
+            videoWrapper.appendChild(timer);
         }
 
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-
-        timeSpan.textContent =
-            `${String(h).padStart(2,"0")}:` +
-            `${String(m).padStart(2,"0")}:` +
-            `${String(s).padStart(2,"0")}`;
-    };
-
-    update();
-    setInterval(update, 1000);
-
-    videoWrapper.appendChild(timer);
-}
         // 🔹 4. Клік по відео
         videoElement.onclick = () => {
             const viewedKey = `viewed_${videoKey}`;
+
             if (!localStorage.getItem(viewedKey)) {
-                const newViewCount = (videoData.views || 0) + 1;
+                const newViewCount = (videoDataRaw.views || 0) + 1;
+
                 database.ref("videos/" + videoKey).update({ views: newViewCount })
                     .then(() => localStorage.setItem(viewedKey, true))
                     .catch(console.error);
@@ -4212,55 +4240,52 @@ if (videoData.autoDelete24h && videoData.expiresAt) {
             const videoParams = new URLSearchParams({
                 key: videoKey
             });
+
             window.location.href = `video.html?${videoParams.toString()}`;
         };
 
-        // 🔹 6. Інформація про відео
+        // 🔹 6. Інформація
         const infoElement = document.createElement("div");
         infoElement.classList.add("video-info");
 
         const avatar = document.createElement("div");
         avatar.className = "avatar";
-        avatar.title = videoData.author || "Анонім";
+        avatar.title = videoDataRaw.author || "Анонім";
 
-        if (videoData.authorAvatar) {
-
-    avatar.style.backgroundImage = `url(${videoData.authorAvatar})`;
-avatar.classList.add("avatar-image");
-} else {
-
-    avatar.innerText = getInitials(videoData.author);
-    avatar.style.backgroundColor = stringToColor(videoData.author || "?");
-
-}
+        if (videoDataRaw.authorAvatar) {
+            avatar.style.backgroundImage = `url(${videoDataRaw.authorAvatar})`;
+            avatar.classList.add("avatar-image");
+        } else {
+            avatar.innerText = getInitials(videoDataRaw.author);
+            avatar.style.backgroundColor = stringToColor(videoDataRaw.author || "?");
+        }
 
         avatar.onclick = () => {
             const infoParams = new URLSearchParams({
-  author: videoData.author,
-  uid: videoData.authorUid,
-  authorAvatar: videoData.authorAvatar || "",
-  authorInitial: videoData.author
-    ? videoData.author.charAt(0).toUpperCase()
-    : "?"
+                author: videoDataRaw.author,
+                uid: videoDataRaw.authorUid || "",
+                authorAvatar: videoDataRaw.authorAvatar || "",
+                authorInitial: videoDataRaw.author
+                    ? videoDataRaw.author.charAt(0).toUpperCase()
+                    : "?"
             });
+
             window.location.href = `profile.html?${infoParams.toString()}`;
         };
 
         const detailsElement = document.createElement("div");
         detailsElement.classList.add("video-details");
-        let statusBadge = "";
 
         detailsElement.innerHTML = `
-            ${sanitizeHTML(videoData.title || "Без назви")}
-            ${videoData.private ? "<span style='color: orange;'>🔒 Приватне</span>" : ""}
-            ${statusBadge ? `<div class="video-status">${statusBadge}</div>` : ""}
-            ${videoData.nsfw ? "<span style='color: red;'>NSFW</span>" : ""}
-            <br>Автор: ${sanitizeHTML(videoData.author || "Анонім")}<br>
-            Переглядів: ${videoData.views || 0}<br>
-            Дата публікації: ${videoData.publishDate || "Не вказана"}
+            ${sanitizeHTML(videoDataRaw.title || "Без назви")}
+            ${videoDataRaw.private ? "<span style='color: orange;'>🔒 Приватне</span>" : ""}
+            ${videoDataRaw.nsfw ? "<span style='color: red;'>NSFW</span>" : ""}
+            <br>Автор: ${sanitizeHTML(videoDataRaw.author || "Анонім")}<br>
+            Переглядів: ${videoDataRaw.views || 0}<br>
+            Дата публікації: ${videoDataRaw.publishDate || "Не вказана"}
         `;
 
-        // 🔹 7. Меню дій
+        // 🔹 MENU
         const moreBtn = document.createElement("button");
         moreBtn.classList.add("more-btn");
         moreBtn.innerHTML = `<i class="material-icons">more_vert</i>`;
@@ -4269,54 +4294,66 @@ avatar.classList.add("avatar-image");
         actionMenu.classList.add("action-menu");
         actionMenu.style.display = "none";
 
-        if (currentUserEmail === videoData.email || currentUserEmail === "zhuzhun2008@gmail.com") {
+        if (currentUserEmail === videoDataRaw.email || currentUserEmail === "zhuzhun2008@gmail.com") {
             const deleteButton = document.createElement("button");
-            deleteButton.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;">  
-                        <i class="material-icons">delete</i>Видалити</a>`;  
+            deleteButton.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;">
+                <i class="material-icons">delete</i>Видалити</a>`;
+
             deleteButton.onclick = () => {
-                deleteVideo(videoKey, videoData.url);
+                deleteVideo(videoKey, videoDataRaw.url);
                 actionMenu.style.display = "none";
             };
+
             actionMenu.appendChild(deleteButton);
         }
 
-        if (currentUserEmail === videoData.email) {
+        if (currentUserEmail === videoDataRaw.email) {
             const editButton = document.createElement("button");
-            editButton.innerHTML = `<a style="padding:3px 8px; display:flex; align-items:center; justify-content:center;">  
-                        <i class="material-icons">edit</i>Редагувати</a>`;  
+            editButton.innerHTML = `<a style="padding:3px 8px; display:flex; align-items:center; justify-content:center;">
+                <i class="material-icons">edit</i>Редагувати</a>`;
+
             editButton.onclick = () => {
-                editVideo(videoKey, videoData);
+                editVideo(videoKey, videoDataRaw);
                 actionMenu.style.display = "none";
             };
+
             actionMenu.appendChild(editButton);
         }
 
         moreBtn.onclick = e => {
             e.stopPropagation();
+
             document.querySelectorAll(".action-menu").forEach(m => {
                 if (m !== actionMenu) m.style.display = "none";
             });
-            actionMenu.style.display = actionMenu.style.display === "block" ? "none" : "block";
+
+            actionMenu.style.display =
+                actionMenu.style.display === "block" ? "none" : "block";
         };
 
-        document.getElementById("video-gallery").addEventListener("click", e => {
-            if (!e.target.closest(".action-menu") && !e.target.closest(".more-btn")) {
-                document.querySelectorAll(".action-menu").forEach(m => m.style.display = "none");
-            }
-        });
+        // FIX: listener only once
+        if (!videoGallery.dataset.listener) {
+            videoGallery.addEventListener("click", e => {
+                if (!e.target.closest(".action-menu") && !e.target.closest(".more-btn")) {
+                    document.querySelectorAll(".action-menu").forEach(m => m.style.display = "none");
+                }
+            });
+
+            videoGallery.dataset.listener = "true";
+        }
 
         infoElement.appendChild(avatar);
         infoElement.appendChild(detailsElement);
         infoElement.appendChild(moreBtn);
         infoElement.appendChild(actionMenu);
 
-        // 🔹 8. Контейнер відео
         const container = document.createElement("div");
         container.classList.add("video-container");
         container.dataset.id = videoKey;
+
         container.appendChild(infoElement);
         videoWrapper.appendChild(videoElement);
-container.appendChild(videoWrapper);
+        container.appendChild(videoWrapper);
 
         videoGallery.appendChild(container);
     });
