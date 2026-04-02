@@ -4083,6 +4083,36 @@ function showArchiveModal() {
 
 const videosLoaded = new Set(); // зверху скрипта
 
+const videoMemoryCache = {};
+const CACHE_TTL = 15 * 60 * 1000; // 15 хв
+
+function setVideoCache(key, data) {
+  localStorage.setItem("video_cache_" + key, JSON.stringify({
+    data,
+    time: Date.now()
+  }));
+}
+
+function getVideoCache(key) {
+  const raw = localStorage.getItem("video_cache_" + key);
+  if (!raw) return null;
+
+  const parsed = JSON.parse(raw);
+
+  if (Date.now() - parsed.time > CACHE_TTL) {
+    localStorage.removeItem("video_cache_" + key);
+    return null;
+  }
+
+  return parsed.data;
+}
+
+function cacheImage(url) {
+  if (!url) return;
+  const img = new Image();
+  img.src = url;
+}
+
 async function loadVideos() {
     const videoGallery = document.getElementById("video-gallery");
     if (!videoGallery) return;
@@ -4101,7 +4131,18 @@ const isExpired =
 
 if (isExpired) return;
         // 🔹 Запобігання дублюванню
+let videoDataRaw = videoMemoryCache[videoKey];
 
+    if (!videoDataRaw) {
+      videoDataRaw = getVideoCache(videoKey);
+
+      if (!videoDataRaw) {
+        videoDataRaw = videoData;
+        setVideoCache(videoKey, videoData);
+      }
+
+      videoMemoryCache[videoKey] = videoDataRaw;
+    }
         // 🔹 1. Фільтри
         if (videoData.nsfw && !showNSFWGlobal) return;
 
@@ -4122,6 +4163,8 @@ videoWrapper.className = "video-thumb-wrapper";
         videoElement.dataset.description = videoData.description || "";
         videoElement.dataset.author = videoData.author || "";
         videoElement.style.filter = videoData.nsfw ? "blur(20px)" : "none";
+        cacheImage(videoElement.src);
+
 if (videoData.autoDelete24h && videoData.expiresAt) {
     const timer = document.createElement("div");
     timer.className = "stories-timer";
