@@ -1167,6 +1167,9 @@ box-shadow: 0 0 10px red; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
 }
+#smart-settings, #account-link, .btn-liquid-glass {
+  display: none;
+}
 .nsfw-label {
     background-color: red;
     color: white;
@@ -2982,9 +2985,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isValentine) {
     applyIcons(valentineIcons);
   }
-});
+  const isEaster = (month === 4 && day >= 10) ||
+    (month === 4 && day <= 25);
   // 🔔 Easter egg по потрійному кліку на логотип
-  
+  if (isEaster) {
+    applyIcons(easterIcons);
+  }
+});
+
 /* ================================
    🎃 HALLOWEEN
    ================================ */
@@ -4933,6 +4941,9 @@ function updateUI(user) {
     document.getElementById("auth-link")?.style?.setProperty("display", "none");
     document.getElementById("register-link")?.style?.setProperty("display", "none");
     document.getElementById("logout-link")?.style?.setProperty("display", "flex");
+    document.getElementById("smart-settings")?.style?.setProperty("display", "block");
+    document.getElementById("account-link")?.style?.setProperty("display", "block");
+    document.querySelector(".btn-liquid-glass")?.style?.setProperty("display", "flex");
     document.getElementById("account-desktop-link")?.style?.setProperty("display", "none");
     document.getElementById("upload-link")?.style?.setProperty("display", "flex");
     document.getElementById("upload-link-photo")?.style?.setProperty("display", "flex");
@@ -4965,6 +4976,9 @@ function updateUI(user) {
     document.getElementById("auth-link")?.style?.setProperty("display", "none");
     document.getElementById("register-link")?.style?.setProperty("display", "none");
     document.getElementById("logout-link")?.style?.setProperty("display", "none");
+    document.getElementById("smart-settings")?.style?.setProperty("display", "none");
+    document.getElementById("account-link")?.style?.setProperty("display", "none");
+    document.querySelector(".btn-liquid-glass")?.style?.setProperty("display", "none");
     document.getElementById("account-desktop-link")?.style?.setProperty("display", "none");
     document.getElementById("upload-link")?.style?.setProperty("display", "none");
     document.getElementById("upload-link-photo")?.style?.setProperty("display", "none");
@@ -5088,73 +5102,15 @@ document.getElementById("nsfw").onclick = function(event) {
         nsfwCheckbox.dataset.listenerAdded = "true";
     }
 }
-async function getKeyFromPassword(password, salt) {
-  const enc = new TextEncoder();
-
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveKey"]
-  );
-
-  return await crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt: salt, // Uint8Array ✔
-      iterations: 100000,
-      hash: "SHA-256"
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-}
-async function encryptAndUpload() {
+async function uploadArchive() {
   const file = document.getElementById("zip-file").files[0];
-  const password = document.getElementById("zip-password").value;
 
-  if (!file || !password) {
-    alert("Вибери файл і введи пароль");
+  if (!file) {
+    showNotificationModal();
+    message.innerHTML = "Вибери файл.";
     return;
   }
 
-  const fileBuffer = await file.arrayBuffer();
-
-  // 🔐 salt + iv
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const key = await getKeyFromPassword(password, salt);
-
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv },
-    key,
-    fileBuffer
-  );
-
-  // 🔥 правильне об'єднання
-  const result = new Uint8Array(16 + 12 + encrypted.byteLength);
-
-  result.set(salt, 0);
-  result.set(iv, 16);
-  result.set(new Uint8Array(encrypted), 28);
-
-  // ❗ важливо: buffer
-  const blob = new Blob([result.buffer], {
-    type: "application/octet-stream"
-  });
-
-  console.log("Encrypted size:", blob.size);
-
-  const ref = firebase.storage().ref(`secure/${Date.now()}_${file.name}.enc`);
-
-  // ❗ важливо: contentType
-  await ref.put(blob, {
-    contentType: "application/octet-stream"
-  });
 
   const url = await ref.getDownloadURL();
 
@@ -5345,6 +5301,7 @@ if (age !== null) {
 
         const isHalloween = m === 10 && (d === 30 || d === 31);
         const isValentineDay = m === 2 && (d === 13 || d === 14);
+        const isEasterWeek = (m === 4 && d >= 10) || (m === 4 && d <= 25);
         const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
 
         if (isHalloween) {
@@ -5359,10 +5316,16 @@ if (age !== null) {
         } else {
             deactivateGirland();
             deactivateNewYearMode();
-            if (!isValentineDay) restoreIcons();
+            if (!isValentineDay || !isEasterWeek) { restoreIcons();
+            }
         }
 
-        if (isValentineDay) applyIcons(valentineIcons, userData);
+        if (isValentineDay) {
+          applyIcons(valentineIcons, userData);
+        }
+        if (isEasterWeek) {
+        applyIcons(easterIcons, userData);
+        }
         // 🔹 Аватар
 
 
