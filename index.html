@@ -2985,8 +2985,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isValentine) {
     applyIcons(valentineIcons);
   }
-  const isEaster = (month === 4 && day >= 10) ||
-    (month === 4 && day <= 25);
+  const isEaster = (month === 4 && day >= 10  && day <= 25);
   // 🔔 Easter egg по потрійному кліку на логотип
   if (isEaster) {
     applyIcons(easterIcons);
@@ -3132,11 +3131,11 @@ const halloweenIcons = {
   "register-link": "🕸",
   "logout-link": "🚪",
   "auth-link": "🚪",
-  "smart-post": "👻<span>Дописи</span>",
-  "smart-video": "🦇<span>Відео</span>",
-  "smart-settings": "🧪<span>Налаштування</span>",
-  "": "👻<span>Дописи</span>",
-  "video": "🦇<span>Відео</span>",
+  "smart-post": `👻<span data-i18n="post">Дописи</span>`,
+  "smart-video": `🦇<span data-i18n="video">Відео</span>`,
+  "smart-settings": `🧪<span data-i18n="settings">Налаштування</span>`,
+  "post": `👻<span data-i18n="post">Дописи</span>`,
+  "video": `🦇<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🎃</i>`,
   "plus-desktop-button": "🎃"
 };
@@ -3146,11 +3145,11 @@ const newyearIcons = {
   "register-link": "⛄",
   "logout-link": "🚪",
   "auth-link": "🚪",
-  "smart-post": "❄️<span>Дописи</span>",
-  "smart-video": "🎬<span>Відео</span>",
-  "smart-settings": "🎁<span>Налаштування</span>",
-  "post": "❄️<span>Дописи</span>",
-  "video": "🎬<span>Відео</span>",
+  "smart-post": `❄️<span data-i18n="post">Дописи</span>`,
+  "smart-video": `🎬<span data-i18n="video">Відео</span>`,
+  "smart-settings": `🎁<span data-i18n="settings">Налаштування</span>`,
+  "post": `❄️<span data-i18n="post">Дописи</span>`,
+  "video": `🎬<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🎄</i>`,
   "plus-desktop-button": "🎄"
 };
@@ -3160,11 +3159,11 @@ const valentineIcons = {
   "register-link": "💖",
   "logout-link": "🚪",
   "auth-link": "💘",
-  "smart-post": "💌<span>Дописи</span>",
-  "smart-video": "💞<span>Відео</span>",
-  "smart-settings": "💌<span>Налаштування</span>",
-  "post": "💌<span>Дописи</span>",
-  "video": "💞<span>Відео</span>",
+  "smart-post": `💌<span data-i18n="post">Дописи</span>`,
+  "smart-video": `💞<span data-i18n="video">Відео</span>`,
+  "smart-settings": `💌<span data-i18n="settings">Налаштування</span>`,
+  "post": `💌<span data-i18n="post">Дописи</span>`,
+  "video": `💞<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">💝</i>`,
   "plus-desktop-button": "💝"
 };
@@ -3174,11 +3173,11 @@ const easterIcons = {
   "register-link": "🥚",
   "logout-link": "🚪",
   "auth-link": "🐰",
-  "smart-post": "🌸<span>Дописи</span>",
-  "smart-video": "🐥<span>Відео</span>",
-  "smart-settings": "🐣<span>Налаштування</span>",
-  "post": "🌸<span>Дописи</span>",
-  "video": "🐥<span>Відео</span>",
+  "smart-post": `🌸<span data-i18n="post">Дописи</span>`,
+  "smart-video": `🐥<span data-i18n="video">Відео</span>`,
+  "smart-settings": `🐣<span data-i18n="settings">Налаштування</span>`,
+  "post": `🌸<span data-i18n="post">Дописи</span>`,
+  "video": `🐥<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🧺</i>`,
   "plus-desktop-button": "🧺"
 };
@@ -3188,11 +3187,11 @@ const vyshyvankaIcons = {
   "register-link": "🪡",
   "logout-link": "🚪",
   "auth-link": "🧶",
-  "smart-post": "🪢<span>Дописи</span>",
-  "smart-video": "📽️<span>Відео</span>",
-  "smart-settings": "🧵🪡<span>Налаштування</span>",
-  "post": "🪢<span>Дописи</span>",
-  "video": "📽️<span>Відео</span>",
+  "smart-post": `🪢<span data-i18n="post">Дописи</span>`,
+  "smart-video": `📽️<span data-i18n="video">Відео</span>`,
+  "smart-settings": `🧵🪡<span data-i18n="settings">Налаштування</span>`,
+  "post": `🪢<span data-i18n="post">Дописи</span>`,
+  "video": `📽️<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🧿</i>`,
   "plus-desktop-button": "🧿"
 };
@@ -3202,11 +3201,11 @@ const independenceIcons = {
   "register-link": "💙💛",
   "logout-link": "🚪",
   "auth-link": "🕊️",
-  "smart-post": "📝<span>Дописи</span>",
-  "smart-video": "📹<span>Відео</span>",
-  "smart-settings": "💙💛🕊️<span>Налаштування</span>",
-  "post": "📝<span>Дописи</span>",
-  "video": "📹<span>Відео</span>",
+  "smart-post": `📝<span data-i18n="post">Дописи</span>`,
+  "smart-video": `📹<span data-i18n="video">Відео</span>`,
+  "smart-settings": `💙💛🕊️<span data-i18n="settings">Налаштування</span>`,
+  "post": `📝<span data-i18n="post">Дописи</span>`,
+  "video": `📹<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🌾</i>`,
   "plus-desktop-button": "🌾"
 };
@@ -5303,7 +5302,7 @@ if (age !== null) {
 
         const isHalloween = m === 10 && (d === 30 || d === 31);
         const isValentineDay = m === 2 && (d === 13 || d === 14);
-        const isEasterWeek = (m === 4 && d >= 10) || (m === 4 && d <= 25);
+        const isEasterWeek = (m === 4 && d >= 10  && d <= 25);
         const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
 
         if (isHalloween) {
@@ -5318,8 +5317,8 @@ if (age !== null) {
         } else {
             deactivateGirland();
             deactivateNewYearMode();
-            if (!isValentineDay || !isEasterWeek) { restoreIcons();
-            }
+            if (!isValentineDay) restoreIcons();
+            if (!isEasterWeek) restoreIcons();
         }
 
         if (isValentineDay) {
