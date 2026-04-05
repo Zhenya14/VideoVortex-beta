@@ -2357,9 +2357,8 @@ text-decoration: none;
       <button id="add"><i class="material-icons">add</i></button>
       <div id="upload">
         <input type="file" id="zip-file" accept=".zip">
-<input type="password" id="zip-password" placeholder="Пароль">
 
-<button onclick="encryptAndUpload()">Зашифрувати і завантажити</button>
+<button onclick="uploadArchive()">Зашифрувати і завантажити</button>
       </div>
       <div id="secure-files"></div>
       </div>
@@ -5112,115 +5111,78 @@ async function uploadArchive() {
     return;
   }
 
-
-  const url = await ref.getDownloadURL();
-
-  await firebase.database().ref("secureFiles").push({
-    url: url,
-    name: file.name,
-    createdAt: Date.now()
-  });
-
-  alert("Зашифровано і завантажено!");
-}
-async function decryptFile(file, password) {
-  const buffer = await file.arrayBuffer();
-  const data = new Uint8Array(buffer);
-
-  // ❗ перевірка
-  if (data.length < 28) {
-    alert("Файл пошкоджений");
-    return null;
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("Користувач не авторизований");
+    return;
   }
 
-  const salt = data.slice(0, 16);
-  const iv = data.slice(16, 28);
-  const encrypted = data.slice(28);
+  const uid = user.uid;
 
-  console.log("Salt:", salt.length);
-  console.log("IV:", iv.length);
-  console.log("Encrypted:", encrypted.length);
-
-  const key = await getKeyFromPassword(password, salt);
+  // 🔥 Upload у Firebase Storage
+  const storageRef = firebase.storage().ref(
+    `archives/${Date.now()}_${file.name}`
+  );
 
   try {
-    const decrypted = await crypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv: iv
-      },
-      key,
-      encrypted
-    );
+    await storageRef.put(file);
+    const url = await storageRef.getDownloadURL();
 
-    return new Blob([decrypted], { type: "application/zip" });
+    // 🔥 Запис у Realtime Database
+    await firebase.database().ref("users/" + uid + "/archive").push({
+      url,
+      name: file.name,
+      createdAt: Date.now(),
+      uid
+    });
 
-  } catch (e) {
-    console.error("Decrypt error:", e);
-    alert("Неправильний пароль або файл пошкоджений");
-    return null;
-  }
-}
-async function downloadAndDecrypt(url, password) {
-  try {
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      alert("Помилка завантаження файлу");
-      return;
-    }
-
-    // ❗ arrayBuffer замість blob
-    const buffer = await res.arrayBuffer();
-    const file = new Blob([buffer]);
-
-    console.log("Downloaded size:", file.size);
-
-    const decryptedBlob = await decryptFile(file, password);
-
-    if (!decryptedBlob) return;
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(decryptedBlob);
-    link.download = "archive.zip";
-    link.click();
-
+    alert("Зашифровано і завантажено!");
   } catch (e) {
     console.error(e);
-    alert("Помилка при завантаженні");
+    alert("Помилка завантаження" + e.message);
   }
 }
-async function loadSecureFiles() {
 
+async function loadSecureFiles() {
   const container = document.getElementById("secure-files");
   container.innerHTML = "";
 
-  const snapshot = await firebase.database().ref("secureFiles").once("value");
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
+  const uid = user.uid;
+
+
+const snapshot = await firebase
+    .database()
+    .ref("users/" + uid + "/archive")
+    .limitToLast(50)
+    .once("value");
+
+  if (!snapshot.exists()) {
+  container.textContent = "Немає опублікованих архівів";
+  return;
+}
   snapshot.forEach(child => {
     const data = child.val();
-
+    const key = child.key;
+    
     const item = document.createElement("div");
     item.classList.add("secure-item");
 
     item.innerHTML = `
-      <b>${data.name}</b><br>
-      <input type="password" placeholder="Пароль" class="pass-input">
-      <button>🔓 Відкрити</button>
+      <b>${data.name || "Без назви"}</b><br>
+      <button class="open-btn">🔓 Відкрити</button>
     `;
-
-    const button = item.querySelector("button");
-    const input = item.querySelector(".pass-input");
+    const button = item.querySelector(".open-btn");
 
     button.onclick = async () => {
-      const password = input.value;
-
-      if (!password) {
-        alert("Введи пароль");
+      // 🔒 базова перевірка доступу
+      if (data.uid !== uid) {
+        alert("Нема доступу");
         return;
       }
-
-      await downloadAndDecrypt(data.url, password);
+      window.location.href = data.url;
     };
 
     container.appendChild(item);
