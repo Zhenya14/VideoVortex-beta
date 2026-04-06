@@ -2540,8 +2540,9 @@ function closeNotificationAIModal() {
   notificationAI.style.display = "none";
 }
 async function generateDescription() {
-  const textarea = document.getElementById("video-title");
-  const text = textarea.value?.trim();
+  const textTitle = document.getElementById("video-title");
+  const description = document.getElementById("video-description");
+  const text = textTitle.value?.trim();
 
   if (!text) {
       showNotificationAIModal();
@@ -2549,7 +2550,7 @@ async function generateDescription() {
     return;
   }
 
-  textarea.value = "⏳ Генерується...";
+ description.value = "⏳ Генерується...";
 
   let response;
 
@@ -2566,7 +2567,7 @@ async function generateDescription() {
     );
   } catch (networkError) {
     console.error("NETWORK ERROR:", networkError);
-    textarea.value = "❌ Network error (CORS / function down)";
+    description.value = "❌ Network error (CORS / function down)";
     return;
   }
 
@@ -2578,13 +2579,13 @@ async function generateDescription() {
     data = JSON.parse(raw);
   } catch (e) {
     console.error("NON-JSON RESPONSE:", raw);
-    textarea.value = "❌ Invalid server response";
+    description.value = "❌ Invalid server response";
     return;
   }
 
   if (!response.ok) {
     console.error("SERVER ERROR:", data);
-    textarea.value = "❌ Server error: " + (data.error || raw);
+    description.value = "❌ Server error: " + (data.error || raw);
     return;
   }
 
@@ -2594,7 +2595,7 @@ async function generateDescription() {
     return;
   }
 
-  textarea.value = data.result;
+  description.value = data.result;
 }
 </script>
 <script defer>
