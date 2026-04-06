@@ -393,7 +393,7 @@ opacity:0.7;
   align-items: center;
   animation: fadeIn 0.3s ease;
 }
-#notification-modal {
+#notification-modal, #notification-ai-modal {
   display: none;
   position: fixed;
   z-index: 100000000000;
@@ -2033,6 +2033,14 @@ text-decoration: none;
     <button id="agree-btn" onclick="acceptRulesUpdate()">Зрозуміло</button>
   </div>
 </div>
+<div id="notification-ai-modal" class="ios-notification-modal">
+  <div class="ios-modal-content">
+    <h2>VideoVortex</h2>
+    <p id="message"></p>
+    <div class="modal-divider"></div>
+    <button id="agree-btn" onclick="closeNotificationAIModal()">ОК</button>
+  </div>
+  </div>
 <div id="notification-modal" class="ios-notification-modal">
   <div class="ios-modal-content">
     <h2>VideoVortex</h2>
@@ -2522,13 +2530,22 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 <script>
-// /api/generate.js
+  const messageNotification = document.getElementById("message");
+  const notificationAI = document.getElementById("notification-ai-modal");
+                  
+function showNotificationAIModal() {
+  notificationAI.style.display = "flex";
+}
+function closeNotificationAIModal() {
+  notificationAI.style.display = "none";
+}
 async function generateDescription() {
-  const textarea = document.getElementById("video-description");
+  const textarea = document.getElementById("video-title");
   const text = textarea.value?.trim();
 
   if (!text) {
-    alert("Введи опис");
+      showNotificationAIModal();
+    messageNotification.innerHTML = "Введи назву.";
     return;
   }
 
