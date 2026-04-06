@@ -2525,7 +2525,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // /api/generate.js
 async function generateDescription() {
   const textarea = document.getElementById("video-description");
-  const text = textarea.value.trim();
+  const text = textarea.value?.trim();
 
   if (!text) {
     alert("Введи опис");
@@ -2534,8 +2534,10 @@ async function generateDescription() {
 
   textarea.value = "⏳ Генерується...";
 
+  let response;
+
   try {
-    const response = await fetch(
+    response = await fetch(
       "https://us-central1-videovortex-235cd.cloudfunctions.net/generateDescription",
       {
         method: "POST",
@@ -2545,19 +2547,37 @@ async function generateDescription() {
         body: JSON.stringify({ text }),
       }
     );
+  } catch (networkError) {
+    console.error("NETWORK ERROR:", networkError);
+    textarea.value = "❌ Network error (CORS / function down)";
+    return;
+  }
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errText}`);
-    }
+  // 🔴 якщо HTTP помилка (400/500)
+  const raw = await response.text();
 
-    const data = await response.json();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    console.error("NON-JSON RESPONSE:", raw);
+    textarea.value = "❌ Invalid server response";
+    return;
+  }
 
-    textarea.value = data?.result || "❌ Порожня відповідь від сервера";
-  } catch (err) {
-  console.error("FULL ERROR:", err);
-  textarea.value = "❌ " + err.message;
-}
+  if (!response.ok) {
+    console.error("SERVER ERROR:", data);
+    textarea.value = "❌ Server error: " + (data.error || raw);
+    return;
+  }
+
+  if (!data?.result) {
+    console.error("BAD RESPONSE:", data);
+    textarea.value = "❌ Empty AI response";
+    return;
+  }
+
+  textarea.value = data.result;
 }
 </script>
 <script defer>
