@@ -3581,7 +3581,8 @@ document.getElementById("smart-settings").onclick = function() {
         }
 
             function blockScreenForVerification() {
-    document.body.innerHTML = `
+              const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
                 <h1>Підтвердьте вашу електронну пошту</h1>
                 <p>Ми надіслали вам лист на пошту. Підтвердіть свій акаунт! Якщо не бачите, то перевірте папку "Спам".</p>
                 <button style="
@@ -3602,6 +3603,7 @@ document.getElementById("smart-settings").onclick = function() {
             </div>
         </div>
     `;
+    document.body.replaceChildren(wrapper);
 }
 
 // Надіслати лист повторно
