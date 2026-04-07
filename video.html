@@ -1867,11 +1867,8 @@ auth.onAuthStateChanged(async user => {
     currentUid = user.uid;
     currentUserEmail = user.email;
     listenUserReaction();
-    await initPush();
     backfillAuthorUidForUser();
-    await requestNotifyPermission();
-
-    startCommentNotifications();
+    
     database.ref("users/" + currentUid).once("value").then(async snapshot => {
       const userData = snapshot.val();
       const birthStr = userData?.birthdate;
