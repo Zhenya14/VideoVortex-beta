@@ -2598,6 +2598,7 @@ async function generateDescription() {
   description.value = data.result;
 }
 </script>
+<script src="notification.js"></script>
 <script defer>
   let APP_VERSION = "5.2.0"; // Поточна версія VideoVortex
  function clearLocalStorageExceptAuth() {
@@ -3581,28 +3582,97 @@ document.getElementById("smart-settings").onclick = function() {
         }
 
             function blockScreenForVerification() {
-              const wrapper = document.createElement("div");
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("wrapper");
+
     wrapper.innerHTML = `
-                <h1>Підтвердьте вашу електронну пошту</h1>
-                <p>Ми надіслали вам лист на пошту. Підтвердіть свій акаунт! Якщо не бачите, то перевірте папку "Спам".</p>
-                <button style="
-                    margin-top: 20px;
-                    padding: 10px 20px;
-                    font-size: 16px;
-                    border: none;
-                    border-radius: 5px;
-                    background: #ffffff;
-                    color: #ff7e5f;
-                    cursor: pointer;
-                " onclick="resendVerification()">Надіслати лист ще раз</button>
-<button id="delete-account" onclick="deleteAccount()"><i class="material-icons">person_remove</i><span style="margin-left: 5px;">Видалити акаунт</span></button>
-<a href="#" id="logout-link-verification" onclick="logout()">
-                <i class="material-icons">logout</i><span class="icon-text">Вийти</span>
-</a>
-                <p style="margin-top: 20px;">Після підтвердження просто зачекайте або перезавантажте сторінку.</p>
-            </div>
-        </div>
+        <style>
+            .wrapper {
+color: #e9ecf1;
+  font-family: Inter, Segoe UI, Roboto, Arial;
+  margin: 0;
+  background: radial-gradient(ellipse at top, #0b0f17, #05060a);
+    line-height: 1.6;
+text-align: center;
+    padding: 0 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+            }
+
+            .wrapper button {
+                all: unset;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+
+                padding: 12px 28px;
+                border-radius: 999px;
+
+                background: #0b0b0b;
+                color: white;
+                border: 2px solid #2a2a2a;
+
+                cursor: pointer;
+
+                transition: 0.25s ease;
+            }
+
+            .wrapper button:hover {
+                border-color: #f472b6;
+                box-shadow: 0 0 18px rgba(244, 114, 182, .65);
+                transform: translateY(-2px);
+            }
+
+            .wrapper button:active {
+                border-color: #06b6d4;
+                transform: scale(0.96);
+            }
+
+            #delete-account {
+                color: #ff4d4d;
+                border-color: #3a1a1a;
+            }
+
+            #logout-link-verification {
+                color: #aaa;
+                text-decoration: none;
+                display: inline-flex;
+                gap: 6px;
+            }
+
+            #logout-link-verification:hover {
+                color: white;
+            }
+        </style>
+
+        <h1>Підтвердьте вашу електронну пошту</h1>
+
+        <p>
+            Ми надіслали вам лист на пошту.
+            Перевірте також "Спам".
+        </p>
+
+        <button onclick="resendVerification()">
+            Надіслати лист ще раз
+        </button>
+
+        <button id="delete-account" onclick="deleteAccount()">
+            <i class="material-icons">person_remove</i>
+            <span style="margin-left: 5px;">Видалити акаунт</span>
+        </button>
+
+        <a href="#" id="logout-link-verification" onclick="logout()">
+            <i class="material-icons">logout</i>
+            <span class="icon-text">Вийти</span>
+        </a>
+
+        <p style="margin-top: 20px;">
+            Після підтвердження просто зачекайте або перезавантажте сторінку.
+        </p>
     `;
+
     document.body.replaceChildren(wrapper);
 }
 
@@ -5246,6 +5316,9 @@ auth.onAuthStateChanged(async (user) => {
     loadChannelSelect();
     loadSecureFiles();
     loadLibrary(user);
+    await requestNotifyPermission();
+
+    startCommentNotifications();
     cleanupExpiredVideos();
     updateVideosAuthor();
     updatePhotosAuthor();
