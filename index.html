@@ -5315,6 +5315,7 @@ auth.onAuthStateChanged(async (user) => {
     loadPhotoChannelSelect();
     loadChannelSelect();
     loadSecureFiles();
+    await initPush();
     loadLibrary(user);
     await requestNotifyPermission();
 
