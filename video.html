@@ -1204,7 +1204,25 @@ async function decryptText(cipher, key) {
     const text = dec.decode(arr);
     return text.replace(key, ''); // віднімаємо ключ
 }
+function canNotify() {
+    return Notification.permission === "granted";
+}
 
+async function requestNotifyPermission() {
+    if (Notification.permission === "default") {
+        return await Notification.requestPermission();
+    }
+    return Notification.permission;
+}
+
+function notifyVideoOwner(commentText, authorName) {
+    if (!canNotify()) return;
+
+    new Notification("Новий коментар 💬", {
+        body: `${authorName}: ${commentText}`,
+        icon: "/icon.png"
+    });
+}
 async function uploadComment(videoKey, videoOwnerEmail) {
     const commentInput = document.getElementById(`comment-input-${videoKey}`);
     const commentText = commentInput.value.trim();
@@ -1247,6 +1265,9 @@ const publishDate = `${day}.${month}.${year}`; // Наприклад, "02.03.202
         videoKey: videoKey
     });
 
+if (videoOwnerEmail === currentUserEmail) return;
+
+notifyVideoOwner(commentText, commentAuthor);
     // Очищуємо поле та оновлюємо коментарі
     commentInput.value = "";
     await loadComments(videoKey, videoOwnerEmail);
