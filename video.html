@@ -1213,11 +1213,13 @@ async function uploadComment(videoKey, videoOwnerEmail) {
     const isPrivate = document.getElementById(`private-comment-${videoKey}`).checked;
 
     if (!commentText) {
-    applyTranslations();
-    message.innerHTML = "Коментар не може бути порожнім.";
-    return
-}
+        applyTranslations();
+        message.innerHTML = "Коментар не може бути порожнім.";
+        return;
+    }
+
     let commentData = commentText;
+
     if (isPrivate) {
         const videoKeyLocal = getVideoKey(videoKey);
         commentData = await encryptText(commentText);
@@ -1225,30 +1227,66 @@ async function uploadComment(videoKey, videoOwnerEmail) {
 
     const uid = firebase.auth().currentUser.uid;
 
-    // Беремо дані користувача з Firebase
+    // Дані користувача
     const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val();
     const commentAuthor = `${userData.name} ${userData.supername}`;
 
-const now = new Date();
-const day = now.getDate().toString().padStart(2, '0');
-const month = (now.getMonth() + 1).toString().padStart(2, '0');
-const year = now.getFullYear();
+    // Дата
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const year = now.getFullYear();
+    const publishDate = `${day}.${month}.${year}`;
 
-const publishDate = `${day}.${month}.${year}`; // Наприклад, "02.03.2026"
-
-    // Додаємо коментар у базу
+    // 🔥 1. ЗБЕРІГАЄМО КОМЕНТ
     await database.ref("comments").push({
         comment: commentData,
         email: currentUserEmail,
         commentAuthor: commentAuthor,
-        authorUid: uid,   // ⭐ ГОЛОВНЕ
+        authorUid: uid,
         videoOwner: videoOwnerEmail,
         isPrivate: isPrivate,
-        publishDate: new Date().toLocaleDateString(),
+        publishDate: publishDate,
         videoKey: videoKey
     });
-    // Очищуємо поле та оновлюємо коментарі
+
+    // 🔥 2. ВІДПРАВКА PUSH
+    try {
+        const usersSnap = await database
+            .ref("users")
+            .orderByChild("email")
+            .equalTo(videoOwnerEmail)
+            .once("value");
+
+        usersSnap.forEach(user => {
+            const token = user.val().fcmToken;
+
+            // не відправляємо собі
+            if (token && user.val().email !== currentUserEmail) {
+
+                fetch("https://fcm.googleapis.com/fcm/send", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "key=SERVER_KEY"
+                    },
+                    body: JSON.stringify({
+                        to: token,
+                        notification: {
+                            title: "Новий коментар 💬",
+                            body: `${commentAuthor}: ${commentText}`
+                        }
+                    })
+                });
+
+            }
+        });
+    } catch (e) {
+        console.error("Push error:", e);
+    }
+
+    // 🔥 3. ОНОВЛЕННЯ UI
     commentInput.value = "";
     await loadComments(videoKey, videoOwnerEmail);
 }
@@ -1829,6 +1867,7 @@ auth.onAuthStateChanged(async user => {
     currentUid = user.uid;
     currentUserEmail = user.email;
     listenUserReaction();
+    await initPush();
     backfillAuthorUidForUser();
     await requestNotifyPermission();
 
