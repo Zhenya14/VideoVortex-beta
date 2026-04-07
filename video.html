@@ -1824,7 +1824,7 @@ function updateReactionUI() {
   if (currentReaction === "dislike") dislikeBtn.classList.add("disliked");
 }
 /* ---------- AUTH ---------- */
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async user => {
   if (user) {
     currentUid = user.uid;
     currentUserEmail = user.email;
