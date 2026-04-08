@@ -2146,7 +2146,7 @@ text-decoration: none;
             <h2 data-i18n="label-video">Завантажити відео</h2>
             <input type="text" id="video-title" placeholder="Назва відео">
             <textarea id="video-description" placeholder="Опис відео"></textarea>
-            <button onclick="generateDescription()">🤖 Згенерувати опис</button>
+            <button onclick="generateDescription()">🤖 Згенерувати опис<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
   <label for="video-file" class="video-label">
   <i class="material-icons">cloud_upload</i> Завантажити відео
@@ -2162,12 +2162,13 @@ text-decoration: none;
 <span>Вимкнути коментарі <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
      <br>
      <p style="text-align: center;">Налаштування приватності:</p>
-     <label>
-  <input type="checkbox" id="auto-delete-24h">
-  Видалити через 24 години
-</label>
-   <span>Приватне відео</span><label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
-<span>Заборонити збереження відео</span><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
+      <span>Видалити через 24 години <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>
+     <label class="switch" for="auto-delete-24h">
+  <input type="checkbox" id="auto-delete-24h"><span class="slider round"></span></label>
+  <br>
+   <span>Приватне відео<label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
+   <br>
+<span>Заборонити збереження відео<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
     <br>
         <span>Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
@@ -4112,7 +4113,7 @@ const brEdit = document.createElement("br");
             const brArchive = document.createElement("br");
            const archive = document.createElement("button");
            archive.classList.add("archive");
-           archive.innerHTML = `<i class="material-icons">archive</i><p data-i18n="archive">Архів</p>`;
+           archive.innerHTML = `<i class="material-icons">archive</i><p data-i18n="archive">Архів<sup class="badge-new" data-i18n="new">NEW</sup></p>`;
            archive.onclick = () => {
              showArchiveModal();
            };
