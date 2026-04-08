@@ -385,7 +385,7 @@ opacity:0.7;
 .ios-modal {
   display: none;
   position: fixed;
-  z-index: 9999;
+  z-index: 999999;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
@@ -396,13 +396,24 @@ opacity:0.7;
 #notification-modal, #notification-ai-modal {
   display: none;
   position: fixed;
-  z-index: 100000000000;
+  z-index: 999999;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
   justify-content: center;
   align-items: center;
   animation: fadeIn 0.3s ease;
+}
+
+.ios-modal-window {
+  width: 90%;
+  max-width: 380px;
+  background: rgba(30,30,30,0.85);
+  border-radius: 20px;
+  overflow: hidden;
+  color: white;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  animation: scaleIn 0.25s ease;
 }
 .ny-popup {
   position: fixed;
@@ -462,7 +473,6 @@ max-width: 420px;
   text-align: center;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
   animation: popIn 0.4s ease;
-  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .ios-modal-content h2 {
@@ -478,25 +488,23 @@ max-width: 420px;
   line-height: 1.4em;
 }
 
-.modal-divider {
-  width: 100%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.25);
-}
 
 .ios-modal-content button {
   background: transparent;
-  color: #007aff;
-  border: none;
+ border: 1px solid transparent; /* ВАЖЛИВО */
 padding: 14px;
-  border-radius: 0 0 20px 20px;
-margin: 0;
+  border-radius: 20px;
+margin: 10px;
   font-size: 17px;
   font-weight: 600;
-  width: 100%;
+  width: 95%;
   height: 100%;
   cursor: pointer;
   transition: background 0.3s;
+  border-radius: 60px;
+  margin-top: 10px;
+  color: white;
+  background-color: #4a4a4a;
 }
 /* 🎄 На Новий рік ховаємо всі Material s */
 /* Новорічні стилі */
@@ -531,11 +539,15 @@ body.newyear {
   100% { transform: translateY(110vh) translateX(30vw); opacity: 0; }
 }
 .ios-modal-content button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #f472b6;
+  box-shadow: 0 0 15px #f472b6;
+  transform: translateY(-2px);
 }
 
 .ios-modal-content button:active {
-  background: rgba(255, 255, 255, 0.2);
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px #06b6d4;
+  transform: scale(0.95);
 }
 
 @keyframes popIn {
@@ -827,12 +839,16 @@ transform: scale(0.95); /* легке стиснення */
 /* BUTTONS */
 .settings-item {
   width: 100%;
-  padding: 10px;
   margin-top: 8px;
   background: #222;
   border: none;
   color: white;
-  border-radius: 10px;
+  border-radius: 42px;
+  background: rgba(0,0,0,0.25);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 8px 12px;
+  transition: .2s;
   text-align: left;
   cursor: pointer;
 }
@@ -847,13 +863,33 @@ transform: scale(0.95); /* легке стиснення */
   border-radius: 10px;
 }
 .settings-item:hover {
-  background: #2a2a2a;
+border-color: #f472b6;
+  box-shadow: 0 0 18px rgba(244, 114, 182, .65);
+  transform: translateY(-2px);
+}
+
+/* ❇️ при кліку */
+.settings-item:active {
+  border-color: #06b6d4;
+  box-shadow: 0 0 12px rgba(6, 182, 212, .75);
+  transform: scale(0.96);
 }
 
 .settings-item.danger {
   color: #ff453a;
+  border: 1px solid rgba(255,255,255,0.18);
 }
-
+.settings-item.danger:hover {
+  border-color: #ff453a;
+  box-shadow: 0 0 18px #ff453a;
+  transform: translateY(-2px);
+}
+.settings-item.danger:active {
+  
+border-color: #ff453a;
+  box-shadow: 0 0 12px rgba(6, 182, 212, .75);
+  transform: scale(0.96);
+}
 /* TOGGLE */
 .settings-toggle {
   display: flex;
@@ -2327,7 +2363,6 @@ text-decoration: none;
             <p id="user-info"></p>
 <p id="view">Дата народження: Завантаження...</p>
         <div id="requests-container"></div>
-<button id="delete-account" onclick="deleteAccount()"><i class="material-icons">person_remove</i><span style="margin-left: 5px;">Видалити акаунт</span></button>
         <label>
        <span>Показувати відео позначенні як NSFW <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch">
           <input type="checkbox" id="show-nsfw-videos"><span id="slidernsfw" class="slider round"></span></label>
@@ -2407,9 +2442,9 @@ text-decoration: none;
     <a href="#" id="post" onclick="post()">
         <i class="material-icons">photo</i><span style="margin-left: 5px">Дописи</span>
     </a>
-    <a href="#" id="account-link">
-<i class="avatar" id="nav-avatar"></i><span>Ви</span>
-    </a>
+          <a href="#" id="settings" onclick="settings()">
+        <i class="material-icons">settings</i><span data-i18n="settings">Налаштування</span>
+        </a>
     <a href="#" id="video" onclick="video()">
         <i class="material-icons">movie</i><span style="margin-left: 5px">Відео</span>
     </a>
@@ -2478,22 +2513,22 @@ text-decoration: none;
   <div class="settings-card">
     <h3>Акаунт</h3>
 
-    <button class="settings-item"><i class="material-icons">edit</i>Редагувати профіль</button>
-    <button class="settings-item"><i class="material-icons">password</i>Змінити пароль</button>
-    <button class="settings-item danger"><i class="material-icons">logout</i>Вийти з акаунта</button>
+    <button class="settings-item" id="edit-profile"><i class="material-icons">edit</i>Редагувати профіль</button>
+    <button class="settings-item" style="display: none;"><i class="material-icons">password</i>Змінити пароль</button>
+    <button class="settings-item danger" id="logout-danger-link"><i class="material-icons">logout</i>Вийти з акаунта</button>
   </div>
 
   <!-- PRIVACY -->
   <div class="settings-card">
     <h3>Приватність</h3>
 
-    <div class="settings-toggle">
+    <div class="settings-toggle" style="display: none;">
       <span><i class="material-icons">lock</i>Приватний профіль</span>
       <input type="checkbox" id="privateProfile">
     </div>
 
     <button class="settings-item" style="display: none;">Спадкоємець акаунта</button>
-    <button class="settings-item"><i class="material-icons">block</i>Заблоковані користувачі</button>
+    <button class="settings-item" id="blocked-button"><i class="material-icons">block</i>Заблоковані користувачі</button>
   </div>
 
   <!-- VIDEO -->
@@ -2515,7 +2550,7 @@ text-decoration: none;
   <div class="settings-card danger-zone">
     <h3>Небезпечна зона</h3>
 
-    <button class="settings-item danger"><i class="material-icons">person_remove</i>
+    <button class="settings-item danger" onclick="deleteAccount()"><i class="material-icons">person_remove</i>
       Видалити акаунт
     </button>
   </div>
@@ -3171,6 +3206,7 @@ const halloweenIcons = {
   "smart-post": `👻<span data-i18n="post">Дописи</span>`,
   "smart-video": `🦇<span data-i18n="video">Відео</span>`,
   "smart-settings": `🧪<span data-i18n="settings">Налаштування</span>`,
+  "settings": `🧪<span data-i18n="settings">Налаштування</span>`,
   "post": `👻<span data-i18n="post">Дописи</span>`,
   "video": `🦇<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🎃</i>`,
@@ -3185,6 +3221,7 @@ const newyearIcons = {
   "smart-post": `❄️<span data-i18n="post">Дописи</span>`,
   "smart-video": `🎬<span data-i18n="video">Відео</span>`,
   "smart-settings": `🎁<span data-i18n="settings">Налаштування</span>`,
+    "settings": `🎁<span data-i18n="settings">Налаштування</span>`,
   "post": `❄️<span data-i18n="post">Дописи</span>`,
   "video": `🎬<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🎄</i>`,
@@ -3199,6 +3236,7 @@ const valentineIcons = {
   "smart-post": `💌<span data-i18n="post">Дописи</span>`,
   "smart-video": `💞<span data-i18n="video">Відео</span>`,
   "smart-settings": `💌<span data-i18n="settings">Налаштування</span>`,
+  "settings": `💌<span data-i18n="settings">Налаштування</span>`,
   "post": `💌<span data-i18n="post">Дописи</span>`,
   "video": `💞<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">💝</i>`,
@@ -3213,6 +3251,7 @@ const easterIcons = {
   "smart-post": `🌸<span data-i18n="post">Дописи</span>`,
   "smart-video": `🐥<span data-i18n="video">Відео</span>`,
   "smart-settings": `🐣<span data-i18n="settings">Налаштування</span>`,
+  "settings": `🐣<span data-i18n="settings">Налаштування</span>`,
   "post": `🌸<span data-i18n="post">Дописи</span>`,
   "video": `🐥<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🧺</i>`,
@@ -3227,6 +3266,7 @@ const vyshyvankaIcons = {
   "smart-post": `🪢<span data-i18n="post">Дописи</span>`,
   "smart-video": `📽️<span data-i18n="video">Відео</span>`,
   "smart-settings": `🧵🪡<span data-i18n="settings">Налаштування</span>`,
+    "settings": `🧵🪡<span data-i18n="settings">Налаштування</span>`,
   "post": `🪢<span data-i18n="post">Дописи</span>`,
   "video": `📽️<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🧿</i>`,
@@ -3241,6 +3281,7 @@ const independenceIcons = {
   "smart-post": `📝<span data-i18n="post">Дописи</span>`,
   "smart-video": `📹<span data-i18n="video">Відео</span>`,
   "smart-settings": `💙💛🕊️<span data-i18n="settings">Налаштування</span>`,
+  "settings": `💙💛🕊️<span data-i18n="settings">Налаштування</span>`,
   "post": `📝<span data-i18n="post">Дописи</span>`,
   "video": `📹<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🌾</i>`,
@@ -3554,9 +3595,16 @@ document.getElementById("smart-settings").onclick = function() {
           document.getElementById("smart-settings").classList.add("button-liquid-glass");
         document.querySelector(".settings-page").style.display = 'block';
         }
+        document.getElementById("settings").onclick = function() {
+           document.getElementById("video-container").style.display = 'none';
+           document.getElementById("library").style.display = 'none';
+           document.getElementById("photo-container").style.display = 'none';
+        document.querySelector(".settings-page").style.display = 'block';
+        }
         document.getElementById("account-desktop-link").onclick = function() {
           document.getElementById("video-container").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
+           document.querySelector(".settings-page").style.display = 'none';
            document.getElementById("library").style.display = 'flex';
         }
         document.getElementById("account-link").onclick = function() {
@@ -4061,16 +4109,6 @@ const brEdit = document.createElement("br");
            };
            authorInfo.appendChild(brArchive);
            authorInfo.appendChild(archive);
-           const brBlockedUsersBtn = document.createElement("br");
-            const blockedUsersBtn = document.createElement("button");
-            blockedUsersBtn.innerHTML = `<i class="material-icons">blocked</i><p data-i18n="blocked-users">Заблоковані користувачі</p>`;
-            blockedUsersBtn.onclick = () => {
-                const user = firebase.auth().currentUser;
-                if (!user) return alert("Спочатку увійдіть у акаунт");
-                showBlockedUsersModal();
-            };
-            authorInfo.appendChild(brBlockedUsersBtn);
-            authorInfo.appendChild(blockedUsersBtn);
 
             // ▸ Контейнер для історії
             const historyInfo = document.createElement("div");
@@ -4138,6 +4176,14 @@ const brEdit = document.createElement("br");
         })
         .catch(err => console.error("Помилка завантаження даних користувача:", err));
 }
+const edit = document.getElementById("edit-profile");
+edit.onclick = showAccountModal;
+const blockedUsersBtn = document.getElementById("blocked-button");
+blockedUsersBtn.onclick = () => {
+                const user = firebase.auth().currentUser;
+                if (!user) return alert("Спочатку увійдіть у акаунт");
+                showBlockedUsersModal();
+            };
 function showBlockedUsersModal() {
   const modal = document.getElementById("blocked-users-modal");
   const list = document.getElementById("blockedUsersList");
@@ -5690,6 +5736,13 @@ async function updateVideosAuthor() {
     console.error("Помилка оновлення:", err);
   }
 }
+document.getElementById("logout-danger-link").onclick = function() {
+            auth.signOut().then(() => {
+              showNotificationModal();
+                message.innerHTML = "Ви вийшли з акаунту.";
+                location.reload();
+            });
+        };
 document.getElementById("logout-link").onclick = function() {
             auth.signOut().then(() => {
               showNotificationModal();
