@@ -302,76 +302,167 @@ input:checked + .slider:before {
   padding: 5px 10px;
 }
 .march8-banner{
-position:fixed;
-top:-120px;
-left:0;
-width:100%;
-display:flex;
-justify-content:center;
-z-index:9999;
-transition:0.4s;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 9999;
+
+  transition: transform 0.4s ease;
+  transform: translateY(-110%);
+  will-change: transform;
 }
 
 .march8-banner.show{
-top:0;
+  transform: translateY(0);
 }
 
 .march8-box{
-background:linear-gradient(90deg,#ff4da6,#ff80bf);
-color:white;
-padding:15px 20px;
-border-radius:0 0 12px 12px;
-font-size:16px;
-display:flex;
-gap:10px;
-align-items:center;
-box-shadow:0 6px 20px rgba(0,0,0,0.3);
+  background: linear-gradient(90deg,#ff4da6,#ff80bf);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 0 0 12px 12px;
+  font-size: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 .march8-box button{
-border:none;
-padding:6px 12px;
-border-radius:6px;
-cursor:pointer;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 #march8-upload{
-background:white;
-color:#ff4da6;
-font-weight:bold;
+  background: white;
+  color: #ff4da6;
+  font-weight: bold;
 }
 
 #march8-close{
-background:transparent;
-color:white;
-font-size:18px;
+  background: transparent;
+  color: white;
+  font-size: 18px;
 }
+
 #flowers-container{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-margin: 55px 0 0 0;
-pointer-events:none;
-overflow:hidden;
-z-index:999;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 999;
 }
+
 .flower{
-position:absolute;
-font-size:22px;
-animation:fall linear infinite;
+  position: absolute;
+  font-size: 22px;
+  top: -40px;
+  left: 0;
+  will-change: transform;
+  animation: fall linear infinite;
 }
 
 @keyframes fall{
-0%{
-transform:translateY(-50px);
-opacity:1;
+  0%{
+    transform: translateY(-50px);
+    opacity: 1;
+  }
+  100%{
+    transform: translateY(100vh);
+    opacity: 0.7;
+  }
 }
-100%{
-transform:translateY(100vh);
-opacity:0.7;
+.easter-banner{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 9999;
+
+  transition: transform 0.4s ease;
+  transform: translateY(-110%);
+  will-change: transform;
 }
+
+.easter-banner.show{
+  transform: translateY(0);
+}
+
+.easter-box {
+  background: linear-gradient(90deg, #a0c4ff, #ffc6ff, #caffbf);
+  background-size: 300% 300%;
+  animation: easterMove 6s ease infinite;
+
+  color: white;
+  padding: 15px 20px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+@keyframes easterMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.easter-box button{
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#easter-upload{
+  background: white;
+ color: #c77dff;
+  font-weight: bold;
+}
+
+#easter-close{
+  background: transparent;
+  color: white;
+  font-size: 18px;
+}
+
+#easter-container{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.easter{
+  position: absolute;
+  font-size: 22px;
+  top: -40px;
+  left: 0;
+  will-change: transform;
+  animation: fall linear infinite;
+}
+
+@keyframes fall{
+  0%{
+    transform: translateY(-50px);
+    opacity: 1;
+  }
+  100%{
+    transform: translateY(100vh);
+    opacity: 0.7;
+  }
+}
+
+html, body{
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 .downloads-list {
     font-size: 30px;
@@ -2093,11 +2184,19 @@ text-decoration: none;
 </div>
 <div id="march8-banner" class="march8-banner">
   <div class="march8-box">
-    🌸 З 8 Березня!  
-    Поділіться святковим відео 💐
+    <p data-i18n="march8-box">🌸 З 8 Березня!  
+    Поділіться святковим відео 💐</p>
 
-    <button id="march8-upload">📹 Опублікувати відео</button>
+    <button id="march8-upload" data-i18n="march8-upload">📹 Опублікувати відео</button>
     <button id="march8-close">✖</button>
+  </div>
+</div>
+<div id="easter-banner" class="raster-banner">
+  <div class="easter-box">
+    <p data-i18n="easter-box">🌸 Христос Воскрес! З Великоднем 🐣💐 Поділіться святковим відео</p>
+
+    <button id="easter-upload" data-i18n="easter-upload">📹 Опублікувати відео</button>
+    <button id="easter-close">✖</button>
   </div>
 </div>
 <div id="videoModal" class="ios-modal">
@@ -2314,6 +2413,7 @@ text-decoration: none;
 <div class="notification-popup" id="notification-popup">
 <p id="message-notification"></p></div>
 <div id="flowers-container"></div>
+<div id="easter-container"></div>
       <ul id="girland">
   <li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li>
 </ul>
@@ -2660,70 +2760,118 @@ async function generateDescription() {
         }
     });
 }
-function march8Banner(){
+function march8Banner() {
+  const d = new Date();
 
-const d = new Date();
-const day = d.getDate();
-const month = d.getMonth()+1;
+  if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
+  if (localStorage.getItem("march8banner2027")) return;
 
-if(day === 8 && month === 3){
+  const banner = document.getElementById("march8-banner");
+  if (!banner) return;
 
-if(!localStorage.getItem("march8banner")){
+  setTimeout(() => {
+    banner.classList.add("show");
+  }, 1500);
 
-const banner = document.getElementById("march8-banner");
+  localStorage.setItem("march8banner", "shown");
 
-setTimeout(()=>{
-banner.classList.add("show");
-},1500);
+  const closeBtn = document.getElementById("march8-close");
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      banner.classList.remove("show");
+    };
+  }
 
-localStorage.setItem("march8banner","shown");
-
-}
-
-}
-
+  const uploadBtn = document.getElementById("march8-upload");
+  if (uploadBtn) {
+    uploadBtn.onclick = () => {
+      const modal = document.getElementById("upload-modal");
+      if (modal) modal.style.display = "flex";
+    };
+  }
 }
 
 march8Banner();
 
-document.getElementById("march8-close").onclick = () =>{
-document.getElementById("march8-banner").classList.remove("show");
-};
+function flowersEffect() {
+  const d = new Date();
 
-document.getElementById("march8-upload").onclick = () =>{
+  if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
 
-// відкриває форму завантаження відео
-document.getElementById("upload-modal").style.display = "flex";
+  const container = document.getElementById("flowers-container");
+  if (!container) return;
 
-};
-function flowersEffect(){
+  setInterval(() => {
+    const flower = document.createElement("div");
+    flower.className = "flower";
+    flower.innerText = "🌸";
 
-const d = new Date();
+    flower.style.left = Math.random() * 100 + "vw";
+    flower.style.animationDuration = (3 + Math.random() * 4) + "s";
 
-if(d.getDate() === 8 && d.getMonth() === 2){
+    container.appendChild(flower);
 
-const container = document.getElementById("flowers-container");
-
-setInterval(()=>{
-
-const flower = document.createElement("div");
-flower.className = "flower";
-flower.innerText = "🌸";
-
-flower.style.left = Math.random()*100 + "vw";
-flower.style.animationDuration = 3 + Math.random()*4 + "s";
-
-container.appendChild(flower);
-
-setTimeout(()=>flower.remove(),7000);
-
-},300);
-
-}
-
+    setTimeout(() => flower.remove(), 8000);
+  }, 300);
 }
 
 flowersEffect();
+function easterBanner() {
+  const d = new Date();
+
+  if (!(d.getDate() === 12 && d.getMonth() === 3)) return;
+  if (localStorage.getItem("easterBanneranner")) return;
+
+  const banner = document.getElementById("easter-banner");
+  if (!banner) return;
+
+  setTimeout(() => {
+    banner.classList.add("show");
+  }, 1500);
+
+  localStorage.setItem("easterbnner", "shown");
+
+  const closeBtn = document.getElementById("easter-close");
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      banner.classList.remove("show");
+    };
+  }
+
+  const uploadBtn = document.getElementById("easter-upload");
+  if (uploadBtn) {
+    uploadBtn.onclick = () => {
+      const modal = document.getElementById("upload-modal");
+      if (modal) modal.style.display = "flex";
+    };
+  }
+}
+
+easterBanner();
+
+function eastersEffect() {
+  const d = new Date();
+
+  if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
+
+  const container = document.getElementById("easter-container");
+  if (!container) return;
+
+  setInterval(() => {
+    const easter = document.createElement("div");
+    easter.className = "easter";
+    easter.textContent = "🌸🐣";
+
+    easter.style.left = Math.random() * 100 + "vw";
+    easter.style.animationDuration = (3 + Math.random() * 4) + "s";
+
+    container.appendChild(easter);
+
+    setTimeout(() => easter.remove(), 8000);
+  }, 300);
+}
+
+eastersEffect();
 function checkUpdateButton() {
 
     const lastVersion = localStorage.getItem("lastUpdateVersion") || "5.0.1";
