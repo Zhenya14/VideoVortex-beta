@@ -481,7 +481,7 @@ function showModalBlocked() {
     const info = document.getElementById("blocked-information");
 
     const displayName = isHiddenAccount
-        ? "Акаунт не знайдено"
+        ? `"Акаунт не знайдено"`
         : `"${realUserName}"`;
 
     info.textContent = `Ви впевнені, що хочете заблокувати користувача ${displayName}?`;
