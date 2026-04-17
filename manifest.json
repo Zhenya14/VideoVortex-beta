@@ -1,7 +1,7 @@
 {
   "name": "VideoVortex beta",
   "short_name": "Vortex beta",
-  "description": "VideoVortex — незалежна платформа для відео без цензури",
+  "description": "VideoVortex — відеоплатформа з контролем приватності, каналами та архівами",
   "start_url": "/VideoVortex-beta/",
   "scope": "/VideoVortex-beta/",
   "display": "standalone",
