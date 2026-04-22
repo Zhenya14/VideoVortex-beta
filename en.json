@@ -27,5 +27,6 @@
   "shareBtn": "Share",
   "popularBtn": "Advance video",
 "boost_1": "You've boosted 1 time",
-  "boost_many": "You've boosted {n} times"
+    "boost_2": "You've boosted 2 times",
+    "boost_3": "You've boosted 3 times"
 }
