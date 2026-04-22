@@ -1990,30 +1990,15 @@ videoPlayer.addEventListener("play", () => {
 function setBoost(lang, count) {
   const el = document.getElementById("boostText");
 
-  let key = "boost_1";
-
-  if (count > 0) {
-    if (lang === "uk") {
-      key =
-        count === 1 ? "boost_1" :
-        count <= 4 ? "boost_few" :
-        "boost_many";
-    } else {
-      key =
-        count === 1 ? "boost_1" :
-        "boost_many";
-    }
-  }
+  let key =
+    count === 1 ? "boost_1" :
+    count === 2 ? "boost_2" :
+    count === 3 ? "boost_3" :
+    "boost_0";
 
   el.setAttribute("data-i18n", key);
 
-  let text = translations[lang][key];
-
-  if (text.includes("{n}")) {
-    text = text.replace("{n}", count);
-  }
-
-  el.innerText = text;
+  el.innerText = translations[lang][key];
 }
 document.getElementById('popularBtn').addEventListener('click', async () => {
   const user = firebase.auth().currentUser;
