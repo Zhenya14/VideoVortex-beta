@@ -903,7 +903,26 @@ width: 80%;  /* Ширина поля вводу */
   background: #3b82f6;
   box-shadow: 0 0 16px rgba(59,130,246,.6);
 }
-
+#notification-popup {
+  display: none;
+  width: 87%;
+  opacity: 0;
+  text-align: left;
+  z-index: 10000;
+position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: black;
+      padding: 20px;
+      border-radius: 69px;
+      border: 1px solid rgba(0, 255, 255, .12);
+  box-shadow: 0 0 22px rgba(0, 255, 255, .07);
+      animation: opacity 0.5s ease;
+    }
+#notification-popup.show {
+  opacity: 1;
+}
 .dislike.disliked {
   background: #ef4444;
   box-shadow: 0 0 16px rgba(239,68,68,.6);
@@ -957,6 +976,9 @@ width: 80%;  /* Ширина поля вводу */
     </div>
   </div>
 </ios-modal>
+<div class="notification-popup" id="notification-popup">
+<p id="message-notification"></p>
+<p id="boostText" data-i18n="boost_1"></p></div>
 <div id="notification-modal" class="ios-notification-modal">
   <div class="ios-modal-content">
     <h2>VideoVortex</h2>
@@ -1965,6 +1987,34 @@ videoPlayer.addEventListener("play", () => {
         })
         .catch(error => console.error("Помилка отримання даних:", error));
 });
+function setBoost(lang, count) {
+  const el = document.getElementById("boostText");
+
+  let key = "boost_1";
+
+  if (count > 0) {
+    if (lang === "uk") {
+      key =
+        count === 1 ? "boost_1" :
+        count <= 4 ? "boost_few" :
+        "boost_many";
+    } else {
+      key =
+        count === 1 ? "boost_1" :
+        "boost_many";
+    }
+  }
+
+  el.setAttribute("data-i18n", key);
+
+  let text = translations[lang][key];
+
+  if (text.includes("{n}")) {
+    text = text.replace("{n}", count);
+  }
+
+  el.innerText = text;
+}
 document.getElementById('popularBtn').addEventListener('click', async () => {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -1982,16 +2032,36 @@ document.getElementById('popularBtn').addEventListener('click', async () => {
       return;
     }
 
+    const newCount = (data.count || 0) + 1;
+
     await ref.set({
-      count: (data.count || 0) + 1,
+      count: newCount,
       updatedAt: Date.now()
     });
 
+    showPopup();
+
+    // ✔ ОЦЕ ПРАВИЛЬНО
+    setBoost("uk", newCount);
+
     console.log("Boost OK");
+
   } catch (e) {
     console.error(e);
   }
 });
+function showPopup() {
+var popup = document.getElementById('notification-popup');
+
+
+popup.classList.add("show");
+popup.style.display = "flex";
+setTimeout(function() {
+
+popup.classList.remove("show");
+popup.style.display = "none";
+}, 3000);
+}
 document.getElementById('shareBtn').addEventListener('click', async () => {
   if (!currentVideo) {
     alert('Відео ще не завантажене');
