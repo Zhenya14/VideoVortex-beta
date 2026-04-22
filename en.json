@@ -25,5 +25,7 @@
   "cancel": "Cancel",
   "block": "Blocked",
   "shareBtn": "Share",
-  "popularBtn": "Advance video"
+  "popularBtn": "Advance video",
+"boost_1": "You've boosted 1 time",
+  "boost_many": "You've boosted {n} times"
 }
