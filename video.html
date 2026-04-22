@@ -622,6 +622,45 @@ box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
 }
+.popularBtn {
+  height: 5%;
+  width: 100%;
+  padding: 0;
+  border-radius: 50px;
+ 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  background: #111;
+  border: 2px solid #333;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: 
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.15s ease,
+    border-color 0.3s ease;
+}
+        .popularBtn:hover {
+            border-color: #f472b6; /* підсвічування рамки блакитним */
+
+box-shadow: 0 0 15px #f472b6; /* світіння */
+
+transform: translateY(-2px); /* легке підняття */
+        }
+.popularBtn:active {
+border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
+
+box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
+
+transform: scale(0.95); /* легке стиснення */
+}
 .speakBtn  {
   
   padding: 0;
@@ -913,8 +952,8 @@ width: 80%;  /* Ширина поля вводу */
     </div>
 
     <div class="ios-modal-footer">
-      <button class="danger" onclick="confirmBlockUser()">Заблокувати</button>
-      <button class="cancel" onclick="closeBlockModal()">Скасувати</button>
+      <button class="danger" data-i18n="block" onclick="confirmBlockUser()">Заблокувати</button>
+      <button class="cancel" data-i18n="cancel" onclick="closeBlockModal()">Скасувати</button>
     </div>
   </div>
 </ios-modal>
@@ -926,7 +965,7 @@ width: 80%;  /* Ширина поля вводу */
     <button id="agree-btn" onclick="closeNotificationModal()">ОК</button>
   </div>
 </div>
-      <div class="player-container">
+      <div class="player-container" style="display: none;">
     <div id="video-container">
         <video id="video-player" controls preload="auto"></video>
         <div class="controls">
@@ -952,8 +991,11 @@ width: 80%;  /* Ширина поля вводу */
   <i class="material-icons">thumb_down</i>
   <p id="dislikeCount" style="padding: 5px;">0</p>
 </a>
+<a class="popularBtn" id="popularBtn">
+  <i class="material-icons">star</i><p data-i18n="popularBtn" style="padding: 5px;">Просунути відео</p> 
+    </a>
 <a class="shareBtn" id="shareBtn">
-  <i class="material-icons">share</i><p style="padding: 5px;">Поділитися</p>  
+  <i class="material-icons">share</i><p data-i18n="shareBtn" style="padding: 5px;">Поділитися</p>  
     </a>
 </div>
 
@@ -965,7 +1007,7 @@ width: 80%;  /* Ширина поля вводу */
                 <div id="comments-root"></div>
 <h3>Схожі відео:</h3>
 <div id="target-videos">
-<p id="similar-message">Схожих відео немає 😔</p>
+<p id="similar-message" data-i18n="similar-message">Схожих відео немає 😔</p>
 </div>
 <script src="i18n.js"></script>
 <script>
@@ -1603,7 +1645,7 @@ textContainer.appendChild(speakBtn);
         blockUser.innerHTML = `
             <span style="display:flex;align-items:center;gap:6px;">
                 <i class="material-icons">block</i>
-                Заблокувати
+                <p data-i18n="block">Заблокувати</p>
             </span>`;  
         blockUser.addEventListener("click", () => {  
             realBlockedUserName = data.commentAuthor || "Видалений акаунт";  
