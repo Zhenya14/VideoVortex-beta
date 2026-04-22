@@ -2006,10 +2006,11 @@ document.getElementById('popularBtn').addEventListener('click', async () => {
 
   const uid = user.uid;
 
-  const ref = firebase.database().ref(`boosts/${videoKey}/${uid}`);
+  const userBoostRef = firebase.database().ref(`boosts/${videoKey}/${uid}`);
+  const videoRef = firebase.database().ref(`videos/${videoKey}`);
 
   try {
-    const snap = await ref.once('value');
+    const snap = await userBoostRef.once('value');
     const data = snap.val() || { count: 0 };
 
     if (data.count >= 3) {
@@ -2017,22 +2018,37 @@ document.getElementById('popularBtn').addEventListener('click', async () => {
       return;
     }
 
-    const newCount = (data.count || 0) + 1;
+    const newCount = data.count + 1;
 
-    await ref.set({
+    // 1. запис буста користувача
+    await userBoostRef.set({
       count: newCount,
       updatedAt: Date.now()
     });
 
+    // 2. оновлення відео (🔥 головне)
+    await videoRef.transaction(v => {
+      if (!v) return v;
+
+      v.boostCount = (v.boostCount || 0) + 1;
+
+      // перерахунок score
+      v.score =
+        (v.boostCount || 0) * 5 +
+        (v.likeCount || 0) * 2 +
+        (v.views || 0) * 0.1;
+
+      return v;
+    });
+
     showPopup();
 
-    // ✔ ОЦЕ ПРАВИЛЬНО
     setBoost("uk", newCount);
 
     console.log("Boost OK");
 
   } catch (e) {
-    console.error(e);
+    console.error("Помилка:", e);
   }
 });
 function showPopup() {
