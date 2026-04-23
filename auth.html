@@ -2,16 +2,31 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Авторизація – VideoVortex</title>
     <link rel="icon" href="VideoVortex_logo.ico">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-html, body {
-  width: 100%;
-  height: 100%;
+html, body{
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(14, 165, 233, 0.35); /* блакитний */
+  border-radius: 12px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(2, 6, 23, 0.6); /* майже чорний */
 }
     body { 
        margin: 0;
