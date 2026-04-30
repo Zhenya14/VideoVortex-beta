@@ -137,6 +137,22 @@ isolation: isolate;
         -webkit-backdrop-filter: blur(4px);
         @apply bg-muted/25;
     }
+    .tab-liquid-glass {
+  position: fixed;
+left: 23%;
+  margin: 15px 0 0 0;
+  padding: 10px 10px;
+  pointer-events: none;
+  width: 50%;
+  border-radius: 65px;
+  background: rgba(255, 255, 255, 0.1);
+  /* Тінь і обведення для глибини */
+  z-index: 1000;
+  isolation: isolate;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        @apply bg-muted/25;
+    }
     .tg-popup {
   position: fixed;
   inset: 0;
@@ -210,6 +226,26 @@ width: 80%;  /* Ширина поля вводу */
         -webkit-backdrop-filter: blur(4px);
         @apply bg-muted/25;
     }
+    .tab-button-liquid-glass {
+    display: inline;
+    transition: 0.3s;
+    width: 100%;
+    height: 100%;
+    margin: 10px 10px 10px 10px;
+    border-radius: 56px;
+    text-decoration: none;
+      background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  filter: url(#glass-distortion);
+  -webkit-filter: url(#glass-distortion);
+
+  /* Тінь і обведення для глибини */
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  z-index: 100;
+    }
     .button-liquid-glass {
       display: grid;
     transition: 0.3s;
@@ -246,7 +282,7 @@ outline: none;
 font-size: 18px;
 }
     @supports not (hanging-punctuation:first) {
-        .bg-liquid-glass, .btn-liquid-glass, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input {
+        .bg-liquid-glass, .btn-liquid-glass, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input, .tab-liquid-glass {
             backdrop-filter: url(#displacementFilter) blur(2px);
         }
     }
@@ -1404,6 +1440,17 @@ display: none;
     display: grid;
     transition: 0.3s;
 }
+.tab a {
+  width: 100%;
+    height: 100%;
+    display: ;
+    padding: 10px 10px;
+    text-decoration: none;
+    text-align: center;
+    align-items: center;
+    color: white;
+    transition: 0.3s;
+}
 .menu a {
     border-radius: 35px;
     padding: 10px 15px;
@@ -1541,7 +1588,14 @@ transform: scale(0.95); /* легке стиснення */
   pointer-events: none;
   width: 100%;
 }
-
+.tab {
+  position: fixed;
+  z-index: 1000;
+  margin: 55px 0 0 0;
+  padding: 0;
+  pointer-events: none;
+  width: 100%;
+}
 .lightrope li {
   position: relative;
   -webkit-animation-fill-mode: both;
@@ -2556,7 +2610,17 @@ text-decoration: none;
  <span>Приватне відео</span><label class="switch" for="edit-private-checkbox"><input type="checkbox" id="edit-private-checkbox"><span class="slider round"></span></label>
             <button id="edit-button" onclick="saveVideoChanges()">Зберегти</button>
         </div>
+        <div class="tab">
+          <div class="tab-liquid-glass">
+ <a class="tab-button-liquid-glass" href="#" id="all" onclick="All()">
+        <span data-i18n="video">Усі</span>
+    </a>
+       <a href="#" id="popular" onclick="popular()">
+<span data-i18n="post">Популярні</span>
+        </a>
 
+</div>
+</div>
         <div  class="smart-menu">
           <div class="bg-liquid-glass">
  <a class="button-liquid-glass" href="#" id="smart-video" onclick="video()">
