@@ -2161,6 +2161,61 @@ text-decoration: none;
   align-items: center;
   padding: 0px 5px;
 }
+.may1-banner {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 900px;
+  background: linear-gradient(90deg, #b31237, #e52d27);
+  color: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  z-index: 9999;
+  animation: slideDown 0.4s ease;
+}
+
+.may1-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.may1-content span {
+  font-size: 28px;
+}
+
+.may1-sub {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.may1-banner button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.may1-banner button:hover {
+  opacity: 1;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
 #timer {
             font-size: 20px;
             color: red;
@@ -2258,6 +2313,16 @@ text-decoration: none;
     </ul>
     <div class="modal-divider"></div>
     <button id="agree-btn" onclick="acceptRulesUpdate()">Зрозуміло</button>
+  </div>
+</div>
+<div id="may1-banner" class="may1-banner">
+  <div class="may1-content">
+    <span class="material-icons">handshake</span>
+    <div>
+      <b>1 травня — День солідарності трудящих</b>
+      <div class="may1-sub">Підтримка, рівність і спільнота</div>
+    </div>
+    <button onclick="closeMayBanner()">✕</button>
   </div>
 </div>
 <div id="notification-ai-modal" class="ios-notification-modal">
@@ -2984,6 +3049,18 @@ function eastersEffect() {
 }
 
 eastersEffect();
+
+function 1MayEffect() {
+  const now = new Date();
+if (now.getDate() !== 1 || now.getMonth() !== 4) {
+  document.getElementById("may1-banner").style.display = "none";
+}
+}
+
+function closeMayBanner() {
+  document.getElementById("may1-banner").style.display = "none";
+}
+1MayEffect();
 function checkUpdateButton() {
 
     const lastVersion = localStorage.getItem("lastUpdateVersion") || "5.0.1";
