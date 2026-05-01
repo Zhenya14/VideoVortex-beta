@@ -139,15 +139,16 @@ isolation: isolate;
     }
     .tab-liquid-glass {
   position: fixed;
-left: 23%;
-  margin: 15px 0 0 0;
-  padding: 10px 10px;
-  pointer-events: none;
-  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 1px;
+  width: 80%;
+  height: 6%;
   border-radius: 65px;
   background: rgba(255, 255, 255, 0.1);
   /* Тінь і обведення для глибини */
-  z-index: 1000;
+  z-index: 1001;
   isolation: isolate;
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
@@ -231,7 +232,7 @@ width: 80%;  /* Ширина поля вводу */
     transition: 0.3s;
     width: 100%;
     height: 100%;
-    margin: 10px 10px 10px 10px;
+    margin: 5px;
     border-radius: 56px;
     text-decoration: none;
       background: rgba(255, 255, 255, 0.1);
@@ -1443,8 +1444,6 @@ display: none;
 .tab a {
   width: 100%;
     height: 100%;
-    display: ;
-    padding: 10px 10px;
     text-decoration: none;
     text-align: center;
     align-items: center;
@@ -1588,13 +1587,21 @@ transform: scale(0.95); /* легке стиснення */
   pointer-events: none;
   width: 100%;
 }
+#all, #popular {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .tab {
   position: fixed;
   z-index: 1000;
-  margin: 55px 0 0 0;
-  padding: 0;
-  pointer-events: none;
-  width: 100%;
+  margin: 3px;
+    display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 1px;
+  width: 80%;
+  height: 20%;
 }
 .lightrope li {
   position: relative;
@@ -2613,10 +2620,10 @@ text-decoration: none;
         <div class="tab">
           <div class="tab-liquid-glass">
  <a class="tab-button-liquid-glass" href="#" id="all" onclick="All()">
-        <span data-i18n="video">Усі</span>
+        <span data-i18n="all">Усі</span>
     </a>
        <a href="#" id="popular" onclick="popular()">
-<span data-i18n="post">Популярні</span>
+<span data-i18n="popular">Популярні</span>
         </a>
 
 </div>
@@ -5233,6 +5240,7 @@ function saveEditName() {
       document.getElementById("name").textContent = "Ім'я: " + newName;
       updateVideosAuthor();
       updatePhotosAuthor();
+      updateCommentsAuthor();
     })
     .catch(err => {
       showNotificationModal();
@@ -5262,6 +5270,7 @@ function saveEditSuperName() {
       document.getElementById("supername").textContent = "Прізвище: " + newSuperName;
       updateVideosAuthor();
       updatePhotosAuthor();
+      updateCommentsAuthor();
     })
     .catch(err => {
       showNotificationModal();
@@ -5634,6 +5643,7 @@ auth.onAuthStateChanged(async (user) => {
     cleanupExpiredVideos();
     updateVideosAuthor();
     updatePhotosAuthor();
+    updateCommentsAuthor();
     backfillAuthorUidForUser();
     enablePushNotifications(user.uid);
     currentUserEmail = user.email;
@@ -6009,6 +6019,56 @@ async function updateVideosAuthor() {
         updates.push(
           database.ref("videos/" + child.key).update({
             author: fullName || "Анонім",
+            authorAvatar: authorAvatarUrl
+          })
+        );
+      }
+    });
+
+    await Promise.all(updates);
+
+    console.log("Відео оновлено");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateCommentsAuthor() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await firebase
+          .storage()
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {
+        console.warn("Аватар не знайдено");
+      }
+    }
+
+    const commentSnap = await database.ref("comments").once("value");
+
+    const updates = [];
+
+    commentSnap.forEach(child => {
+      const comment = child.val();
+
+      if (comment.authorUid === uid) {
+        updates.push(
+          database.ref("comments/" + child.key).update({
+            commentAuthor: fullName || "Анонім",
             authorAvatar: authorAvatarUrl
           })
         );
