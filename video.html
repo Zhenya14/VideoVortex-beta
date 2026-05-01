@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <title></title>
     <svg style="display: none">
     <filter id="displacementFilter">
@@ -323,6 +324,34 @@ border: 2px solid #333333;
             border: none; 
             outline: none;
             font-size: 1em;
+}
+#confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 9999999;
+}
+
+.confetti {
+  position: absolute;
+  width: 8px;
+  height: 12px;
+  opacity: 0.9;
+  animation: fall 2.5s linear forwards;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-10px) rotate(0deg);
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
 }
         button { 
   display: inline-block;
@@ -951,6 +980,7 @@ position: fixed;
             <h1 style="padding-left: 5px;">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup></a>
 
     </nav>
+    <div id="confetti-container"></div>
     <ios-modal id="block-user-modal">
   <div class="ios-modal-window">
     <div class="ios-modal-header">
@@ -1603,13 +1633,22 @@ async function loadComments(videoKey, videoOwnerEmail) {
         const avatarComment = document.createElement("div");  
         avatarComment.className = "avatar";  
 
-        if (blockedMeComments) {
-            avatarComment.textContent = "❌";  
-        } else if (!data.commentAuthor || data.commentAuthor === "Видалений акаунт") {
-            avatarComment.textContent = "👻";  
-        } else {
-            avatarComment.textContent = getInitials(data.commentAuthor);  
-        }
+if (data.authorAvatar) {
+  avatarComment.style.backgroundImage = `url(${data.authorAvatar})`;
+  avatarComment.style.backgroundSize = "cover";
+  avatarComment.style.backgroundPosition = "center";
+} else {
+  avatarComment.style.backgroundImage = "";
+  avatarComment.textContent = getInitials(data.commentAuthor || "");
+}
+// ===== ICON LOGIC =====
+if (blockedMeComments) {
+  avatarComment.style.backgroundImage = "";
+  avatarComment.textContent = "❌";
+} else if (!data.email || data.email === "Видалений акаунт") {
+  avatarComment.style.backgroundImage = "";
+  avatarComment.textContent = "👻";
+} 
 
         // 🔹 Ім'я користувача
         const userEl = document.createElement("strong");  
@@ -2000,57 +2039,7 @@ function setBoost(lang, count) {
 
   el.innerText = translations[lang][key];
 }
-document.getElementById('popularBtn').addEventListener('click', async () => {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
 
-  const uid = user.uid;
-
-  const userBoostRef = firebase.database().ref(`boosts/${videoKey}/${uid}`);
-  const videoRef = firebase.database().ref(`videos/${videoKey}`);
-
-  try {
-    const snap = await userBoostRef.once('value');
-    const data = snap.val() || { count: 0 };
-
-    if (data.count >= 3) {
-      alert("Ліміт досягнуто (3 бусти)");
-      return;
-    }
-
-    const newCount = data.count + 1;
-
-    // 1. запис буста користувача
-    await userBoostRef.set({
-      count: newCount,
-      updatedAt: Date.now()
-    });
-
-    // 2. оновлення відео (🔥 головне)
-    await videoRef.transaction(v => {
-      if (!v) return v;
-
-      v.boostCount = (v.boostCount || 0) + 1;
-
-      // перерахунок score
-      v.score =
-        (v.boostCount || 0) * 5 +
-        (v.likeCount || 0) * 2 +
-        (v.views || 0) * 0.1;
-
-      return v;
-    });
-
-    showPopup();
-
-    setBoost("uk", newCount);
-
-    console.log("Boost OK");
-
-  } catch (e) {
-    console.error("Помилка:", e);
-  }
-});
 function showPopup() {
 var popup = document.getElementById('notification-popup');
 
@@ -2063,6 +2052,81 @@ popup.classList.remove("show");
 popup.style.display = "none";
 }, 3000);
 }
+function celebrate() {
+  const container = document.getElementById("confetti-container");
+
+  if (!container) {
+    console.error("❌ confetti-container не знайдено");
+    return;
+  }
+
+  const colors = ["#ff4d4d", "#4dd2ff", "#ffd24d", "#7dff4d", "#b84dff"];
+
+  for (let i = 0; i < 120; i++) {
+    const confetti = document.createElement("div");
+    confetti.classList.add("confetti");
+
+    confetti.style.left = Math.random() * 100 + "vw";
+    confetti.style.backgroundColor =
+      colors[Math.floor(Math.random() * colors.length)];
+
+    confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
+
+    container.appendChild(confetti);
+
+    setTimeout(() => confetti.remove(), 3000);
+  }
+}
+  document.getElementById('popularBtn').addEventListener('click', async () => {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const uid = user.uid;
+
+    const userBoostRef = firebase.database().ref(`boosts/${videoKey}/${uid}`);
+    const videoRef = firebase.database().ref(`videos/${videoKey}`);
+
+    try {
+      const snap = await userBoostRef.once('value');
+      const data = snap.val() || { count: 0 };
+
+      if (data.count >= 3) {
+        alert("Ліміт досягнуто (3 бусти)");
+        return;
+      }
+
+      const newCount = data.count + 1;
+
+      await userBoostRef.set({
+        count: newCount,
+        updatedAt: Date.now()
+      });
+
+      await videoRef.transaction(v => {
+        if (!v) return v;
+
+        v.boostCount = (v.boostCount || 0) + 1;
+
+        v.score =
+          (v.boostCount || 0) * 5 +
+          (v.likeCount || 0) * 2 +
+          (v.views || 0) * 0.1;
+
+        return v;
+      });
+      celebrate();
+      showPopup();
+      setBoost("uk", newCount);
+      
+
+      console.log("Boost OK");
+
+    } catch (e) {
+      console.error("Помилка:", e);
+    }
+  });
+
+
 document.getElementById('shareBtn').addEventListener('click', async () => {
   if (!currentVideo) {
     alert('Відео ще не завантажене');
@@ -2105,7 +2169,7 @@ function setPrivacyMode(active) {
 let lastCheck = 0;
 
 // Основна логіка орієнтації
-function handleOrientation(event){
+function handlerientation(event){
     const now = Date.now();
     if(now - lastCheck < 200) return; // не частіше ніж раз на 200ms
     lastCheck = now;
