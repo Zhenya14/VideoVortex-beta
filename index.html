@@ -3050,17 +3050,26 @@ function eastersEffect() {
 
 eastersEffect();
 
-function 1MayEffect() {
-  const now = new Date();
-if (now.getDate() !== 1 || now.getMonth() !== 4) {
-  document.getElementById("may1-banner").style.display = "none";
-}
-}
+function May1Effect() {
+  const banner = document.getElementById("may1-banner");
+  if (!banner) return;
 
-function closeMayBanner() {
-  document.getElementById("may1-banner").style.display = "none";
+  const now = new Date();
+  const closed = localStorage.getItem("may1BannerClosed");
+
+  if (closed === "true" || now.getDate() !== 1 || now.getMonth() !== 4) {
+    banner.style.display = "none";
+  }
 }
-1MayEffect();
+function closeMayBanner() {
+  const mayBanner = document.getElementById("may1-banner");
+  if (!mayBanner) return;
+
+  mayBanner.style.display = "none";
+
+  // зберігаємо СТАН, а не елемент
+  localStorage.setItem("may1BannerClosed", "true");
+}
 function checkUpdateButton() {
 
     const lastVersion = localStorage.getItem("lastUpdateVersion") || "5.0.1";
@@ -6774,5 +6783,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-</body>                                                          
+</body>                                                   
         </html>
