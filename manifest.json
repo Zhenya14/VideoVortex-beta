@@ -1,6 +1,7 @@
 {
   "name": "VideoVortex beta",
   "short_name": "Vortex beta",
+  "version": "5.3.0 beta",
   "description": "VideoVortex — відеоплатформа з контролем приватності, каналами та архівами",
   "start_url": "/VideoVortex-beta/",
   "scope": "/VideoVortex-beta/",
