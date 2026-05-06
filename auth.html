@@ -315,6 +315,30 @@ document.addEventListener("DOMContentLoaded", () => {
         logo.src = "VideoVortex_new_year's_logo.jpg"; // новорічний логотип
     }
 
+  if (isVyshyvanka) {
+    activateVyshyvankaMode();
+    applyIcons(vyshyvankaIcons);
+  } else {
+    deactivateVyshyvankaMode();
+    restoreIcons();
+  }
+  function activateVyshyvankaMode() {
+
+  const logo = document.getElementById("logo");
+  if (logo && !logo.dataset.originalSrc) logo.dataset.originalSrc = logo.src;
+  if (logo) logo.src = "VideoVortex_logo_embriodery.jpg";
+
+  styleButtons("#8B0000", "#1C1C1C");
+}
+
+function deactivateVyshyvankaMode() {
+  
+  const logo = document.getElementById("logo");
+  if (logo && logo.dataset.originalSrc) logo.src = logo.dataset.originalSrc;
+
+  resetButtonColors();
+}
+
     // ---------- СНІГ 1 СІЧНЯ ----------
     if(month === 1 && day === 1) {
         startSnow();
