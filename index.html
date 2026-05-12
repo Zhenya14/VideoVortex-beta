@@ -461,7 +461,7 @@ input:checked + .slider:before {
     opacity: 0.7;
   }
 }
-.-banner{
+.easter-banner{
   position: fixed;
   top: 0;
   left: 0;
@@ -475,13 +475,13 @@ input:checked + .slider:before {
   will-change: transform;
 }
 
-.-banner.show{
+.easter-banner.show{
   transform: translateY(0);
 }
 .may1-banner.show{
   transform: translateY(0);
 }
-.-box {
+.easter-box {
   background: linear-gradient(90deg, #a0c4ff, #ffc6ff, #caffbf);
   background-size: 300% 300%;
   animation: Move 6s ease infinite;
@@ -501,26 +501,26 @@ input:checked + .slider:before {
   100% { background-position: 0% 50%; }
 }
 
-.-box button{
+.easter-box button{
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
 }
 
-#-upload{
+#easter-upload{
   background: white;
  color: #c77dff;
   font-weight: bold;
 }
 
-#-close{
+#easter-close{
   background: transparent;
   color: white;
   font-size: 18px;
 }
 
-#-container{
+#easter-container{
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -528,7 +528,7 @@ input:checked + .slider:before {
   z-index: 999;
 }
 
-.{
+.easter-container{
   position: absolute;
   font-size: 22px;
   top: 40px;
@@ -2348,12 +2348,12 @@ text-decoration: none;
     <button id="march8-close">✖</button>
   </div>
 </div>
-<div id="-banner" class="-banner">
-  <div class="-box">
-    <p data-i18n="-box">🌸 Христос Воскрес! З Великоднем 🐣💐 Поділіться святковим відео</p>
+<div id="easter-banner" class="easter-banner">
+  <div class="easter-box">
+    <p data-i18n="easter-box">🌸 Христос Воскрес! З Великоднем 🐣💐 Поділіться святковим відео</p>
 
-    <button id="-upload" data-i18n="-upload">📹 Опублікувати відео</button>
-    <button id="-close">✖</button>
+    <button id="easter-upload" data-i18n="easter-upload">📹 Опублікувати відео</button>
+    <button id="easter-close">✖</button>
   </div>
 </div>
 <div id="videoModal" class="ios-modal">
@@ -2929,8 +2929,10 @@ async function generateDescription() {
 }
 </script>
 <script defer>
-  let APP_VERSION = "5.3.1 beta"; // Поточна версія VideoVortex
- function clearLocalStorageExceptAuth() {
+
+const APP_VERSION = "5.6.1";
+
+function clearLocalStorageExceptAuth() {
     const keepPrefixes = [
         "firebase:authUser:",
         "firebase:authEvent:",
@@ -2940,197 +2942,330 @@ async function generateDescription() {
 
     Object.keys(localStorage).forEach(key => {
         const keep = keepPrefixes.some(prefix => key.startsWith(prefix));
+
         if (!keep) {
             localStorage.removeItem(key);
         }
     });
 }
+function randomGradient() {
+
+const gradients = [
+
+/* Сині — темні, контрастні */
+"linear-gradient(135deg,#0f2027,#2c5364,#00c9ff)",
+"linear-gradient(135deg,#141e30,#243b55)",
+"linear-gradient(135deg,#1e3c72,#2a5298)",
+
+/* Червоні — глибокі (краще читається білий текст) */
+"linear-gradient(135deg,#200122,#6f0000)",
+"linear-gradient(135deg,#8e0e00,#1f1c18)",
+"linear-gradient(135deg,#cb2d3e,#0f0f0f)",
+
+/* Помаранчеві — затемнені */
+"linear-gradient(135deg,#e65c00,#1a1a1a)",
+"linear-gradient(135deg,#ff512f,#dd2476,#1a1a1a)",
+"linear-gradient(135deg,#2c3e50,#fd746c)",
+
+/* Жовто-золоті — з темною базою */
+"linear-gradient(135deg,#1a1a1a,#f7971e,#ffd200)",
+"linear-gradient(135deg,#2b2b2b,#f9d423)",
+"linear-gradient(135deg,#000000,#b79891,#94716b)",
+
+/* Зелені — темні tech-style */
+"linear-gradient(135deg,#0f9b0f,#000000)",
+"linear-gradient(135deg,#134e5e,#71b280)",
+"linear-gradient(135deg,#1c1c1c,#00c853)",
+
+/* Фіолетові — premium/dark */
+"linear-gradient(135deg,#0f0c29,#302b63,#24243e)",
+"linear-gradient(135deg,#1b1b2f,#53354a,#903749)",
+"linear-gradient(135deg,#4a00e0,#8e2de2,#0f0f0f)",
+
+/* Рожеві — але затемнені (не “цукеркові”) */
+"linear-gradient(135deg,#20002c,#cbb4d4)",
+"linear-gradient(135deg,#0f0f0f,#ff0844,#ffb199)",
+"linear-gradient(135deg,#4b134f,#c94b4b)",
+
+/* Бірюзові / tech */
+"linear-gradient(135deg,#000000,#0f9b0f,#00c9ff)",
+"linear-gradient(135deg,#1d4350,#243b55,#a43931)",
+"linear-gradient(135deg,#0f2027,#203a43,#2c5364)",
+
+/* Темні (найкраща читабельність білого тексту) */
+"linear-gradient(135deg,#000000,#434343)",
+"linear-gradient(135deg,#141414,#1f1f1f,#3a3a3a)",
+"linear-gradient(135deg,#0a0a0a,#2c2c2c)",
+
+];
+
+return gradients[Math.floor(Math.random()*gradients.length)];
+
+}
 function march8Banner() {
-  const d = new Date();
+    const d = new Date();
 
-  if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
-  if (localStorage.getItem("march8banner")) return;
+    if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
+    if (localStorage.getItem("march8banner")) return;
 
-  const banner = document.getElementById("march8-banner");
-  if (!banner) return;
+    const banner = document.getElementById("march8-banner");
 
-  setTimeout(() => {
-    banner.classList.add("show");
-  }, 1500);
+    if (!banner) return;
 
-  localStorage.setItem("march8banner", "shown");
+    setTimeout(() => {
+        banner.classList.add("show");
+    }, 1500);
 
-  const closeBtn = document.getElementById("march8-close");
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      banner.classList.remove("show");
-    };
-  }
+    localStorage.setItem("march8banner", "shown");
 
-  const uploadBtn = document.getElementById("march8-upload");
-  if (uploadBtn) {
-    uploadBtn.onclick = () => {
-      const modal = document.getElementById("upload-modal");
-      if (modal) modal.style.display = "flex";
-    };
-  }
+    const closeBtn = document.getElementById("march8-close");
+
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            banner.classList.remove("show");
+        };
+    }
+
+    const uploadBtn = document.getElementById("march8-upload");
+
+    if (uploadBtn) {
+        uploadBtn.onclick = () => {
+            const modal = document.getElementById("upload-modal");
+
+            if (modal) modal.style.display = "flex";
+        };
+    }
 }
 
 march8Banner();
 
-
 function flowersEffect() {
-  const d = new Date();
+    const d = new Date();
 
-  if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
+    if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
 
-  const container = document.getElementById("flowers-container");
-  if (!container) return;
+    const container = document.getElementById("flowers-container");
 
-  const interval = setInterval(() => {
-    const flower = document.createElement("div");
-    flower.className = "flower";
-    flower.textContent = "🌸";
+    if (!container) return;
 
-    flower.style.left = Math.random() * 100 + "vw";
-    flower.style.animationDuration = (3 + Math.random() * 4) + "s";
+    const interval = setInterval(() => {
 
-    container.appendChild(flower);
+        const flower = document.createElement("div");
 
-    setTimeout(() => flower.remove(), 8000);
-  }, 300);
+        flower.className = "flower";
+        flower.textContent = "🌸";
 
-  setTimeout(() => clearInterval(interval), 20000);
+        flower.style.left = Math.random() * 100 + "vw";
+        flower.style.animationDuration =
+            (3 + Math.random() * 4) + "s";
+
+        container.appendChild(flower);
+
+        setTimeout(() => {
+            flower.remove();
+        }, 8000);
+
+    }, 300);
+
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 20000);
 }
 
 flowersEffect();
 
+function easterBanner() {
+    const d = new Date();
 
-function Banner() {
-  const d = new Date();
+    if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
+    if (localStorage.getItem("easterBanner")) return;
 
-  if (!(d.getDate() === 8 && d.getMonth() === 2)) return;
-  if (localStorage.getItem("Banner")) return;
+    const banner = document.getElementById("easter-banner");
 
-  const banner = document.getElementById("-banner");
-  if (!banner) return;
-
-  setTimeout(() => {
-    banner.classList.add("show");
-  }, 1500);
-
-  localStorage.setItem("Banner", "shown");
-
-  const closeBtn = document.getElementById("-close");
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      banner.classList.remove("show");
-    };
-  }
-
-  const uploadBtn = document.getElementById("-upload");
-  if (uploadBtn) {
-    uploadBtn.onclick = () => {
-      const modal = document.getElementById("upload-modal");
-      if (modal) modal.style.display = "flex";
-    };
-  }
-}
-
-Banner();
-
-
-function sEffect() {
-  const d = new Date();
-
-  if (!(d.getDate() === 12 && d.getMonth() === 3)) return;
-
-  const container = document.getElementById("-container");
-  if (!container) return;
-
-  const interval = setInterval(() => {
-    const  = document.createElement("div");
-    .className = "";
-    .textContent = "🌸🐣";
-
-    .style.left = Math.random() * 100 + "vw";
-    .style.animationDuration = (3 + Math.random() * 4) + "s";
-
-    container.appendChild();
-
-    setTimeout(() => .remove(), 8000);
-  }, 300);
-
-  setTimeout(() => clearInterval(interval), 20000);
-}
-
-sEffect();
-
-function May1Effect() {
-  document.addEventListener("DOMContentLoaded", () => {
-
-    const banner = document.getElementById("may1-banner");
     if (!banner) return;
 
-    const now = new Date();
-
-    // тільки 1 травня
-    if (!(now.getDate() === 1 && now.getMonth() === 4)) return;
-
-    // якщо вже закритий — не показуємо
-    const closed = localStorage.getItem("may1-banner-closed");
-    if (closed === "true") return;
-
-    // показ з затримкою
     setTimeout(() => {
-      banner.classList.add("show");
+        banner.classList.add("show");
     }, 1500);
 
-    // кнопка закриття
-    const closeBtn = document.getElementById("closeMayBanner");
+    localStorage.setItem("easterBanner", "shown");
+
+    const closeBtn = document.getElementById("easter-close");
 
     if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        banner.classList.remove("show");
-        localStorage.setItem("may1-banner-closed", "true");
-      });
+        closeBtn.onclick = () => {
+            banner.classList.remove("show");
+        };
     }
 
-  });
+    const uploadBtn = document.getElementById("easter-upload");
+
+    if (uploadBtn) {
+        uploadBtn.onclick = () => {
+            const modal = document.getElementById("upload-modal");
+
+            if (modal) modal.style.display = "flex";
+        };
+    }
+}
+
+easterBanner();
+
+function sEffect() {
+    const d = new Date();
+
+    if (!(d.getDate() === 12 && d.getMonth() === 3)) return;
+
+    const container = document.getElementById("easter-container");
+
+    if (!container) return;
+
+    const interval = setInterval(() => {
+
+        const effect = document.createElement("div");
+
+        effect.className = "effect";
+        effect.textContent = "🌸🐣";
+
+        effect.style.left = Math.random() * 100 + "vw";
+        effect.style.animationDuration =
+            (3 + Math.random() * 4) + "s";
+
+        container.appendChild(effect);
+
+        setTimeout(() => {
+            effect.remove();
+        }, 8000);
+
+    }, 300);
+
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 20000);
+}
+
+flowersEffect();
+
+function May1Effect() {
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const banner =
+            document.getElementById("may1-banner");
+
+        if (!banner) return;
+
+        const now = new Date();
+
+        if (!(now.getDate() === 1 && now.getMonth() === 4)) return;
+
+        const closed =
+            localStorage.getItem("may1-banner-closed");
+
+        if (closed === "true") return;
+
+        setTimeout(() => {
+            banner.classList.add("show");
+        }, 1500);
+
+        const closeBtn =
+            document.getElementById("closeMayBanner");
+
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => {
+
+                banner.classList.remove("show");
+
+                localStorage.setItem(
+                    "may1-banner-closed",
+                    "true"
+                );
+            });
+        }
+
+    });
 }
 
 May1Effect();
-May1Effect();
+
+function isNewVersion(current, saved) {
+
+    const currentParts =
+        current.split(".").map(Number);
+
+    const savedParts =
+        saved.split(".").map(Number);
+
+    for (
+        let i = 0;
+        i < Math.max(currentParts.length, savedParts.length);
+        i++
+    ) {
+
+        const c = currentParts[i] || 0;
+        const s = savedParts[i] || 0;
+
+        if (c > s) return true;
+        if (c < s) return false;
+    }
+
+    return false;
+}
+
 function checkUpdateButton() {
 
-    const lastVersion = localStorage.getItem("lastUpdateVersion") || "5.0.1";
-    const updateBtn = document.getElementById("update-app-btn");
+    const lastVersion =
+        localStorage.getItem("lastUpdateVersion") || "0.0.0";
+
+    const updateBtn =
+        document.getElementById("update-app-btn");
 
     if (!updateBtn) return;
 
-    if (lastVersion !== APP_VERSION) {
-        updateBtn.style.display = "block"; // показати
+    if (isNewVersion(APP_VERSION, lastVersion)) {
+
+        updateBtn.style.display = "block";
+
     } else {
-        updateBtn.style.display = "none"; // приховати
+
+        updateBtn.style.display = "none";
     }
 }
-  function updateMenuPosition() {
-    const plusBtn = document.getElementById("plus-button");
-    const updateBtn = document.getElementById("update-app-btn");
-    const smartMenu = document.querySelector(".smart-menu");
-    const bgGlass = document.querySelector(".bg-liquid-glass");
-    const btnGlass = document.querySelector(".btn-liquid-glass");
 
-    if (!updateBtn || !btnGlass || !smartMenu || !bgGlass || !plusBtn) return;
+function updateMenuPosition() {
+
+    const plusBtn =
+        document.getElementById("plus-button");
+
+    const updateBtn =
+        document.getElementById("update-app-btn");
+
+    const smartMenu =
+        document.querySelector(".smart-menu");
+
+    const bgGlass =
+        document.querySelector(".bg-liquid-glass");
+
+    const btnGlass =
+        document.querySelector(".btn-liquid-glass");
+
+    if (
+        !updateBtn ||
+        !btnGlass ||
+        !smartMenu ||
+        !bgGlass ||
+        !plusBtn
+    ) return;
 
     if (updateBtn.style.display !== "none") {
-        // Кнопка видима →  меню
+
         smartMenu.style.bottom = "30px";
         bgGlass.style.bottom = "30px";
         btnGlass.style.bottom = "60px";
         plusBtn.style.bottom = "60px";
+
     } else {
-        // Кнопка прихована → повернути меню на місце
+
         smartMenu.style.bottom = "10px";
         bgGlass.style.bottom = "10px";
         btnGlass.style.bottom = "20px";
@@ -3138,35 +3273,58 @@ function checkUpdateButton() {
     }
 }
 
-// Викликати після завантаження DOM
 window.addEventListener("DOMContentLoaded", () => {
+
     checkUpdateButton();
+
     updateMenuPosition();
 });
-// Викликати після показу / приховування кнопки
+
 function showUpdateButton() {
-    const btn = document.getElementById("update-app-btn");
+
+    const btn =
+        document.getElementById("update-app-btn");
+
     if (!btn) return;
+
     btn.style.display = "block";
+
     updateMenuPosition();
 }
 
 function hideUpdateButton() {
-    const btn = document.getElementById("update-app-btn");
+
+    const btn =
+        document.getElementById("update-app-btn");
+
     if (!btn) return;
+
     btn.style.display = "none";
+
     updateMenuPosition();
 }
-  document.getElementById("update-app-btn")?.addEventListener("click", () => {
-    clearLocalStorageExceptAuth();
 
-    localStorage.setItem("lastUpdateAt", new Date().toISOString());
-    localStorage.setItem("lastUpdateVersion", APP_VERSION);
+document
+    .getElementById("update-app-btn")
+    ?.addEventListener("click", () => {
 
-    hideUpdateButton(); // кнопка ховається, меню повертається
+        clearLocalStorageExceptAuth();
 
-    location.reload(true);
-});
+        localStorage.setItem(
+            "lastUpdateAt",
+            new Date().toISOString()
+        );
+
+        localStorage.setItem(
+            "lastUpdateVersion",
+            APP_VERSION
+        );
+
+        hideUpdateButton();
+
+        location.reload();
+    });
+
 </script>
 <script defer>
 const banner = document.getElementById("cookieBanner");
@@ -3451,7 +3609,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================= VALENTINE (OVERRIDE LAYER) ================= */
   const isValentine = month === 2 && (day === 13 || day === 14);
-const isVyshyvanka = month === 5 && (day === 15 || day === 16);
+const isVyshyvanka = month === 5 && (day === 20 || day === 21);
   if (isValentine) {
     applyIcons(valentineIcons);
   }
@@ -5057,7 +5215,7 @@ if (videoDataRaw.score > 15) {
             avatar.classList.add("avatar-image");
         } else {
             avatar.innerText = getInitials(videoDataRaw.author);
-            avatar.style.backgroundColor = stringToColor(videoDataRaw.author || "?");
+            avatar.style.background = `${videoDataRaw.authorColor}`;
         }
 
         avatar.onclick = () => {
@@ -5199,26 +5357,48 @@ function insertRandomComment(videoKey) {
     input.value = randomComments[randomIndex];
   }
 }
-function deleteVideo(videoKey, videoURL) {
-    if (!videoURL || !videoKey) return showNotificationModal(); message.innerHTML = "Немає даних для видалення відео";
+async function deleteVideo(videoKey, videoURL) {
+    if (!videoURL || !videoKey) {
+        showNotificationModal();
+        message.innerHTML = "Немає даних для видалення відео";
+        return;
+    }
 
-    if (confirm("Ви впевнені, що хочете видалити це відео?")) {
+    if (!confirm("Ви впевнені, що хочете видалити це відео?")) return;
+
+    try {
+        // 🔹 1. Storage delete
         const storageRef = storage.refFromURL(videoURL);
-        storageRef.delete()
-        .then(() => {
-            return database.ref(`videos/${videoKey}`).remove();
-            database.ref(`comments/${videoKey}`).remove();
-        })
-        .then(() => {
-          showNotificationModal();
-            message.innerHTML = "Відео успішно видалено.";
-            loadVideos();
-        })
-        .catch((error) => {
-            console.error("Помилка при видаленні відео:", error);
-            showNotificationModal();
-            message.innerHTML = "Помилка при видаленні відео: " + error.message;
+        await storageRef.delete();
+
+        // 🔹 2. Delete video document
+        await database.ref(`videos/${videoKey}`).remove();
+
+        // 🔹 3. Delete all comments for this video
+        const snapshot = await database.ref("comments")
+            .orderByChild("videoKey")
+            .equalTo(videoKey)
+            .once("value");
+
+        const updates = {};
+
+        snapshot.forEach(child => {
+            updates[`comments/${child.key}`] = null;
         });
+
+        if (Object.keys(updates).length > 0) {
+            await database.ref().update(updates);
+        }
+
+        // 🔹 4. UI update
+        showNotificationModal();
+        message.innerHTML = "Відео успішно видалено.";
+        loadVideos();
+
+    } catch (error) {
+        console.error("Помилка при видаленні відео:", error);
+        showNotificationModal();
+        message.innerHTML = "Помилка: " + error.message;
     }
 }
 function createSecondChannel() {
@@ -6000,6 +6180,10 @@ auth.onAuthStateChanged(async (user) => {
     loadChannelSelect();
     loadSecureFiles();
     loadLibrary(user);
+    updateColorsAuthor(user);
+    updateColorsCommentsAuthor(user);
+    updateColorsPhotosAuthor(user);
+    updateColorsVideosAuthor(user);
     cleanupExpiredVideos();
     updateVideosAuthor();
     updatePhotosAuthor();
@@ -6059,7 +6243,7 @@ if (age !== null) {
 
         const isHalloween = m === 10 && (d === 30 || d === 31);
         const isValentineDay = m === 2 && (d === 13 || d === 14);
-        const isVyshyvankaDay = m === 5 && (d === 15 || d === 16);
+        const isVyshyvankaDay = m === 5 && (d === 20 || d === 21);
         const isWeek = (m === 4 && d >= 10  && d <= 25);
         const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
 
@@ -6348,6 +6532,166 @@ async function updatePhotosAuthor() {
     await Promise.all(updates);
 
     console.log("Відео оновлено");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    if (userData.color) return;
+
+    await database.ref("users/" + uid).update({
+      color: randomGradient()
+    });
+
+  } catch (error) {
+    console.error("Failed to update user color:", error);
+  }
+}
+async function updateColorsVideosAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const videoSnap = await database
+      .ref("videos")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    videoSnap.forEach(child => {
+      updates.push(
+        database.ref("videos/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Videos updated");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsCommentsAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const commentSnap = await database
+      .ref("comments")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    commentSnap.forEach(child => {
+      updates.push(
+        database.ref("comments/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Videos updated");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsPhotosAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const photoSnap = await database
+      .ref("photos")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    photoSnap.forEach(child => {
+      updates.push(
+        database.ref("photos/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Photos updated");
 
   } catch (err) {
     console.error("Помилка оновлення:", err);
