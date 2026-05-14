@@ -1778,18 +1778,18 @@ async function loadComments(videoKey, videoOwnerEmail) {
         speakBtn.appendChild(icon);
 
         speakBtn.onclick = () => {
-            speakText(
-                blockedMeComments
-                    ? "account-not-found"
-                    : data.commentAuthor
-            );
+    speakText(
+        blockedMeComments
+            ? "Акаунт не знайдено"
+            : data.commentAuthor
+    );
 
-            speakText(
-                blockedMeComments
-                    ? "Коментар недоступний"
-                    : data.comment
-            );
-        };
+    speakText(
+        blockedMeComments
+            ? "Коментар недоступний"
+            : data.comment
+    );
+};
 
         textContainer.appendChild(speakBtn);
 
@@ -1868,10 +1868,14 @@ function showModalBlocked() {
     const modal = document.getElementById("block-user-modal");
     const info = document.getElementById("blocked-information");
 
-    info.textContent =
-        `Ви впевнені, що хочете заблокувати користувача "${blockedUserName}"?`;
+    let nameText = blockedUserName;
+
+    // якщо це i18n key — даємо можливість applyTranslations обробити
+    info.innerHTML =
+        `Ви впевнені, що хочете заблокувати користувача "<span data-i18n="${nameText}"></span>"?`;
 
     modal.style.display = "flex";
+    applyTranslations();
 }
 
 function closeBlockModal() {
