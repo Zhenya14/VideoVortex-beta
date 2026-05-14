@@ -1710,13 +1710,18 @@ async function loadComments(videoKey, videoOwnerEmail) {
         // 🔹 Username
         const userEl = document.createElement("strong");
 
-        if (blockedMeComments) {
-            userEl.setAttribute("data-i18n", "account-not-found");
-        } else if (!data.commentAuthor) {
-            userEl.setAttribute("data-i18n", "account-deleted");
-        } else {
-            userEl.textContent = data.commentAuthor;
-        }
+
+
+if (blockedMeComments) {
+    userEl.setAttribute("data-i18n", "account-not-found");
+    realBlockedUserName = "account-not-found";
+} else if (!data.commentAuthor) {
+    userEl.setAttribute("data-i18n", "account-deleted");
+    realBlockedUserName = "account-deleted";
+} else {
+    userEl.textContent = data.commentAuthor;
+    realBlockedUserName = null;
+}
 
         applyAccentUsername(userEl, gradientSource);
 
@@ -1783,11 +1788,10 @@ blockUser.addEventListener("click", () => {
     realBlockedUserName =
         data.commentAuthor || getTranslation("deleted-account");
 
-    blockedUserName =
-        blockedMeComments
-            ? getTranslation("account-not-found")
-            : realBlockedUserName;
-
+  
+ blockedUserName = realBlockedUserName
+    ? getTranslation(realBlockedUserName)
+    : null;
     blockedUserUid = data.authorUid;
 
     showModalBlocked();
