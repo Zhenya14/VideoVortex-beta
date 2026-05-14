@@ -9,6 +9,7 @@
   "save": "Save",
   "main-channel": "Main channel",
   "account-deleted": "Deleted Account",
+"account-not-found": "Account not found",
   "history": "Viewing history:",
   "new": "NEW",
   "information-blocked": "Profile avatars, videos, posts, and comments are hidden from blocked users.",
