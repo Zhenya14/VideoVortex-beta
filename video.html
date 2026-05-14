@@ -1649,6 +1649,8 @@ function applyAvatar(el, gradient, fallbackText) {
 }
 // =================== GLOBAL CLICK (ОДИН РАЗ) ===================
 
+// =================== GLOBAL CLICK (ОДИН РАЗ) ===================
+
 document.addEventListener("click", () => {
     document.querySelectorAll(".action-menu")
         .forEach(m => m.style.display = "none");
@@ -1714,42 +1716,45 @@ async function loadComments(videoKey, videoOwnerEmail) {
         if (blockedMeComments) {
             avatarComment.textContent = "❌";
             applyAvatar(avatarComment, gradientAvatar);
+
         } else if (!data.email || data.email === "Видалений акаунт") {
             avatarComment.textContent = "👻";
             applyAvatar(avatarComment, gradientAvatar);
         }
 
-        // =================== USER ===================
+        // =================== USERNAME ===================
 
         const userEl = document.createElement("strong");
 
         if (blockedMeComments) {
             userEl.setAttribute("data-i18n", "account-not-found");
+
         } else if (!data.commentAuthor) {
             userEl.setAttribute("data-i18n", "account-deleted");
+
         } else {
             userEl.textContent = data.commentAuthor;
         }
 
         applyAccentUsername(userEl, gradientSource);
 
-        // =================== TEXT ===================
+        // =================== COMMENT TEXT ===================
 
         const textEl = document.createElement("span");
 
-        let rawCommentText = "";
+        let commentText = "";
 
         if (blockedMeComments) {
-            rawCommentText = ": Коментар недоступний";
-            textEl.textContent = rawCommentText;
+            commentText = "Коментар недоступний";
+            textEl.textContent = `: ${commentText}`;
 
         } else if (data.isPrivate) {
-            rawCommentText = await decryptText(data.comment, videoKeyLocal);
-            textEl.textContent = ": " + rawCommentText;
+            commentText = await decryptText(data.comment, videoKeyLocal);
+            textEl.textContent = `: ${commentText}`;
 
         } else {
-            rawCommentText = data.comment;
-            textEl.textContent = ": " + rawCommentText;
+            commentText = data.comment;
+            textEl.textContent = `: ${commentText}`;
         }
 
         // =================== CONTAINER ===================
@@ -1765,14 +1770,20 @@ async function loadComments(videoKey, videoOwnerEmail) {
 
         const speakBtn = document.createElement("a");
         speakBtn.classList.add("speakBtn");
-        speakBtn.innerHTML = `<i class="material-icons">micro</i>`;
+
+        const icon = document.createElement("i");
+        icon.className = "material-icons";
+        icon.textContent = "micro";
+
+        speakBtn.appendChild(icon);
 
         speakBtn.onclick = () => {
             speakText(
                 blockedMeComments
-                    ? getTranslation("account-not-found")
+                    ? "account-not-found"
                     : data.commentAuthor
             );
+
             speakText(
                 blockedMeComments
                     ? "Коментар недоступний"
@@ -1785,12 +1796,17 @@ async function loadComments(videoKey, videoOwnerEmail) {
         // =================== MENU ===================
 
         const actionMenu = document.createElement("div");
-        actionMenu.classList.add("action-menu");
+        actionMenu.className = "action-menu";
         actionMenu.style.display = "none";
 
         const more = document.createElement("a");
-        more.classList.add("moreBtn");
-        more.innerHTML = `<i class="material-icons">more_vert</i>`;
+        more.className = "moreBtn";
+
+        const moreIcon = document.createElement("i");
+        moreIcon.className = "material-icons";
+        moreIcon.textContent = "more_vert";
+
+        more.appendChild(moreIcon);
 
         more.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -1805,7 +1821,7 @@ async function loadComments(videoKey, videoOwnerEmail) {
         // =================== BLOCK ===================
 
         const blockUser = document.createElement("button");
-        blockUser.classList.add("block-button");
+        blockUser.className = "block-button";
 
         blockUser.innerHTML = `
             <span style="display:flex;align-items:center;gap:6px;">
@@ -1817,11 +1833,11 @@ async function loadComments(videoKey, videoOwnerEmail) {
         blockUser.addEventListener("click", () => {
 
             realBlockedUserName =
-                data.commentAuthor || getTranslation("deleted-account");
+                data.commentAuthor || "deleted-account";
 
             blockedUserName =
                 blockedMeComments
-                    ? getTranslation("account-not-found")
+                    ? "account-not-found"
                     : realBlockedUserName;
 
             blockedUserUid = data.authorUid;
