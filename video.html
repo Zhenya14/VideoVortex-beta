@@ -1647,6 +1647,16 @@ function applyAvatar(el, gradient, fallbackText) {
         el.textContent = fallbackText;
     }
 }
+// =================== GLOBAL CLICK (ОДИН РАЗ) ===================
+
+document.addEventListener("click", () => {
+    document.querySelectorAll(".action-menu")
+        .forEach(m => m.style.display = "none");
+});
+
+
+// =================== LOAD COMMENTS ===================
+
 async function loadComments(videoKey, videoOwnerEmail) {
     const commentsContainer = document.getElementById(`comments-${videoKey}`);
     if (!commentsContainer) return;
@@ -1667,9 +1677,14 @@ async function loadComments(videoKey, videoOwnerEmail) {
     const videoKeyLocal = getVideoKey(videoKey);
     const children = Object.values(snapshot.val() || {});
 
+    const fragment = document.createDocumentFragment();
+
     for (const data of children) {
 
-        if (data.isPrivate && !(data.email === currentUserEmail || videoOwnerEmail === currentUserEmail)) continue;
+        if (
+            data.isPrivate &&
+            !(data.email === currentUserEmail || videoOwnerEmail === currentUserEmail)
+        ) continue;
 
         const blockedMeComments = await didUserBlockMe(data.authorUid);
 
@@ -1679,7 +1694,8 @@ async function loadComments(videoKey, videoOwnerEmail) {
         const commentDiv = document.createElement("div");
         commentDiv.className = "comment";
 
-        // 🔹 Avatar
+        // =================== AVATAR ===================
+
         const avatarComment = document.createElement("div");
         avatarComment.className = "avatar";
 
@@ -1697,46 +1713,47 @@ async function loadComments(videoKey, videoOwnerEmail) {
 
         if (blockedMeComments) {
             avatarComment.textContent = "❌";
-            applyAvatar(
-                avatarComment,
-                gradientAvatar)
+            applyAvatar(avatarComment, gradientAvatar);
         } else if (!data.email || data.email === "Видалений акаунт") {
             avatarComment.textContent = "👻";
-            applyAvatar(
-                avatarComment,
-                gradientAvatar)
+            applyAvatar(avatarComment, gradientAvatar);
         }
 
-        // 🔹 Username
+        // =================== USER ===================
+
         const userEl = document.createElement("strong");
 
-
-
-if (blockedMeComments) {
-    userEl.setAttribute("data-i18n", "account-not-found");
-    realBlockedUserName = "account-not-found";
-} else if (!data.commentAuthor) {
-    userEl.setAttribute("data-i18n", "account-deleted");
-    realBlockedUserName = "account-deleted";
-} else {
-    userEl.textContent = data.commentAuthor;
-    realBlockedUserName = null;
-}
+        if (blockedMeComments) {
+            userEl.setAttribute("data-i18n", "account-not-found");
+        } else if (!data.commentAuthor) {
+            userEl.setAttribute("data-i18n", "account-deleted");
+        } else {
+            userEl.textContent = data.commentAuthor;
+        }
 
         applyAccentUsername(userEl, gradientSource);
 
-        // 🔹 Text
+        // =================== TEXT ===================
+
         const textEl = document.createElement("span");
 
+        let rawCommentText = "";
+
         if (blockedMeComments) {
-            textEl.textContent = ": Коментар недоступний";
+            rawCommentText = ": Коментар недоступний";
+            textEl.textContent = rawCommentText;
+
         } else if (data.isPrivate) {
-            textEl.textContent = ": " + await decryptText(data.comment, videoKeyLocal);
+            rawCommentText = await decryptText(data.comment, videoKeyLocal);
+            textEl.textContent = ": " + rawCommentText;
+
         } else {
-            textEl.textContent = ": " + data.comment;
+            rawCommentText = data.comment;
+            textEl.textContent = ": " + rawCommentText;
         }
 
-        // 🔹 Container
+        // =================== CONTAINER ===================
+
         const textContainer = document.createElement("div");
         textContainer.style.display = "inline-flex";
         textContainer.style.alignItems = "center";
@@ -1744,20 +1761,29 @@ if (blockedMeComments) {
 
         textContainer.appendChild(textEl);
 
-        // 🔹 Speak
+        // =================== SPEAK ===================
+
         const speakBtn = document.createElement("a");
         speakBtn.classList.add("speakBtn");
         speakBtn.innerHTML = `<i class="material-icons">micro</i>`;
+
         speakBtn.onclick = () => {
-            speakText(blockedMeComments
-        ? getTranslation("account-not-found")
-        : data.commentAuthor);
-            speakText(blockedMeComments ? "Коментар недоступний" : data.comment);
+            speakText(
+                blockedMeComments
+                    ? getTranslation("account-not-found")
+                    : data.commentAuthor
+            );
+            speakText(
+                blockedMeComments
+                    ? "Коментар недоступний"
+                    : data.comment
+            );
         };
 
         textContainer.appendChild(speakBtn);
 
-        // 🔹 Menu
+        // =================== MENU ===================
+
         const actionMenu = document.createElement("div");
         actionMenu.classList.add("action-menu");
         actionMenu.style.display = "none";
@@ -1769,61 +1795,65 @@ if (blockedMeComments) {
         more.addEventListener("click", (e) => {
             e.stopPropagation();
             actionMenu.style.display =
-                actionMenu.style.display === "inline-flex" ? "none" : "inline-flex";
+                actionMenu.style.display === "inline-flex"
+                    ? "none"
+                    : "inline-flex";
         });
 
         textContainer.appendChild(more);
 
-        // 🔹 Block
+        // =================== BLOCK ===================
+
         const blockUser = document.createElement("button");
         blockUser.classList.add("block-button");
+
         blockUser.innerHTML = `
             <span style="display:flex;align-items:center;gap:6px;">
                 <i class="material-icons">block</i>
                 <p>Заблокувати</p>
-            </span>`;
+            </span>
+        `;
 
-blockUser.addEventListener("click", () => {
+        blockUser.addEventListener("click", () => {
 
-    realBlockedUserName =
-        data.commentAuthor || getTranslation("deleted-account");
+            realBlockedUserName =
+                data.commentAuthor || getTranslation("deleted-account");
 
-  
- blockedUserName = realBlockedUserName
-    ? getTranslation(realBlockedUserName)
-    : null;
-    blockedUserUid = data.authorUid;
+            blockedUserName =
+                blockedMeComments
+                    ? getTranslation("account-not-found")
+                    : realBlockedUserName;
 
-    showModalBlocked();
-});
+            blockedUserUid = data.authorUid;
+
+            showModalBlocked();
+        });
 
         actionMenu.appendChild(blockUser);
         textContainer.appendChild(actionMenu);
 
-        document.addEventListener("click", () => {
-            document.querySelectorAll(".action-menu")
-                .forEach(m => m.style.display = "none");
-        });
+        // =================== ASSEMBLE ===================
 
-        // 🔹 Assemble
         commentDiv.appendChild(avatarComment);
         commentDiv.appendChild(userEl);
         commentDiv.appendChild(textContainer);
 
-        commentsContainer.appendChild(commentDiv);
+        fragment.appendChild(commentDiv);
     }
 
+    commentsContainer.appendChild(fragment);
     applyTranslations();
 }
 
-// =================== BLOCK MODAL ===================
+
+// =================== MODAL ===================
 
 function showModalBlocked() {
     const modal = document.getElementById("block-user-modal");
     const info = document.getElementById("blocked-information");
 
-    // Відображаємо те, що потрібно бачити користувачу
-    info.textContent = `Ви впевнені, що хочете заблокувати користувача "${blockedUserName}"?`;
+    info.textContent =
+        `Ви впевнені, що хочете заблокувати користувача "${blockedUserName}"?`;
 
     modal.style.display = "flex";
 }
