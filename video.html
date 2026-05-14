@@ -1868,11 +1868,17 @@ function showModalBlocked() {
     const modal = document.getElementById("block-user-modal");
     const info = document.getElementById("blocked-information");
 
-    let nameText = blockedUserName;
+    const isI18nKey =
+        blockedUserName === "account-not-found" ||
+        blockedUserName === "account-deleted";
 
-    // якщо це i18n key — даємо можливість applyTranslations обробити
-    info.innerHTML =
-        `Ви впевнені, що хочете заблокувати користувача "<span data-i18n="${nameText}"></span>"?`;
+    if (isI18nKey) {
+        info.innerHTML =
+            `Ви впевнені, що хочете заблокувати користувача "<span data-i18n="${blockedUserName}"></span>"?`;
+    } else {
+        info.textContent =
+            `Ви впевнені, що хочете заблокувати користувача "${blockedUserName}"?`;
+    }
 
     modal.style.display = "flex";
     applyTranslations();
