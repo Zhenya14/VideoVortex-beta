@@ -282,8 +282,51 @@ border: none;
 outline: none;
 font-size: 18px;
 }
+        nav a {
+height: 50px;
+align-items: center;
+    justify-content: center;
+display: flex;
+    padding: 0px 5px;
+    border-radius: 50px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+          background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: url(#displacementFilter) blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  filter: url(#glass-distortion);
+  -webkit-filter: url(#glass-distortion);
+
+  /* Тінь і обведення для глибини */
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 rgb(59 130 246 / 0%);
+        }
+        .search { 
+  display: inline-block;
+  padding: 12px 28px;
+  margin: 0 10px;
+  border-radius: 999px;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: url(#displacementFilter) blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  filter: url(#glass-distortion);
+  -webkit-filter: url(#glass-distortion);
+
+  /* Тінь і обведення для глибини */
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+
+}
     @supports not (hanging-punctuation:first) {
-        .bg-liquid-glass, .btn-liquid-glass, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input, .tab-liquid-glass {
+        .bg-liquid-glass, .btn-liquid-glass, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input, .tab-liquid-glass, .open-liquid-glass-menu {
             backdrop-filter: url(#displacementFilter) blur(2px);
         }
     }
@@ -381,7 +424,8 @@ input:checked + .slider:before {
   padding: 5px;
 }
 
-.secure-item button {
+.secure-item {
+  display: inline-flex;
   margin-left: 5px;
   padding: 5px 10px;
 }
@@ -747,7 +791,11 @@ body.newyear {
         }
         body { 
     color: #e9ecf1;
-  font-family: Inter, Segoe UI, Roboto, Arial;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   margin: 0;
   background: radial-gradient(ellipse at top, #0b0f17, #05060a);
     line-height: 1.6;
@@ -757,6 +805,40 @@ text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 1.35;
+}
+
+.text {
+  font-size: 14px;
+  font-weight: 400;
+  color: #b5b5b5;
+  line-height: 1.5;
+}
+
+.meta {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8a8a8a;
+  letter-spacing: 0.01em;
 }
         }
         .video-status {
@@ -1040,6 +1122,9 @@ transform: scale(0.95); /* легке стиснення */
   color: white;
   border: 1px solid rgba(255,255,255,0.18);
   padding: 8px 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   transition: .2s;
   text-align: left;
   cursor: pointer;
@@ -1517,6 +1602,7 @@ transform: scale(0.95); /* легке стиснення */
   border-radius: 5px;
 }
 .history-info p {
+  display: inline;
   margin: 0;
   font-size: 12px;
   color: #fff;
@@ -1533,6 +1619,12 @@ transform: scale(0.95); /* легке стиснення */
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.open-btn, .delete-btn  {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
 }
 .action-menu {
   position: absolute;
@@ -1874,15 +1966,11 @@ display: none;
 
 .search-close i {
   font-size: 28px;
-  color: black;
+  color: white;
 }
 
 /* Кнопка пошуку у navbar (опціонально) */
-.open--btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
+
 .modal-blocked-overlay {
   position: fixed;
   inset: 0;
@@ -1995,51 +2083,20 @@ display: none;
   from { transform: scale(0.8); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
-.open--btn i {
-  font-size: 28px;
-}
+
 nav {
     display: flex;
     justify-content: center;
     padding: 0px 20px;
-    background: rgb(26 26 26 / 68%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+
     border-radius: 16px;
     box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
     position: fixed;
     z-index: 100;
     width: 97%;
         }
-        nav a {
-height: 50px;
-align-items: center;
-    justify-content: center;
-display: flex;
-    padding: 0px 5px;
-    border-radius: 50px;
-    text-align: center;
-    text-decoration: none;
-    color: white;
-    background: #111111;
-    border: 2px solid #333333;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 0 rgb(59 130 246 / 0%);
-        }
-        nav a:hover {
-            border-color: #f472b6; /* підсвічування рамки блакитним */
 
-box-shadow: 0 0 15px #f472b6; /* світіння */
-
-transform: translateY(-2px); /* легке підняття */
-        }
-nav a:active {
-border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
-
-box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
-
-transform: scale(0.95); /* легке стиснення */
-}
+        
         .icon-text {
             margin-left: 5px;
         }
@@ -2271,6 +2328,7 @@ text-decoration: none;
 </div>
 <button class="donate" onclick="window.open('https://www.privat24.ua/send/iwcz8', '_blank')"><i class="material-icons">favorite</i>Підтримати проект</button>
  <nav>
+ 
         <div style="display: flex; align-items: center;">
             <a href="#" id="open-menu" onclick="toggleSidebar()">
     <i class="material-icons">menu</i>
@@ -2279,7 +2337,7 @@ text-decoration: none;
             <a href="index.html">
             <h1 style="padding-left: 5px;">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup><sup><div id="timer"></div></sup></a>
         </div>
-        <button onclick="openSearch()">
+        <button class="search" onclick="openSearch()">
   <i class="material-icons">search</i>
 </button>
         <div style="display: flex; gap: 15px; margin-left: auto;">
@@ -2402,10 +2460,10 @@ text-decoration: none;
             <h2 data-i18n="label-video">Завантажити відео</h2>
             <input type="text" id="video-title" placeholder="Назва відео">
             <textarea id="video-description" placeholder="Опис відео"></textarea>
-            <button onclick="generateDescription()">🤖 Згенерувати опис<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></button>
+            <button style="display:flex; align-items: center; justify-content: center; margin: 0 0 0 70px; padding: 0 10px;" onclick="generateDescription()"><i class="material-icons">smart_toy</i><p data-i18n="generate-description">Згенерувати опис</p><sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
   <label for="video-file" class="video-label">
-  <i class="material-icons">cloud_upload</i> Завантажити відео
+  <i class="material-icons">cloud_upload</i><p data-i18n="label-video">Завантажити відео</p>
 </label>
 <button id="openVideoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="video-file" accept="video/*">
@@ -2415,19 +2473,19 @@ text-decoration: none;
   <option value="second">Другий канал</option>
 </select>
 <br>
-<span>Вимкнути коментарі <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
+<span data-i18n ="disabled-comments-checkbox">Вимкнути коментарі</span><sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
      <br>
-     <p style="text-align: center;">Налаштування приватності:</p>
-      <span>Видалити через 24 години <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>
+     <p style="text-align: center;" data-i18n="settings-privacy">Налаштування приватності:</p>
+      <span data-i18n="auto-delete-24h">Видалити через 24 години</span> <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>
      <label class="switch" for="auto-delete-24h">
   <input type="checkbox" id="auto-delete-24h"><span class="slider round"></span></label>
   <br>
-   <span>Приватне відео<label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
+   <span data-i18n="private-checkbox">Приватне відео<label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
    <br>
-<span>Заборонити збереження відео<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
+<span data-i18n="save-video-checkbox">Заборонити збереження відео<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
     <br>
-        <span>Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
+        <span data-i18n="domain-restrict-checkbox">Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
         <input type="checkbox" id="domain-restrict-checkbox"><span class="slider round"></span></label>
 </div>
 <br>
@@ -4342,7 +4400,9 @@ function resendVerification() {
             });
     }
 }
-
+function deleteAccountModal() {
+  deleteAccountModal.style.display = "flex";
+}
 function deleteAccount() {
     const user = firebase.auth().currentUser;
 
@@ -4707,7 +4767,7 @@ const brEdit = document.createElement("br");
             const brArchive = document.createElement("br");
            const archive = document.createElement("button");
            archive.classList.add("archive");
-           archive.innerHTML = `<i class="material-icons">archive</i><p data-i18n="archive">Архів<sup class="badge-new" data-i18n="new">NEW</sup></p>`;
+           archive.innerHTML = `<i class="material-icons">archive</i><p data-i18n="archive">Архів</p><sup class="badge-new" data-i18n="new">NEW</sup>`;
            archive.onclick = () => {
              showArchiveModal();
            };
@@ -4718,8 +4778,7 @@ const brEdit = document.createElement("br");
             const historyInfo = document.createElement("div");
             historyInfo.classList.add("history-info");
             const historyTitle = document.createElement("p");
-            historyTitle.setAttribute("data-i18n", "history");
-            historyTitle.innerHTML = `Історія переглядів<sup class="badge-new" data-i18n="new">NEW</sup>:`;
+            historyTitle.innerHTML = `<p data-i18n="history">Історія переглядів</p><sup class="badge-new" data-i18n="new">NEW</sup>:`;
             historyInfo.appendChild(historyTitle);
             authorInfo.appendChild(historyInfo);
             library.appendChild(authorInfo);
@@ -5357,6 +5416,50 @@ function insertRandomComment(videoKey) {
     input.value = randomComments[randomIndex];
   }
 }
+async function deleteArchive() {
+    if (!videoURL || !videoKey) {
+        showNotificationModal();
+        message.innerHTML = "Немає даних для видалення відео";
+        return;
+    }
+
+    if (!confirm("Ви впевнені, що хочете видалити це відео?")) return;
+
+    try {
+        // 🔹 1. Storage delete
+        const storageRef = storage.refFromURL(videoURL);
+        await storageRef.delete();
+
+        // 🔹 2. Delete video document
+        await database.ref(`videos/${videoKey}`).remove();
+
+        // 🔹 3. Delete all comments for this video
+        const snapshot = await database.ref("comments")
+            .orderByChild("videoKey")
+            .equalTo(videoKey)
+            .once("value");
+
+        const updates = {};
+
+        snapshot.forEach(child => {
+            updates[`comments/${child.key}`] = null;
+        });
+
+        if (Object.keys(updates).length > 0) {
+            await database.ref().update(updates);
+        }
+
+        // 🔹 4. UI update
+        showNotificationModal();
+        message.innerHTML = "Відео успішно видалено.";
+        loadVideos();
+
+    } catch (error) {
+        console.error("Помилка при видаленні відео:", error);
+        showNotificationModal();
+        message.innerHTML = "Помилка: " + error.message;
+    }
+}
 async function deleteVideo(videoKey, videoURL) {
     if (!videoURL || !videoKey) {
         showNotificationModal();
@@ -5556,11 +5659,70 @@ document.getElementById("video-file").addEventListener("change", async (e) => {
     message.innerHTML = "Помилка конвертації відео";
   }
 });
+function updateUploadUI(id, progress, timeLeftSec) {
+  const el = document.getElementById(id);
+  if (!el) return;
 
+  const percent = el.querySelector(".upload-progress-text");
+  const time = el.querySelector(".upload-time-left");
+
+  if (percent) percent.innerText = `${Math.round(progress)}%`;
+  if (time) time.innerText = `~${Math.round(timeLeftSec)}s left`;
+}
+function addVideoToFeed(video) {
+  const container = document.getElementById("video-gallery");
+
+  if (!container) {
+    console.warn("videos-feed container not found");
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.className = "video-card";
+  card.id = video.id;
+
+  card.innerHTML = `
+    <img src="${video.thumbnail}" class="video-thumb"/>
+
+    <div class="video-meta">
+      <div class="video-title">${video.title}</div>
+      <div class="video-author">${video.author}</div>
+
+      ${
+        video.uploading
+          ? `
+        <div class="upload-status">
+          <div class="upload-progress-text">0%</div>
+          <div class="upload-time-left">calculating...</div>
+        </div>
+      `
+          : ""
+      }
+    </div>
+  `;
+
+  container.prepend(card);
+}
+function finalizeUpload(tempId, data) {
+  const el = document.getElementById(tempId);
+  if (!el) return;
+
+  el.querySelector(".upload-box")?.remove();
+
+  el.querySelector("h3").innerText = data.title;
+  el.querySelector("p").innerText = data.author;
+
+  el.id = data.realId;
+}
 async function uploadVideo() {
   const startTime = Date.now();
-  const isBandura = document.getElementById("bandura-video")?.checked || false;
-const autoDelete24h = document.getElementById("auto-delete-24h")?.checked || false;
+
+  const isBandura =
+    document.getElementById("bandura-video")?.checked || false;
+
+  const autoDelete24h =
+    document.getElementById("auto-delete-24h")?.checked || false;
+
   const banduraExtra = isBandura ? {
     style: document.getElementById("bandura-style").value || "Соло",
     key: document.getElementById("bandura-key").value || "",
@@ -5577,6 +5739,7 @@ const autoDelete24h = document.getElementById("auto-delete-24h")?.checked || fal
   const videoTitle = document.getElementById("video-title").value;
   const videoDescription = document.getElementById("video-description").value;
   const videoFile = document.getElementById("video-file").files[0];
+
   const isNSFW = document.getElementById("nsfw").checked;
   const safeVideo = document.getElementById("save-video-checkbox").checked;
   const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
@@ -5590,6 +5753,7 @@ const autoDelete24h = document.getElementById("auto-delete-24h")?.checked || fal
   }
 
   const user = firebase.auth().currentUser;
+
   if (!user) {
     showNotificationModal();
     message.innerHTML = "Потрібно увійти в акаунт";
@@ -5602,39 +5766,59 @@ const autoDelete24h = document.getElementById("auto-delete-24h")?.checked || fal
     const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val() || {};
 
-    // Вибір каналу через селект
-    const selectedChannel = document.getElementById("video-channel-select").value || "main";
+    const selectedChannel =
+      document.getElementById("video-channel-select").value || "main";
 
     let authorName;
     let authorAvatarUrl = null;
 
-    if (selectedChannel === "second" && userData.channels && userData.channels.second) {
-      // Другий канал
+    if (selectedChannel === "second" && userData.channels?.second) {
       authorName = userData.channels.second.name || "Другий канал";
-      const secondAvatar = userData.channels.second.avatarId || null;
+
+      const secondAvatar = userData.channels.second.avatarId;
+
       if (secondAvatar) {
         try {
-          authorAvatarUrl = await storage.ref(`avatars/${secondAvatar}.webp`).getDownloadURL();
-        } catch (e) {
-          console.warn("Аватар другого каналу не знайдено");
-        }
+          authorAvatarUrl =
+            await storage.ref(`avatars/${secondAvatar}.webp`).getDownloadURL();
+        } catch {}
       }
+
     } else {
-      // Основний канал
-      authorName = `${userData.name || ""} ${userData.supername || ""}`.trim() || "Основний канал";
-      const mainAvatar = userData.avatarId || null;
+      authorName =
+        `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+        "Основний канал";
+
+      const mainAvatar = userData.avatarId;
+
       if (mainAvatar) {
         try {
-          authorAvatarUrl = await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
-        } catch (e) {
-          console.warn("Аватар основного каналу не знайдено");
-        }
+          authorAvatarUrl =
+            await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
+        } catch {}
       }
     }
 
-    // Завантаження відео
-    const storageRef = storage.ref(`videos/${Date.now()}_${videoFile.name}`);
+    const storageRef =
+      storage.ref(`videos/${Date.now()}_${videoFile.name}`);
+
     const uploadTask = storageRef.put(videoFile);
+
+    const tempId = "temp_" + Date.now();
+    const tempThumbnailUrl = URL.createObjectURL(videoFile);
+
+    addVideoToFeed({
+      id: tempId,
+      title: videoTitle,
+      author: "Uploading...",
+      thumbnail: tempThumbnailUrl,
+      uploading: true
+    });
+loadVideos();
+    const progressContainer =
+      document.getElementById("progress-container");
+
+    progressContainer.style.display = "block";
 
     localStorage.setItem("activeUpload", JSON.stringify({
       fileName: videoFile.name,
@@ -5644,84 +5828,148 @@ const autoDelete24h = document.getElementById("auto-delete-24h")?.checked || fal
       status: "uploading"
     }));
 
-    uploadTask.on("state_changed",
-      snapshot => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        const timeElapsed = (Date.now() - startTime) / 1000;
-        const speed = snapshot.bytesTransferred / Math.max(timeElapsed, 1);
-        const remainingBytes = snapshot.totalBytes - snapshot.bytesTransferred;
-        const timeLeft = remainingBytes / Math.max(speed, 1);
+    uploadTask.on(
+      "state_changed",
 
-        const uploadData = JSON.parse(localStorage.getItem("activeUpload"));
+      snapshot => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+        const timeElapsed =
+          (Date.now() - startTime) / 1000;
+
+        const speed =
+          snapshot.bytesTransferred / (timeElapsed || 0.001);
+
+        const remainingBytes =
+          snapshot.totalBytes - snapshot.bytesTransferred;
+
+        const timeLeftSec =
+          remainingBytes / Math.max(speed, 1);
+
+        updateUploadUI(tempId, progress, timeLeftSec);
+
+        const uploadData =
+          JSON.parse(localStorage.getItem("activeUpload"));
+
         if (uploadData) {
-          uploadData.bytesTransferred = snapshot.bytesTransferred;
-          localStorage.setItem("activeUpload", JSON.stringify(uploadData));
+          uploadData.bytesTransferred =
+            snapshot.bytesTransferred;
+
+          localStorage.setItem(
+            "activeUpload",
+            JSON.stringify(uploadData)
+          );
         }
 
-        document.getElementById("time-left").innerText = `${Math.round(timeLeft)}s`;
-        document.getElementById("upload-progress").value = progress;
-        document.getElementById("progress-text").innerText = `Завантаження: ${Math.round(progress)}%`;
-        document.getElementById("progress-container").style.display = "block";
+        document.getElementById("time-left").innerText =
+          `${Math.round(timeLeftSec)}s`;
+
+        document.getElementById("upload-progress").value =
+          progress;
+
+        document.getElementById("progress-text").innerText =
+          `Завантаження: ${Math.round(progress)}%`;
       },
+
       error => {
         console.error(error);
         showNotificationModal();
         message.innerHTML = "Помилка завантаження відео.";
       },
+
       async () => {
-        const uploadData = JSON.parse(localStorage.getItem("activeUpload"));
+        const uploadData =
+          JSON.parse(localStorage.getItem("activeUpload"));
+
         if (uploadData) {
           uploadData.status = "processing";
-          localStorage.setItem("activeUpload", JSON.stringify(uploadData));
+
+          localStorage.setItem(
+            "activeUpload",
+            JSON.stringify(uploadData)
+          );
         }
 
         try {
-          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+          const downloadURL =
+            await uploadTask.snapshot.ref.getDownloadURL();
 
-          // Створення мініатюри
-          const thumbnailBlob = await createThumbnail(videoFile);
-          const thumbRef = storage.ref(`thumbnails/${Date.now()}_${videoFile.name}.jpg`);
+          const thumbnailBlob =
+            await createThumbnail(videoFile);
+
+          const thumbRef =
+            storage.ref(`thumbnails/${Date.now()}_${videoFile.name}.jpg`);
+
           await thumbRef.put(thumbnailBlob);
-          const thumbnailURL = await thumbRef.getDownloadURL();
+
+          const thumbnailURL =
+            await thumbRef.getDownloadURL();
 
           const now = new Date();
-          const currentDate = `${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}.${now.getFullYear()}`;
 
-          // Додаємо відео в базу
-          await database.ref("videos").push({
+          const currentDate =
+            `${now.getDate().toString().padStart(2,'0')}.` +
+            `${(now.getMonth()+1).toString().padStart(2,'0')}.` +
+            `${now.getFullYear()}`;
+
+          const ref = await database.ref("videos").push({
             title: videoTitle,
             author: authorName,
             authorAvatar: authorAvatarUrl,
             authorUid: uid,
+            authorColor: userData.color,
+            videoColor: randomGradient(),
             email: user.email,
-            disabledComments: disabledComments,
+
+            disabledComments,
             url: downloadURL,
             thumbnail: thumbnailURL,
             description: videoDescription,
             saveVideo: safeVideo,
+
             views: 0,
             private: privateVideo,
-            domainRestrict: domainRestrict,
+            domainRestrict,
             nsfw: isNSFW,
+
             createdAt: Date.now(),
-  autoDelete24h: autoDelete24h,
+            autoDelete24h,
             publishDate: currentDate,
+
             banduraExtra,
-            expiresAt: autoDelete24h ? Date.now() + 86400000 : null
+            expiresAt: autoDelete24h
+              ? Date.now() + 86400000
+              : null
           });
 
+          finalizeUpload(tempId, {
+            realId: ref.key,
+            title: videoTitle,
+            author: authorName
+          });
+
+          URL.revokeObjectURL(tempThumbnailUrl);
+
           localStorage.removeItem("activeUpload");
+
           showPopup();
-          document.getElementById("message-notification").innerHTML = "Відео завантажено!";
-          document.getElementById("progress-container").style.display = "none";
+
+          document.getElementById("message-notification").innerHTML =
+            "Відео завантажено!";
+
+          progressContainer.style.display = "none";
+
           document.getElementById("upload-modal").style.display = "none";
-document.getElementById("modal-window").style.display = "none";
-document.getElementById("videoModal").style.display = "none";
+          document.getElementById("modal-window").style.display = "none";
+          document.getElementById("videoModal").style.display = "none";
 
         } catch (err) {
           console.error(err);
           showNotificationModal();
-          message.innerHTML = "Помилка при завантаженні відео або мініатюри." + err.message;
+          message.innerHTML =
+            "Помилка при завантаженні відео або мініатюри. " +
+            err.message;
         }
       }
     );
@@ -5729,7 +5977,7 @@ document.getElementById("videoModal").style.display = "none";
   } catch (err) {
     console.error("Помилка при отриманні даних користувача:", err);
     showNotificationModal();
-    message.innerHTML = "Не вдалося отримати дані профілю.";
+    message.innerHTML = "Не вдалося отримати дані профілю." + err.message;
   }
 }
 
@@ -6146,7 +6394,8 @@ const snapshot = await firebase
 
     item.innerHTML = `
       <b>${data.name || "Без назви"}</b><br>
-      <button class="open-btn">🔓 Відкрити</button>
+      <button class="open-btn"><i class="material-icons">lock_open</i>Відкрити</button>
+      <button class="delete-btn"><i class="material-icons">delete</i>Видалити</button>
     `;
     const button = item.querySelector(".open-btn");
 
@@ -6180,10 +6429,10 @@ auth.onAuthStateChanged(async (user) => {
     loadChannelSelect();
     loadSecureFiles();
     loadLibrary(user);
-    updateColorsAuthor(user);
-    updateColorsCommentsAuthor(user);
-    updateColorsPhotosAuthor(user);
-    updateColorsVideosAuthor(user);
+    updateColorsAuthor();
+    updateColorsCommentsAuthor();
+    updateColorsPhotosAuthor();
+    updateColorsVideosAuthor();
     cleanupExpiredVideos();
     updateVideosAuthor();
     updatePhotosAuthor();
@@ -6537,7 +6786,7 @@ async function updatePhotosAuthor() {
     console.error("Помилка оновлення:", err);
   }
 }
-async function updateColorsAuthor(user) {
+async function updateColorsAuthor() {
   if (!user) return;
 
   const uid = user.uid;
@@ -6556,7 +6805,7 @@ async function updateColorsAuthor(user) {
     console.error("Failed to update user color:", error);
   }
 }
-async function updateColorsVideosAuthor(user) {
+async function updateColorsVideosAuthor() {
   if (!user) return;
 
   const uid = user.uid;
@@ -6590,7 +6839,8 @@ async function updateColorsVideosAuthor(user) {
         database.ref("videos/" + child.key).update({
           author: fullName || "Анонім",
           authorAvatar: authorAvatarUrl,
-          authorColor: userData.color || null
+          authorColor: userData.color || null,
+          videoColor: randomGradient(),
         })
       );
     });
@@ -6603,7 +6853,7 @@ async function updateColorsVideosAuthor(user) {
     console.error("Помилка оновлення:", err);
   }
 }
-async function updateColorsCommentsAuthor(user) {
+async function updateColorsCommentsAuthor() {
   if (!user) return;
 
   const uid = user.uid;
@@ -6650,7 +6900,7 @@ async function updateColorsCommentsAuthor(user) {
     console.error("Помилка оновлення:", err);
   }
 }
-async function updateColorsPhotosAuthor(user) {
+async function updateColorsPhotosAuthor() {
   if (!user) return;
 
   const uid = user.uid;
