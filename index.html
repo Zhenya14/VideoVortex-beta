@@ -307,7 +307,7 @@ font-size: 18px;
         nav a {
 height: 50px;
 align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 display: flex;
     padding: 0px 5px;
     border-radius: 50px;
@@ -2301,17 +2301,16 @@ text-decoration: none;
 <img src="VideoVortex_logo.ico" id="logo" style="height: 50px; width: 50px; border-radius: 50%;">
             <a href="index.html">
             <h1 style="padding-left: 5px;">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup><sup><div id="timer"></div></sup></a>
-        </div>
+
         <button class="search" onclick="openSearch()">
   <i class="material-symbols">search</i>
 </button>
+</div>
         <div style="display: flex; gap: 15px; margin-left: auto;">
+                <a href="#" class="notification"><i class="material-symbols">notifications</i></a>
            <a href="#" id="plus-desktop-button"><i class="material-symbols">add</i></a>
             <a href="auth.html" id="auth-link">
-                <i class="material-symbols">login</i><span class="icon-text">Увійти</span>
-            </a>
-            <a href="auth.html" id="register-link">
-                <i class="material-symbols">person_add</i><span class="icon-text">Реєстрація</span>
+                <i class="material-symbols">account_circle</i><span>Увійти</span>
             </a>
             <a href="#" id="logout-link" style="display: none;">
                 <i class="material-symbols">logout</i><span class="icon-text">Вийти</span>
@@ -6246,6 +6245,7 @@ function toggleUploadVisibility() {
     const plusDesktopPost = document.getElementById("plus-desktop-button");
     const openMenu = document.getElementById("open-menu");
     const accountDesktopLink = document.getElementById("account-desktop-link");
+    const logoutLink = document.getElementById("logout-link");
 
     // Перевірка на null, щоб уникнути помилок
     if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) return;
@@ -6254,11 +6254,13 @@ function toggleUploadVisibility() {
         openMenu.style.display = "none";
         plusPost.style.display = "grid";
         plusDesktopPost.style.display = "none";
+        logoutLink.style.display= "none";
         accountDesktopLink.style.display = "none";
     } else {
         openMenu.style.display = "flex";
         plusPost.style.display = "none";
         plusDesktopPost.style.display = "flex";
+        logoutLink.style.display= "flex";
         accountDesktopLink.style.display = "flex";
     }
 }
