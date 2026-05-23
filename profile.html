@@ -293,7 +293,7 @@ button.cancel:active {
      <button id="blockUserBtn" style="
     margin-left: 12px;
     padding: 6px 12px;
-    border-radius: 8px;
+    border-radius: 38px;
     border: 1px solid #333;
     background: #111;
     color: #fff;
@@ -306,6 +306,21 @@ button.cancel:active {
     <i class="material-symbols">block</i>
     Заблокувати
   </button>
+  <button class="shareBtn" id="shareBtn" style="
+    margin-left: 12px;
+    padding: 6px 12px;
+    border-radius: 38px;
+    border: 1px solid #333;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  ">
+  <i class="material-symbols">share</i><p data-i18n="shareBtn" style="padding: 5px;">Поділитися</p>  
+    </button>
   </div>
 </div>
 
@@ -654,6 +669,29 @@ async function confirmBlockUser() {
     closeBlockModal();
     alert("Користувача заблоковано");
 }
+document.getElementById('shareBtn').addEventListener('click', async () => {
+    if (blockedUserUid) {
+      const blockedMeProfile = await didUserBlockMe(blockedUserUid);
+
+      if (blockedMeProfile) {
+        alert("Сталася Помилка.");
+        return;
+      }
+    }
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'VideoVortex',
+        url: window.location.href, // або конкретний URL на твоєму хості
+      });
+      console.log('Поділено успішно');
+    } catch (err) {
+      console.error('Помилка при поділі:', err);
+    }
+  } else {
+    alert('Ваш браузер не підтримує цю функцію');
+  }
+});
 async function loadPosts() {
   const photoGallery = document.getElementById("photo-gallery");
   photoGallery.innerHTML = "";
