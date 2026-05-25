@@ -362,7 +362,7 @@ cursor: pointer;
   gtag('config', 'G-JQTQ0P69EF');
 </script>
 <style>
-#photo-file, #video-file {
+#photo-file, #video-file, #action-btn {
   display: none;
 }
 /* Стиль повзунка */
@@ -1800,6 +1800,77 @@ position: fixed;
   box-shadow: 0 0 22px rgba(0, 255, 255, .07);
       animation: opacity 0.5s ease;
     }
+/* Контейнер для картинки, затемнення та кнопки */
+.image-container {
+  position: relative;
+  width: 100%;
+  max-width: 300px; /* Задайте потрібну ширину для прев'ю відео */
+  margin: 15px auto; /* Центрування в модальному вікні */
+  border-radius: 8px;
+  overflow: hidden; /* Щоб затемнення не виходило за округлені кути */
+}
+
+/* Стилі для самого зображення */
+.image-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  object-fit: cover;
+  min-height: 150px; /* Мінімальна висота, якщо картинка ще не завантажилась */
+  background-color: #333; /* Тимчасовий темний фон, поки немає src */
+}
+
+/* Шале затемнення */
+.image-container .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Чорний колір із прозорістю 50% */
+  z-index: 1; /* Шар вище за картинку */
+  pointer-events: none; /* Кліки будуть проходити крізь цей шар */
+}
+
+/* Стилі кнопки редагування */
+.image-container .action-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Ідеальне центрування по центру */
+  z-index: 2; /* Шар вище за затемнення (overlay) */
+  
+  /* Зовнішній вигляд круглої кнопки */
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  
+  /* Центрування іконки всередині кнопки */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+/* Ефект при наведенні на кнопку */
+.image-container .action-btn:hover {
+  background-color: #fff;
+  transform: translate(-50%, -50%) scale(1.1); /* Легке збільшення */
+}
+
+/* Стилі для іконки Material Symbols */
+.image-container .action-btn .material-symbols {
+  font-size: 24px;
+}
+
+
     .video-thumb-wrapper {
   position: relative;
 }
@@ -2706,6 +2777,13 @@ text-decoration: none;
             <h2>Редагувати відео</h2>
             <input type="text" id="edit-video-title" placeholder="Назва відео">
             <textarea id="edit-video-description" placeholder="Опис відео"></textarea>
+            <div class="image-container">
+              <img>
+    <div class="overlay"></div>
+    <label for="action-btn" class="action-btn"><i class="material-symbols">edit_square</i></label>
+    <input type="file" id="action-btn" accept="image/*">
+</div>
+
  <span>Приватне відео</span><label class="switch" for="edit-private-checkbox"><input type="checkbox" id="edit-private-checkbox"><span class="slider round"></span></label>
             <button id="edit-button" onclick="saveVideoChanges()">Зберегти</button>
         </div>
@@ -2887,6 +2965,8 @@ function closeNotificationAIModal() {
 async function generateDescription() {
   const textTitle = document.getElementById("video-title");
   const description = document.getElementById("video-description");
+  const language =
+        document.getElementById("language-select").value;
   const text = textTitle.value?.trim();
 
   if (!text) {
@@ -2907,7 +2987,11 @@ async function generateDescription() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ 
+          text,
+          language
+          
+        }),
       }
     );
   } catch (networkError) {
@@ -3479,6 +3563,22 @@ function searchVideos() {
         }
     });
 }
+        </script>
+        <script defer>
+     const prewiewInput = document.getElementById("action-btn");     
+     const imgPrewiew = document.querySelector(".image-container img");
+     prewiewInput.addEventListener('change', () => {
+    // Перевіряємо через тернарний оператор, чи файл обрано
+    const file = prewiewInput.files.length ? prewiewInput.files[0] : null;
+    
+    if (file) {
+        // Створюємо тимчасовий URL для локального файлу
+        const objectURL = URL.createObjectURL(file);
+        
+        // Замінюємо старе фото на нове у вікні редагування
+        imgPrewiew.src = objectURL;
+    }
+});
         </script>
         <script defer>
 const fileInput = document.getElementById("photo-file");
@@ -5636,22 +5736,29 @@ function createSecondChannel() {
 showNotificationModal();
   message.innerHTML = "Другий канал створено ✅";
 }
-function editVideo(videoKey, videoData) {
+function editVideo(videoKey, videoDataRaw) {
   currentEditKey = videoKey;
   document.getElementById("edit-modal").style.display = 'flex';
-
+const editPrewiew = document.querySelector(".image-container img");
+editPrewiew.src = videoDataRaw.thumbnail;
   // Заповнюємо поля редагування
-  document.getElementById("edit-video-title").value = videoData.title || '';
-  document.getElementById("edit-video-description").value = videoData.description || '';
-document.getElementById("edit-private-checkbox").checked = videoData.private || false;
+  document.getElementById("edit-video-title").value = videoDataRaw.title || '';
+  document.getElementById("edit-video-description").value = videoDataRaw.description || '';
+document.getElementById("edit-private-checkbox").checked = videoDataRaw.private || false;
 }
 
 function saveVideoChanges() {
-  if (!currentEditKey) return showNotificationModal(); message.innerHTML = "Відео не вибрано.";
+
+  if (!currentEditKey) {
+    showNotificationModal();
+    message.innerHTML = "Відео не вибрано.";
+    return;
+  }
 
   const newTitle = document.getElementById("edit-video-title").value.trim();
-const newPrivate = document.getElementById("edit-private-checkbox").checked;
+  const newPrivate = document.getElementById("edit-private-checkbox").checked;
   const newDescription = document.getElementById("edit-video-description").value.trim();
+  const newPreview = document.getElementById("action-btn").files[0];
 
   if (!newTitle) {
     showNotificationModal();
@@ -5659,21 +5766,67 @@ const newPrivate = document.getElementById("edit-private-checkbox").checked;
     return;
   }
 
-  // Оновлюємо тільки заголовок і опис
-  database.ref("videos/" + currentEditKey).update({
-    title: newTitle,
-    description: newDescription,
-    private: newPrivate
-  }).then(() => {
-    showNotificationModal();
-    message.innerHTML = "? Відео оновлено!";
-    document.getElementById("edit-modal").style.display = 'none';
-    currentEditKey = null;
-    loadVideos();
-  }).catch(error => {
-    showNotificationModal();
-    message.innerHTML = "? Помилка при оновленні відео: " + error.message;
-  });
+  function updateVideo(thumbnailURL = null) {
+
+    const updateData = {
+      title: newTitle,
+      description: newDescription,
+      private: newPrivate
+    };
+
+    if (thumbnailURL) {
+      updateData.thumbnail = thumbnailURL;
+    }
+
+    database.ref("videos/" + currentEditKey).update(updateData)
+      .then(() => {
+
+        showNotificationModal();
+        message.innerHTML = "✅ Відео оновлено!";
+
+        document.getElementById("edit-modal").style.display = "none";
+
+        currentEditKey = null;
+
+        loadVideos();
+
+      })
+      .catch(error => {
+
+        showNotificationModal();
+        message.innerHTML =
+          "❌ Помилка при оновленні відео: " + error.message;
+
+      });
+  }
+
+  // Якщо вибрана нова превʼюшка
+  if (newPreview) {
+
+    const thumbRef = storage.ref(
+      `thumbnails/${Date.now()}_${newPreview.name}`
+    );
+
+    thumbRef.put(newPreview)
+      .then(() => {
+        return thumbRef.getDownloadURL();
+      })
+      .then(url => {
+        updateVideo(url);
+      })
+      .catch(error => {
+
+        showNotificationModal();
+        message.innerHTML =
+          "❌ Помилка завантаження превʼюшки: " + error.message;
+
+      });
+
+  } else {
+
+    updateVideo();
+
+  }
 }
 function loadChannelSelect() {
     const select = document.getElementById("video-channel-select");
