@@ -2494,8 +2494,8 @@ text-decoration: none;
                 <div class="upload-form" id="upload-form">
             <h2 data-i18n="label-video">Завантажити відео</h2>
             <input type="text" id="video-title" placeholder="Назва відео">
-            <textarea id="video-description" placeholder="Опис відео"></textarea>
-            <button style="display:flex; align-items: center; justify-content: center; margin: 0 0 0 70px; padding: 0 10px;" onclick="generateDescription()"><i class="material-symbols">smart_toy</i><p data-i18n="generate-description">Згенерувати опис</p><sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></button>
+            <textarea id="video-description" data-i18n-placeholder="video-description"></textarea>
+            <button style="display:flex; align-items: center; justify-content: center; margin: 0 0 0 70px; padding: 0 10px;" onclick="generateDescription()"><i class="material-symbols">smart_toy</i><p data-i18n="generate-description">Згенерувати опис</p><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
   <label for="video-file" class="video-label">
   <i class="material-symbols">cloud_upload</i><p data-i18n="label-video">Завантажити відео</p>
@@ -2508,16 +2508,16 @@ text-decoration: none;
   <option value="second">Другий канал</option>
 </select>
 <br>
-<span data-i18n ="disabled-comments-checkbox">Вимкнути коментарі</span><sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
+<span data-i18n ="disabled-comments-checkbox">Вимкнути коментарі</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
      <br>
      <p style="text-align: center;" data-i18n="settings-privacy">Налаштування приватності:</p>
-      <span data-i18n="auto-delete-24h">Видалити через 24 години</span> <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup>
+      <span data-i18n="auto-delete-24h">Видалити через 24 години</span> <sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup>
      <label class="switch" for="auto-delete-24h">
   <input type="checkbox" id="auto-delete-24h"><span class="slider round"></span></label>
   <br>
    <span data-i18n="private-checkbox">Приватне відео<label class="switch" for="private-checkbox"><input type="checkbox" id="private-checkbox"><span class="slider round"></span></label>
    <br>
-<span data-i18n="save-video-checkbox">Заборонити збереження відео<sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
+<span data-i18n="save-video-checkbox">Заборонити збереження відео<sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
     <br>
         <span data-i18n="domain-restrict-checkbox">Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
@@ -2722,7 +2722,7 @@ text-decoration: none;
 <p id="view">Дата народження: Завантаження...</p>
         <div id="requests-container"></div>
         <label>
-       <span>Показувати відео позначенні як NSFW <sup style="background-color: blue; color: white; border-radius: 8px;">NEW</sup></span><label class="switch">
+       <span>Показувати відео позначенні як NSFW <sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></span><label class="switch">
           <input type="checkbox" id="show-nsfw-videos"><span id="slidernsfw" class="slider round"></span></label>
         <p id="information-nsfw">Вам повинно бути щонайменше 18 років, щоб переглядати NSFW відео.</p>
         
@@ -5634,49 +5634,31 @@ function insertRandomComment(videoKey) {
     input.value = randomComments[randomIndex];
   }
 }
-async function deleteArchive() {
-    if (!videoURL || !videoKey) {
-        showNotificationModal();
-        message.innerHTML = "Немає даних для видалення відео";
-        return;
-    }
+async function deleteArchive(url, archiveId) {
+  if (!confirm("Ви впевнені, що хочете видалити цей архів?")) return;
 
-    if (!confirm("Ви впевнені, що хочете видалити це відео?")) return;
+  const uid = auth.currentUser.uid;
 
-    try {
-        // 🔹 1. Storage delete
-        const storageRef = storage.refFromURL(videoURL);
-        await storageRef.delete();
+  try {
+    // 1. Delete from Storage (ВАЖЛИВО: через реальний path)
+    const storageRef = firebase.storage().refFromURL(url);
+    await storageRef.delete();
 
-        // 🔹 2. Delete video document
-        await database.ref(`videos/${videoKey}`).remove();
+    // 2. Delete only specific DB record
+    await firebase.database()
+      .ref(`users/${uid}/archive/${archiveId}`)
+      .remove();
 
-        // 🔹 3. Delete all comments for this video
-        const snapshot = await database.ref("comments")
-            .orderByChild("videoKey")
-            .equalTo(videoKey)
-            .once("value");
+    // 3. UI update
+    showNotificationModal();
+    message.innerHTML = "Відео успішно видалено.";
+    loadSecureFiles();
 
-        const updates = {};
-
-        snapshot.forEach(child => {
-            updates[`comments/${child.key}`] = null;
-        });
-
-        if (Object.keys(updates).length > 0) {
-            await database.ref().update(updates);
-        }
-
-        // 🔹 4. UI update
-        showNotificationModal();
-        message.innerHTML = "Відео успішно видалено.";
-        loadVideos();
-
-    } catch (error) {
-        console.error("Помилка при видаленні відео:", error);
-        showNotificationModal();
-        message.innerHTML = "Помилка: " + error.message;
-    }
+  } catch (error) {
+    console.error("Помилка при видаленні відео:", error);
+    showNotificationModal();
+    message.innerHTML = "Помилка: " + error.message;
+  }
 }
 async function deleteVideo(videoKey, videoURL) {
     if (!videoURL || !videoKey) {
@@ -6672,7 +6654,7 @@ const snapshot = await firebase
       <button class="delete-btn"><i class="material-symbols">delete</i>Видалити</button>
     `;
     const button = item.querySelector(".open-btn");
-
+const deleteButton = item.querySelector(".delete-btn");
     button.onclick = async () => {
       // 🔒 базова перевірка доступу
       if (data.uid !== uid) {
@@ -6681,7 +6663,9 @@ const snapshot = await firebase
       }
       window.location.href = data.url;
     };
-
+  deleteButton.onclick = async () => {
+  deleteArchive(data.url, key);
+}
     container.appendChild(item);
   });
 }
