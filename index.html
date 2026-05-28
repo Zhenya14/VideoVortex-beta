@@ -309,7 +309,7 @@ height: 50px;
 align-items: center;
     justify-content: space-between;
 display: flex;
-    padding: 0px 5px;
+    padding: 0px 1px;
     border-radius: 50px;
     text-align: center;
     text-decoration: none;
@@ -1632,7 +1632,7 @@ transform: scale(0.95); /* легке стиснення */
 .history-info {
   text-align: left;
 }
-.edit {
+.edit, .delete-history-views {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2378,7 +2378,7 @@ text-decoration: none;
 </button>
 </div>
         <div style="display: flex; gap: 15px; margin-left: auto;">
-                <a href="#" class="notification"><i class="material-symbols">notifications</i></a>
+                <a href="#" class="notification" style="display: none;"><i class="material-symbols">notifications</i></a>
            <a href="#" id="plus-desktop-button"><i class="material-symbols">add</i></a>
             <a href="auth.html" id="auth-link">
                 <i class="material-symbols">account_circle</i><span>Увійти</span>
@@ -2780,7 +2780,7 @@ text-decoration: none;
             <div class="image-container">
               <img>
     <div class="overlay"></div>
-    <label for="action-btn" class="action-btn"><i class="material-symbols">edit_square</i></label>
+    <label for="action-btn" class="action-btn"><i class="material-symbols">edit_square</i><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></label>
     <input type="file" id="action-btn" accept="image/*">
 </div>
 
@@ -4746,6 +4746,24 @@ function createThumbnail(file) {
  });
 }
 const avatarLibrary = document.getElementById("avatar-library");
+async function deleteAllViewsHistory() {
+  if (!confirm("Ви впевнені, що хочете видалити історію переглядів?")) return;
+
+  const uid = auth.currentUser.uid;
+  const deleteHistoryRef = database.ref("users/" + uid + "/history");
+
+  try {
+    await deleteHistoryRef.remove();
+
+    showNotificationModal();
+    message.innerHTML = "Історію переглядів успішно видалено.";
+  } catch (error) {
+    console.error("Помилка при видаленні історії:", error);
+
+    showNotificationModal();
+    message.innerHTML = "Помилка: " + error.message;
+  }
+}
 function loadLibrary(user) {
     const library = document.getElementById("library");
     library.innerHTML = "";
@@ -4791,7 +4809,14 @@ const brEdit = document.createElement("br");
             historyInfo.classList.add("history-info");
             const historyTitle = document.createElement("p");
             historyTitle.innerHTML = `<p data-i18n="history">Історія переглядів</p><sup class="badge-new" data-i18n="new">NEW</sup>:`;
+            const deleteHistoryViews = document.createElement("button");
+            deleteHistoryViews.classList.add("delete-history-views");
+            deleteHistoryViews.innerHTML = `<i class=" material-symbols">delete</i><p data-i18n="delete-history-views">Очистити історію переглядів</p>`;
+            deleteHistoryViews.onclick = () => {
+              deleteAllViewsHistory();
+            }
             historyInfo.appendChild(historyTitle);
+            historyInfo.appendChild(deleteHistoryViews);
             authorInfo.appendChild(historyInfo);
             library.appendChild(authorInfo);
 
@@ -6876,50 +6901,76 @@ auth.onAuthStateChanged(async (user) => {
         // =========================
 
         if (userProfile.avatarId) {
-            try {
-                const url = await firebase.storage()
-                    .ref(`avatars/${userProfile.avatarId}.webp`)
-                    .getDownloadURL();
+    try {
+        // Отримуємо URL аватара з Firebase Storage
+        const url = await firebase.storage().ref(`avatars/${userProfile.avatarId}.webp`).getDownloadURL();
 
-                const setImg = (el, src) => {
-                    if (!el) return;
-                    el.innerHTML = "";
-                    const img = document.createElement("img");
-                    img.src = src;
-                    el.appendChild(img);
-                };
+        // 🔹 avatarEl
+        avatarEl.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Аватар користувача";
+        avatarEl.appendChild(img);
 
-                setImg(avatarEl, url);
-                setImg(navAvatar, url);
-                setImg(settingsAvatar, url);
+        // 🔹 navAvatar
+        navAvatar.innerHTML = "";
+        const imgNav = document.createElement("img");
+        imgNav.src = url;
+        imgNav.alt = "Аватар користувача";
+        navAvatar.prepend(imgNav);
 
-                let avatarLibraryEl = document.getElementById("avatar-library");
+        // 🔹 settingsAvatar
+        settingsAvatar.innerHTML = "";
+        const imgSettings = document.createElement("img");
+        imgSettings.src = url;
+        imgSettings.alt = "Аватар користувача";
+        settingsAvatar.prepend(imgSettings);
 
-                if (!avatarLibraryEl) {
-                    avatarLibraryEl = document.createElement("div");
-                    avatarLibraryEl.classList.add("avatar");
-                    avatarLibraryEl.id = "avatar-library";
-                    document.getElementById("library")?.appendChild(avatarLibraryEl);
-                }
+        // 🔹 avatarLibrary
+        let avatarLibraryEl = document.getElementById("avatar-library");
 
-                setImg(avatarLibraryEl, url);
-
-            } catch (err) {
-                console.error("Avatar error:", err);
-            }
+        // якщо елемент ще не створений динамічно
+        if (!avatarLibraryEl) {
+            avatarLibraryEl = document.createElement("div");
+            avatarLibraryEl.classList.add("avatar");
+            avatarLibraryEl.id = "avatar-library";
+            const library = document.getElementById("library");
+            library.appendChild(avatarLibraryEl);
         }
 
-        // fallback avatars
-        const fallback = userProfile.name?.charAt(0).toUpperCase() || "?";
+        avatarLibraryEl.innerHTML = "";
+        const imgLibrary = document.createElement("img");
+        imgLibrary.src = url;
+        imgLibrary.alt = "Аватар користувача";
+        avatarLibraryEl.appendChild(imgLibrary);
 
-        if (!userProfile.avatarId) {
-            [settingsAvatar, avatarEl, navAvatar].forEach(el => {
-                if (el) el.innerText = fallback;
-            });
+    } catch (err) {
+        console.error("Помилка завантаження аватара:", err);
+        settingsAvatar.style.background = userProfile.color;
+        settingsAvatar.innerText = userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+        avatarEl.style.background = userProfile.color;
+        avatarEl.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
 
-            const el = document.getElementById("avatar-library");
-            if (el) el.innerText = fallback;
-        }
+        const el = document.getElementById("avatar-library");
+        if (el) el.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+            if (el) el.style.background = userProfile.color;
+       navAvatar.style.background = userProfile.color;
+        navAvatar.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+    }
+
+} else {
+  settingsAvatar.style.background = userProfile.color;
+  settingsAvatar.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+    avatarEl.style.background = userProfile.color;
+    avatarEl.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+
+    const el = document.getElementById("avatar-library");
+    if (el) el.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+    if (el) el.style.background = userProfile.color;
+   navAvatar.style.background = userProfile.color;
+    navAvatar.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+}
+
 
         // =========================
         // 🔹 FINAL LOADS
