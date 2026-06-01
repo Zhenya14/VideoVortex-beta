@@ -514,6 +514,7 @@ async function loadProfile() {
         avatar.textContent = "❌";
         userName.textContent = "Акаунт не знайдено";
         userName.setAttribute("data-i18n", "account-not-found");
+        applyTranslations();
         isHiddenAccount = true;
         return;
       }
