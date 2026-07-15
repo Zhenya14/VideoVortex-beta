@@ -1877,6 +1877,29 @@ transform: scale(0.95); /* легке стиснення */
   background: rgba(255,255,255,0.18);
 }
 .profile-header {
+    position: relative;
+    overflow: hidden;
+
+    background-size: cover;
+    background-position: center;
+}
+.profile-header #userName,
+.profile-header .avatar {
+    position: relative;
+    z-index: 2;
+}
+.profile-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.10),
+        rgba(0,0,0,0.45)
+    );
+    z-index: 1;
+}
+.profile-header {
   margin-top: 60px;
   padding: 50px 0px;
   display: flex;
@@ -5491,14 +5514,14 @@ authorInfo.addEventListener("click", e => {
     }
 });
 const editWallpaperProfile = document.createElement("button");
-editWallpaperProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">palette</i><p data-i18n="edit-wallpaper-profile">Редагувати шпалери профілю</p></a>`;
+editWallpaperProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">palette</i><p data-i18n="edit-wallpaper-profile">Редагувати шпалери профілю</p><sup class="badge-new" data-i18n="new">NEW</sup></a>`;
 editWallpaperProfile.onclick = () => {
         showEditWallpaperProfileModal();
           
         }
 moreMenu.appendChild(editWallpaperProfile);
         const copyLinkProfile = document.createElement("button");
-        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">link_2</i><p data-i18n="copy-link-profile">Копіювати посилання</p></a>`;
+        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">link_2</i><p data-i18n="copy-link-profile">Копіювати посилання</p><sup class="badge-new" data-i18n="new">NEW</sup></a>`;
         copyLinkProfile.onclick = async () => {
         const profileUrl = `https://zhenya14.github.io/VideoVortex/profile.html?uid={uid}`;
 
