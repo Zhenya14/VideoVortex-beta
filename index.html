@@ -4678,6 +4678,7 @@ plusDesktop?.addEventListener("click", () => {
 
 // Закриття модалок
 closeAccountModal?.addEventListener("click", () => accountModal.style.display = "none");
+closeEditWallpaperProfileModal?.addEventListener("click", () => editWallpaperProfileModal.style.display = "none");
 closeBtn?.addEventListener("click", () => modal.style.display = "none");
 closeArchiveModal?.addEventListener("click", () => archiveModal.style.display = "none");
 closeEditModal?.addEventListener("click", () => editModal.style.display = "none");
@@ -4830,18 +4831,21 @@ addButton.onclick = function() {
 };
         document.getElementById("post").onclick = function() {
                      document.querySelector(".tab").style.display = 'none';
+                     document.querySelector(".stories-bar").style.display = 'none';
            document.getElementById("video-container").style.display = 'none';
         document.getElementById("photo-container").style.display = 'flex';
         document.getElementById("author-info").style.display = 'none';
         }
             document.getElementById("video").onclick = function() {
                          document.querySelector(".tab").style.display = 'flex';
+                         document.querySelector(".stories-bar").style.display = 'flex';
            document.getElementById("video-container").style.display = 'flex';
         document.getElementById("photo-container").style.display = 'none';
         document.getElementById("author-info").style.display = 'none';
         }
         document.getElementById("smart-post").onclick = function() {
                      document.querySelector(".tab").style.display = 'none';
+                     document.querySelector(".stories-bar").style.display = 'none';
            document.getElementById("video-container").style.display = 'none';
            document.getElementById("author-info").style.display = 'none';
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
@@ -4854,6 +4858,7 @@ addButton.onclick = function() {
 document.getElementById("smart-settings").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
            document.querySelector(".tab").style.display = 'none';
+           document.querySelector(".stories-bar").style.display = 'none';
            document.getElementById("author-info").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
@@ -4864,6 +4869,7 @@ document.getElementById("smart-settings").onclick = function() {
         }
         document.getElementById("settings").onclick = function() {
            document.getElementById("video-container").style.display = 'none';
+           document.querySelector(".stories-bar").style.display = 'none';
            document.querySelector(".tab").style.display = 'none';
            document.getElementById("author-info").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
@@ -4887,6 +4893,7 @@ document.getElementById("all").addEventListener("click", function() {
 document.getElementById("all").addEventListener("click", loadVideos);
         document.getElementById("account-desktop-link").onclick = function() {
                      document.querySelector(".tab").style.display = 'none';
+                     document.querySelector(".stories-bar").style.display = 'none';
           document.getElementById("video-container").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
            document.querySelector(".settings-page").style.display = 'none';
@@ -4894,6 +4901,7 @@ document.getElementById("all").addEventListener("click", loadVideos);
         }
         document.getElementById("account-link").onclick = function() {
                      document.querySelector(".tab").style.display = 'none';
+                     document.querySelector(".stories-bar").style.display = 'none';
            document.getElementById("video-container").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
            document.getElementById("smart-settings").classList.remove("button-liquid-glass");
@@ -4905,6 +4913,7 @@ document.getElementById("all").addEventListener("click", loadVideos);
         }
             document.getElementById("smart-video").onclick = function() {
                          document.querySelector(".tab").style.display = 'flex';
+                         document.querySelector(".stories-bar").style.display = 'flex';
               document.getElementById("smart-video").classList.add("button-liquid-glass");
               document.getElementById("smart-post").classList.remove("button-liquid-glass");
               document.getElementById("account-link").classList.remove("button-liquid-glass");
@@ -5490,10 +5499,30 @@ editWallpaperProfile.onclick = () => {
 moreMenu.appendChild(editWallpaperProfile);
         const copyLinkProfile = document.createElement("button");
         copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">link_2</i><p data-i18n="copy-link-profile">Копіювати посилання</p></a>`;
-        copyLinkProfile.onclick = () => {
-        
+        copyLinkProfile.onclick = async () => {
+        const profileUrl = `https://zhenya14.github.io/VideoVortex/profile.html?uid={uid}`;
+
+    try {
+        // Копіюємо посилання у буфер обміну
+        await navigator.clipboard.writeText(profileUrl);
+
+        // Візуальний відгук на кнопці (збереження старої іконки та зміна тексту)
+        const originalContent = copyLinkProfile.innerHTML;
+        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">check</i><p data-i18n="copied">Скопійовано</p></a>`; // якщо використовуєте material-icons, замініть на <i class="material-icons">check</i>
+        copyLinkProfile.classList.add('copied-success'); // додаємо клас для зміни стилю (наприклад, зелений фон)
+
+        // Повертаємо кнопку до початкового стану через 2 секунди
+        setTimeout(() => {
+            copyLinkProfile.innerHTML = originalContent;
+            copyLinkProfile.classList.remove('copied-success');
+        }, 2000);
+
+    } catch (err) {
+        console.error('Помилка копіювання посилання:', err);
+        alert('Не вдалося скопіювати посилання автоматично.');
+    }
           
-        }
+        };
         moreMenu.appendChild(copyLinkProfile);
 // Контейнер для кнопок управления профилем
 const buttons = document.createElement("div");
@@ -7674,7 +7703,23 @@ auth.onAuthStateChanged(async (user) => {
        if (editWallpaperProfileNameEl) {
        editWallpaperProfileNameEl.textContent =                 `${userProfile.name || ""} ${userProfile.supername || ""}`;
        }
-       
+       const wallpaperEl = document.querySelector(".profile-header");
+              if (!userProfile.wallpaperId) {
+      wallpaperEl.style.backgroundImage = "";
+    } else {
+      try {
+        const urlWallpaper = await firebase
+          .storage()
+          .ref(`wallpapers/${userProfile.wallpaperId}.webp`)
+          .getDownloadURL();
+
+        wallpaperEl.style.backgroundImage = `url(${urlWallpaper})`;
+        wallpaperEl.style.backgroundSize = "cover";
+        wallpaperEl.style.backgroundPosition = "center";
+      } catch (e) {
+        wallpaperEl.style.backgroundImage = "";
+      }
+    }
         // =========================
         // 🔹 AVATAR
         // =========================
