@@ -971,9 +971,10 @@ position: absolute;
     height: 10px;
 }
 .more-profile {
-  position: fixed;
+  position: absolute;
   top: 190px;
   right: 30px;
+  z-index: 1;
 }
 .random-comments, #button-name, #button-supername, #save-name, #save-supername, .save {
 width: 100%; 
@@ -5432,11 +5433,12 @@ async function loadYouStories(user) {
     console.error("Помилка завантаження користувача:", err);
   }
 }
-
+const avatarLibraryEl = document.createElement("div");
 function loadLibrary(user) {
     const authorInfo = document.getElementById("author-info");
     authorInfo.innerHTML = "";
-    const uid = user.uid;
+
+    const uid = firebase.auth().currentUser.uid;
     const userRef = database.ref("users/" + uid);
     const historyRef = database.ref("users/" + uid + "/history");
 
@@ -5446,7 +5448,7 @@ function loadLibrary(user) {
 
             // ▸ Основна панель автора
 
-const avatarLibraryEl = document.createElement("div");
+
 avatarLibraryEl.id = "avatar-library";
 avatarLibraryEl.classList.add("avatar");
 authorInfo.appendChild(avatarLibraryEl);
@@ -7709,15 +7711,6 @@ auth.onAuthStateChanged(async (user) => {
         settingsAvatar.appendChild(imgSettings);
 
         // 🔹 avatarLibrary
-        let avatarLibraryEl = document.getElementById("avatar-library");
-
-        // якщо елемент ще не створений динамічно
-        if (!avatarLibraryEl) {
-            avatarLibraryEl = document.createElement("div");
-            avatarLibraryEl.id = "avatar-library";
-            const library = document.getElementById("library");
-            library.appendChild(avatarLibraryEl);
-        }
 
         avatarLibraryEl.innerHTML = "";
         const imgLibrary = document.createElement("img");
@@ -8664,7 +8657,6 @@ window.onload = function() {
         loadVideos();
         loadPhotos();
         loadPopularVideos();
-        loadLibrary();
     };
     </script>
     <!-- 🔰 РЕЖИМ ДЛЯ ЛЮДЕЙ ІЗ ЗМР -->
