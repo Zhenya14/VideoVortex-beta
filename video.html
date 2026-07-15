@@ -1790,7 +1790,9 @@ async function loadComments(videoKey, videoOwnerEmail) {
             avatarComment.textContent = "👻";
             applyAvatar(avatarComment, gradientAvatar);
         }
-
+avatarComment.onclick = () => {
+  window.location.href = `https://zhenya14.github.io/VideoVortex/profile.html?uid=${data.authorUid}`;
+}
         // =================== USERNAME ===================
 
         const userEl = document.createElement("strong");
@@ -1804,7 +1806,9 @@ async function loadComments(videoKey, videoOwnerEmail) {
         } else {
             userEl.textContent = data.commentAuthor;
         }
-
+userEl.onclick = () => {
+  window.location.href = `https://zhenya14.github.io/VideoVortex/profile.html?uid=${data.authorUid}`;
+}
         applyAccentUsername(userEl, gradientSource);
 
         // =================== COMMENT TEXT ===================
@@ -2285,54 +2289,56 @@ function celebrate() {
     setTimeout(() => confetti.remove(), 3000);
   }
 }
-  document.getElementById('popularBtn').addEventListener('click', async () => {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
 
-    const uid = user.uid;
+document.getElementById('popularBtn').addEventListener('click', async () => {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-    const userBoostRef = firebase.database().ref(`boosts/${videoKey}/${uid}`);
-    const videoRef = firebase.database().ref(`videos/${videoKey}`);
+  const uid = user.uid;
 
-    try {
-      const snap = await userBoostRef.once('value');
-      const data = snap.val() || { count: 0 };
+  const userRef = firebase.database().ref(`users/${uid}`);
+  const userSnap = await userRef.once('value');
 
-      if (data.count >= 3) {
-        alert("Ліміт досягнуто (3 бусти)");
-        return;
-      }
+  const userBoostRef = firebase.database().ref(`boosts/${videoKey}/${uid}`);
+  const videoRef = firebase.database().ref(`videos/${videoKey}`);
 
-      const newCount = data.count + 1;
+  try {
+    const snap = await userBoostRef.once('value');
+    const data = snap.val() || { count: 0 };
 
-      await userBoostRef.set({
-        count: newCount,
-        updatedAt: Date.now()
-      });
-
-      await videoRef.transaction(v => {
-        if (!v) return v;
-
-        v.boostCount = (v.boostCount || 0) + 1;
-
-        v.score =
-          (v.boostCount || 0) * 5 +
-          (v.likeCount || 0) * 2 +
-          (v.views || 0) * 0.1;
-
-        return v;
-      });
-      celebrate();
-      showPopup();
-      setBoost("uk", newCount);
-      
-
-      console.log("Boost OK");
-
-    } catch (e) {
-      console.error("Помилка:", e);
+    if (data.count >= 3) {
+      alert("Ліміт досягнуто (3 бусти)");
+      return;
     }
-  });
+
+    const newCount = data.count + 1;
+
+    await userBoostRef.set({
+      count: newCount,
+      updatedAt: Date.now()
+    });
+
+    await videoRef.transaction(v => {
+      if (!v) return v;
+
+      v.boostCount = (v.boostCount || 0) + 1;
+
+      v.score =
+        (v.boostCount || 0) * 5 +
+        (v.likeCount || 0) * 2 +
+        (v.views || 0) * 0.1;
+
+      return v;
+    });
+
+    celebrate();
+    showPopup();
+    setBoost("uk", newCount);
+
+  } catch (e) {
+    console.error("Помилка:", e);
+  }
+});
 
 
 document.getElementById('shareBtn').addEventListener('click', async () => {
