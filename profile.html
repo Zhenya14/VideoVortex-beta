@@ -76,6 +76,31 @@ display: flex;
     transition: all 0.3s ease;
     box-shadow: 0 0 0 rgb(59 130 246 / 0%);
         }
+        .profile-header {
+    position: relative;
+    overflow: hidden;
+
+    background-size: cover;
+    background-position: center;
+}
+.profile-header #userName,
+.profile-header .avatar,
+.profile-header #blockUserBtn,
+.profile-header .shareBtn {
+    position: relative;
+    z-index: 2;
+}
+.profile-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.10),
+        rgba(0,0,0,0.45)
+    );
+    z-index: 1;
+}
 .profile-header {
   margin-top: 60px;
   padding: 50px 0px;
