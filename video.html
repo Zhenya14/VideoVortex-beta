@@ -1791,7 +1791,7 @@ async function loadComments(videoKey, videoOwnerEmail) {
             applyAvatar(avatarComment, gradientAvatar);
         }
 avatarComment.onclick = () => {
-  window.location.href = `https://zhenya14.github.io/VideoVortex/profile.html?uid=${data.authorUid}`;
+  window.location.href = `profile.html?uid=${data.authorUid}`;
 }
         // =================== USERNAME ===================
 
@@ -1807,7 +1807,7 @@ avatarComment.onclick = () => {
             userEl.textContent = data.commentAuthor;
         }
 userEl.onclick = () => {
-  window.location.href = `https://zhenya14.github.io/VideoVortex/profile.html?uid=${data.authorUid}`;
+  window.location.href = `profile.html?uid=${data.authorUid}`;
 }
         applyAccentUsername(userEl, gradientSource);
 
