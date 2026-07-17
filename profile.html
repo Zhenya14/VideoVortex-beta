@@ -464,7 +464,7 @@ let hasVideos = false;
 const backgroundProfile = document.querySelector(".profile-header");
 const avatar = document.getElementById("avatar");
   const userName = document.getElementById("userName");
-  
+  let realBlockedUserName = "";
   
 function showNotFound() {
   document.getElementById("video-gallery").innerHTML = `<h3>🎬 Публікації відсутні</h3>`;
@@ -649,7 +649,7 @@ async function loadVideos() {
 
   const snapshot = await firebase.database().ref("videos").once("value");
 
-  if (!snapshot.exists()) {
+  if (!snapshot.exists() || !blockedUserUid) {
     videoGallery.innerHTML = "<h3>🎬 Публікації відсутні</h3>";
     return;
   }
@@ -702,6 +702,8 @@ document.getElementById("blockUserBtn").addEventListener("click", () => {
 function showModalBlocked() {
     const modal = document.getElementById("block-user-modal");
     const info = document.getElementById("blocked-information");
+realBlockedUserName =
+                nameAccount || "deleted-account";
 
     const i18nKey = userName.getAttribute("data-i18n");
 
@@ -744,7 +746,7 @@ async function confirmBlockUser() {
       .set({
           blocked: true,
           uid: blockedUserUid,
-          userName: nameAccount
+          userName: realBlockedUserName
       });
 
     closeBlockModal();
@@ -779,7 +781,7 @@ async function loadPosts() {
 
   const snapshot = await firebase.database().ref("photos").once("value");
 
-  if (!snapshot.exists()) {
+  if (!snapshot.exists() || !blockedUserUid) {
     photoGallery.innerHTML = "<h3>📭 Немає дописів</h3>";
     return;
   }
