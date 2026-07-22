@@ -1355,7 +1355,7 @@ body {
   gap: 14px;
   padding: 12px;
 
-  position: fixed;
+  position: absolute;
   top: 5%;
   left: 0;
   right: 0;
@@ -1364,7 +1364,7 @@ body {
   overflow-y: hidden;
 
   align-items: center;
-  z-index: 1000;
+  z-index: 1;
 
   backdrop-filter: blur(3px) saturate(140%);
 }
@@ -1786,7 +1786,7 @@ transform: scale(0.95); /* легке стиснення */
 }
 
 /* Плашка NEW для Архіву */
-.archive .badge-new, .your-profile .badge-new {
+.archive .badge-new, .your-profile .badge-new, .edit-wallpaper-profile .badge-new, .copy-link-profile .badge-new {
   position: absolute;
   top: 12px;
   right: 16px;
@@ -2596,6 +2596,16 @@ text-decoration: none;
   text-transform: uppercase;
 }
 
+.badge-new-edit-wallpaper-profile, .badge-new-copy-link-profile {
+  font-size: 8px;
+  font-weight: 700;
+  background-color: #007aff; /* М'який червоний відтінок */
+  color: #ffffff;
+  padding: 2px 5px;
+  border-radius: 6px;
+  line-height: 1;
+  text-transform: uppercase;
+}
 /* Блок історії */
 .history-info {
   width: 100%;
@@ -2693,6 +2703,13 @@ text-decoration: none;
   justify-content: center;
   align-items: center;
 }
+.publishStory {
+  position: absolute;
+  padding:12px;
+  border-radius:20px;
+  background:#07f;
+  color:white;
+}
       .smart-menu {
   position: fixed;
   bottom: 10px;
@@ -2777,21 +2794,34 @@ text-decoration: none;
 </div>
 <!-- CAMERA SCREEN -->
 <div id="story-camera" style="display:none; position:fixed; inset:0; background:black; z-index:999;">
-      
-  <video id="cameraPreview" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
 
-  <!-- CONTROLS -->
-  <div style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:20px;">
-    <button onclick="publishStory()" style="padding:12px;border-radius:20px;background:#07f;color:white;">
-      Опублікувати
+    <!-- Тут буде прев'ю фото або відео -->
+    <div id="storyPreview"
+         style="position:absolute; inset:0; width:100%; height:100%;">
+    </div>
+
+    <!-- Камера -->
+    <video id="cameraPreview"
+           autoplay
+           playsinline
+           style="display:none; width:100%; height:100%; object-fit:cover;">
+    </video>
+
+    <button class="publishStory" onclick="publishStory()">
+        Опублікувати
     </button>
-    <button onclick="openGallery()" style="display: none; padding:12px;border-radius:50%;background:rgba(255,255,255,0.2);color:white;">🖼</button>
 
-    <button onclick="captureStop()" style="display: none;padding:18px;border-radius:50%;background:white;"></button>
+    <button onclick="openGallery()"
+            style="display:none; padding:12px; border-radius:50%;
+                   background:rgba(255,255,255,0.2); color:white;">
+        🖼
+    </button>
 
+    <button onclick="captureStop()"
+            style="display:none; padding:18px; border-radius:50%;
+                   background:white;">
+    </button>
 
-
-  </div>
 </div>
 
 <input id="galleryInput" type="file" accept="image/*,video/*" hidden>
@@ -3044,7 +3074,7 @@ text-decoration: none;
             </div>
   
             <button id="upload-button" onclick="uploadVideo()">Завантажити</button>
-<label>Публікуючи відео, ви погоджуєтеся з <a href="https://telegra.ph/Pravila-sp%D1%96lnoti-VideoVortex-09-14-2" target="_blank">правилами спільноти.</a></label>
+<label>Публікуючи відео, ви погоджуєтеся з <a href="https://app.notion.com/p/VideoVortex-283beb289348809183e8e8d185b3c469?source=copy_link" target="_blank">правилами спільноти.</a></label>
 </div>
       </div>
 
@@ -3142,12 +3172,6 @@ text-decoration: none;
           <input type="checkbox" id="show-nsfw-videos"><span id="slidernsfw" class="slider round"></span></label>
         <p id="information-nsfw">Вам повинно бути щонайменше 18 років, щоб переглядати NSFW відео.</p>
         
-        <button id="generate-thumbnails-btn">Генерувати превю для старих відео</button>
-        <div id="thumbnail-progress-container" style="display:none; margin-top:10px;">
-  <progress id="thumbnail-progress" value="0" max="100" style="width:300px;"></progress>
-  <span id="thumbnail-progress-text">0%</span>
-</div>
-<div id="thumbnail-status" style="margin-top:10px; color:green;"></div>
 <h1>Налаштування обмеження екранного часу</h1>
     <p>Вкажіть, скільки хвилин на день ви хочете бути на сторінці:</p>
     <input type="number" id="maxTimeInput" value="45" min="1" />
@@ -3236,26 +3260,6 @@ text-decoration: none;
               <a id="add-story" onclick="openGallery()"><i class="material-symbols">add</i></a>
     <div class="name">Моя історія</div>
 
-  </div>
-  <div class="story-item">
-    <div class="avatar-ring">
-      <div class="avatar-stories">A</div>
-    </div>
-    <div class="name">Alex</div>
-  </div>
-
-             <div class="story-item">
-    <div class="avatar-ring seen">
-      <div class="avatar-stories">M</div>
-    </div>
-    <div class="name">Maria</div>
-  </div>
-
-  <div class="story-item">
-    <div class="avatar-ring">
-      <div class="avatar-stories">D</div>
-    </div>
-    <div class="name">Dima</div>
   </div>
 
 </div>
@@ -3987,37 +3991,76 @@ document.getElementById("galleryInput").addEventListener("change", (e) => {
 
 });
 
+let currentStoryFile = null;
+let storyPreviewURL = null;
+
 function previewStory(file) {
 
     const container = document.getElementById("story-camera");
-  const bgGlassClose = document.querySelector(".bg-liquid-glass");
-  const btnGlassClose = document.querySelector(".btn-liquid-glass");
-    // Очистити попередній прев'ю
-    container.innerHTML = "";
-   container.style.display ="block";
-   bgGlassClose.style.display = "none";
-  btnGlassClose.style.display = "none";
-    const url = URL.createObjectURL(file);
+    const preview = document.getElementById("storyPreview");
+    const camera = document.getElementById("cameraPreview");
 
-    // Фото
+    const bgGlassClose = document.querySelector(".bg-liquid-glass");
+    const btnGlassClose = document.querySelector(".btn-liquid-glass");
+
+    // Зберігаємо поточний файл
+    currentStoryFile = file;
+
+    // Показуємо вікно Story
+    container.style.display = "block";
+
+    if (bgGlassClose) {
+        bgGlassClose.style.display = "none";
+    }
+
+    if (btnGlassClose) {
+        btnGlassClose.style.display = "none";
+    }
+
+    // Зупиняємо камеру, якщо вона працювала
+    if (camera.srcObject) {
+        camera.srcObject.getTracks().forEach(track => track.stop());
+        camera.srcObject = null;
+    }
+
+    camera.style.display = "none";
+
+    // Очищаємо тільки область прев'ю
+    preview.innerHTML = "";
+
+    // Видаляємо старий ObjectURL
+    if (storyPreviewURL) {
+        URL.revokeObjectURL(storyPreviewURL);
+    }
+
+    storyPreviewURL = URL.createObjectURL(file);
+
+    // =========================
+    // ФОТО
+    // =========================
+
     if (file.type.startsWith("image/")) {
 
         const img = document.createElement("img");
 
-        img.src = url;
+        img.src = storyPreviewURL;
+
         img.style.width = "100%";
         img.style.height = "100%";
         img.style.objectFit = "cover";
 
-        container.appendChild(img);
+        preview.appendChild(img);
     }
 
-    // Відео
+    // =========================
+    // ВІДЕО
+    // =========================
+
     else if (file.type.startsWith("video/")) {
 
         const video = document.createElement("video");
 
-        video.src = url;
+        video.src = storyPreviewURL;
         video.autoplay = true;
         video.loop = true;
         video.muted = true;
@@ -4028,9 +4071,16 @@ function previewStory(file) {
         video.style.height = "100%";
         video.style.objectFit = "cover";
 
-        container.appendChild(video);
+        preview.appendChild(video);
 
-        video.play().catch(console.error);
+        video.play().catch(error => {
+            console.error("Не вдалося відтворити відео:", error);
+        });
+    }
+
+    else {
+        console.error("Непідтримуваний тип файлу:", file.type);
+        return;
     }
 
     console.log("Preview ready:", file.name);
@@ -5285,60 +5335,7 @@ async function generateThumbnailFirstFrame(videoUrl) {
     }, { once: true });
   });
 }
-document.getElementById("generate-thumbnails-btn").addEventListener("click", async () => {
-  const user = firebase.auth().currentUser;
-  if (!user) {
-    alert("Потрібно увійти!");
-    return;
-  }
 
-  const progressContainer = document.getElementById("thumbnail-progress-container");
-  const progressBar = document.getElementById("thumbnail-progress");
-  const progressText = document.getElementById("thumbnail-progress-text");
-  const statusText = document.getElementById("thumbnail-status");
-
-  if (progressContainer) progressContainer.style.display = "block";
-  if (progressBar) progressBar.value = 0;
-  if (progressText) progressText.innerText = "0%";
-  if (statusText) statusText.innerText = "";
-
-  try {
-    const snapshot = await database.ref('videos').once('value');
-    const videos = snapshot.val() || {};
-    const videoKeys = Object.keys(videos);
-
-    for (let i = 0; i < videoKeys.length; i++) {
-      const videoKey = videoKeys[i];
-      const videoData = videos[videoKey];
-
-      if (!videoData?.url) {
-        console.warn("Пропускаємо відео без URL:", videoKey);
-        continue;
-      }
-
-      try {
-        const blob = await generateThumbnailFirstFrame(videoData.url);
-        const ref = firebase.storage().ref(`thumbnails/${videoKey}.jpg`);
-        await ref.put(blob);
-        const url = await ref.getDownloadURL();
-        await database.ref(`videos/${videoKey}`).update({ thumbnail: url });
-      } catch (e) {
-        console.warn(`Не вдалося згенерувати thumbnail для ${videoKey}:`, e.message);
-      }
-
-      // оновлюємо прогрес
-      const percent = Math.round(((i + 1) / videoKeys.length) * 100);
-      if (progressBar) progressBar.value = percent;
-      if (progressText) progressText.innerText = `${percent}%`;
-    }
-
-    if (statusText) statusText.innerText = "Генерація thumbnail завершена!";
-    console.log("Генерація thumbnail завершена!");
-  } catch (err) {
-    console.error("Помилка при отриманні відео з бази:", err);
-    alert("Сталася помилка. Перевірте консоль.");
-  }
-});
 document.getElementById("domain-restrict-checkbox").onclick = function(event) {
     if (!currentUserEmail || !currentUserEmail.endsWith("@kfccte-nau.ukr.education")) {
         message.innerHTML = "Сталася помилка. ACCOUNT_IS_NOT_DOMAIN_KFCCTE-NAU.UKR.EDUCATION";
@@ -5514,14 +5511,16 @@ authorInfo.addEventListener("click", e => {
     }
 });
 const editWallpaperProfile = document.createElement("button");
-editWallpaperProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">palette</i><p data-i18n="edit-wallpaper-profile">Редагувати шпалери профілю</p><sup class="badge-new" data-i18n="new">NEW</sup></a>`;
+editWallpaperProfile.classList.add("edit-wallpaper-profile");
+editWallpaperProfile.innerHTML = `<a style="padding:3px 0px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">palette</i><span data-i18n="edit-wallpaper-profile">Редагувати шпалери профілю</span><sup class="badge-new-edit-wallpaper-profile" data-i18n="new">NEW</sup></a>`;
 editWallpaperProfile.onclick = () => {
         showEditWallpaperProfileModal();
           
         }
 moreMenu.appendChild(editWallpaperProfile);
         const copyLinkProfile = document.createElement("button");
-        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">link_2</i><p data-i18n="copy-link-profile">Копіювати посилання</p><sup class="badge-new" data-i18n="new">NEW</sup></a>`;
+        copyLinkProfile.classList.add("copy-link-profile");
+        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">link_2</i><span data-i18n="copy-link-profile">Копіювати посилання</span><sup class="badge-new-copy-link-profile" data-i18n="new">NEW</sup></a>`;
         copyLinkProfile.onclick = async () => {
         const profileUrl = `https://zhenya14.github.io/VideoVortex/profile.html?uid={uid}`;
 
@@ -6315,9 +6314,9 @@ detailsElement.innerHTML = `
     <br>
 
     ${getSafeBanduraHTML(videoDataRaw.banduraExtra)}
-
-    <span data-i18n='views'>Переглядів</span>: ${videoDataRaw.views || 0}
-    <br>
+<li><span data-i18n='views'>Переглядів</span>: ${videoDataRaw.views || 0}
+    <br></li>
+    
 
     <span data-i18n='publish-date'>Дата публікації</span>: ${videoDataRaw.publishDate || "—"}
 `;
