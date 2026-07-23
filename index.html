@@ -2706,6 +2706,20 @@ text-decoration: none;
 #storyPreview img {
   border-radius: 0px;
 }
+.cancel-publish {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  width: 30px;
+  height: 30px;
+  top: 12px;
+  left: 20px;
+  border-radius: 26px;
+  backdrop-filter: url(#displacementFilter) blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
 .publishStory {
   position: absolute;
   padding: 12px;
@@ -2811,7 +2825,9 @@ text-decoration: none;
            playsinline
            style="display:none; width:100%; height:100%; object-fit:cover;">
     </video>
-
+    <a class="cancel-publish" onclick="captureStop()">
+        <i class="material-symbols">arrow_back_ios_new</i>
+    </a>
     <button class="publishStory" onclick="publishStory()">
         Опублікувати
     </button>
@@ -7138,6 +7154,7 @@ function saveEditName() {
       updateVideosAuthor();
       updatePhotosAuthor();
       updateCommentsAuthor();
+      updateNameBlockedUsers();
     })
     .catch(err => {
       showNotificationModal();
@@ -7168,6 +7185,7 @@ function saveEditSuperName() {
       updateVideosAuthor();
       updatePhotosAuthor();
       updateCommentsAuthor();
+      updateNameBlockedUsers();
     })
     .catch(err => {
       showNotificationModal();
@@ -7615,6 +7633,7 @@ auth.onAuthStateChanged(async (user) => {
         cleanupExpiredVideos();
         updateVideosAuthor();
         updatePhotosAuthor();
+        await updateNameBlockedUsers();
         updateCommentsAuthor();
         backfillAuthorUidForUser();
 
@@ -7915,6 +7934,7 @@ input.onchange = async () => {
 };
 updateVideosAuthor();
 updatePhotosAuthor();
+updateNameBlockedUsers();
 function submitBirthdate() {
     const user = firebase.auth().currentUser;
     const input = document.getElementById("birthdate-input").value; // "YYYY-MM-DD"
@@ -7942,6 +7962,7 @@ function submitBirthdate() {
         if (age !== null) configureAgeUI(age);
         updateVideosAuthor();
         updatePhotosAuthor();
+        updateNameBlockedUsers();
     }).catch(err => console.error("Помилка збереження даних:", err));
 }
 
@@ -7956,6 +7977,70 @@ function calculateAge(birthdate) {
         age--;
     }
     return age;
+}
+async function updateNameBlockedUsers() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const uid = user.uid;
+
+    try {
+        // Отримуємо список користувачів, яких заблокував поточний користувач
+        const blockedSnapshot = await database
+            .ref(`users/${uid}/blockedUsers`)
+            .once("value");
+
+        if (!blockedSnapshot.exists()) {
+            console.log("Список заблокованих порожній");
+            return;
+        }
+
+        const updates = {};
+
+        blockedSnapshot.forEach((childSnapshot) => {
+            const blockedUid = childSnapshot.key;
+
+            // Отримуємо актуальне ім'я з users/{blockedUid}
+            const userData = childSnapshot.val() || {};
+
+            // Тут тільки створюємо список UID
+            updates[blockedUid] = userData;
+        });
+
+        // Для кожного заблокованого отримуємо актуальні дані
+        for (const blockedUid of Object.keys(updates)) {
+
+            const userSnapshot = await database
+                .ref(`users/${blockedUid}`)
+                .once("value");
+
+            if (!userSnapshot.exists()) continue;
+
+            const userData = userSnapshot.val() || {};
+
+            const fullName =
+                `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+                "Анонім";
+
+            // Оновлюємо userName у твоєму blockedUsers
+            await database
+                .ref(`users/${uid}/blockedUsers/${blockedUid}`)
+                .update({
+                    userName: fullName
+                });
+
+            console.log(
+                `Ім'я ${blockedUid} оновлено:`,
+                fullName
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Помилка оновлення імен заблокованих:",
+            error
+        );
+    }
 }
 async function updateVideosAuthor() {
   const user = firebase.auth().currentUser;
