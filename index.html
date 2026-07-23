@@ -4114,14 +4114,14 @@ async function publishStory() {
 
   // STORAGE
   const ref = firebase.storage()
-    .ref(`stories/${user.uid}/${storyId}`);
+    .ref(`stories/${storyId}`);
 
   await ref.put(selectedStoryFile);
 
   const url = await ref.getDownloadURL();
 
   // DATABASE
-  await firebase.database().ref(`stories/${user.uid}/${storyId}`).set({
+  await firebase.database().ref(`stories/${storyId}`).set({
     uid: user.uid,
     url: url,
     type: selectedStoryFile.type.startsWith("video") ? "video" : "image",
