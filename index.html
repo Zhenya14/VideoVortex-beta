@@ -3274,7 +3274,7 @@ text-decoration: none;
         </div>
 
   <div class="stories-bar">
-  <div class="story-item">
+  <div class="story-item" onclick="openStories()">
     <div class="avatar-ring seen">
       <div id="avatar-stories-you" class="avatar-stories"></div>
     </div>
@@ -3998,9 +3998,7 @@ function captureStop() {
   document.querySelector(".bg-liquid-glass").style.display = "flex";
   document.querySelector(".btn-liquid-glass").style.display = "flex";
 }
-function openGallery() {
-    document.getElementById("galleryInput").click();
-}
+
 
 document.getElementById("galleryInput").addEventListener("change", (e) => {
 
@@ -4014,7 +4012,13 @@ document.getElementById("galleryInput").addEventListener("change", (e) => {
 
 let currentStoryFile = null;
 let storyPreviewURL = null;
-
+function openGallery() {
+    document.getElementById("galleryInput").click();
+}
+function openStories() {
+  const viewsContainer = document.getElementById("story-camera");
+    const view = document.getElementById("storyPreview");
+}
 function previewStory(file) {
 
     const container = document.getElementById("story-camera");
@@ -4109,9 +4113,28 @@ function previewStory(file) {
 async function publishStory() {
   const user = firebase.auth().currentUser;
   if (!user || !selectedStoryFile) return;
-
+const uid = user.uid;
   const storyId = Date.now().toString();
+  try {
+    
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
 
+    let authorName;
+    let authorAvatarUrl = null;
+
+      authorName =
+        `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+        "Основний канал";
+
+      const mainAvatar = userData.avatarId;
+
+      if (mainAvatar) {
+        try {
+          authorAvatarUrl =
+            await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
+        } catch {}
+      }
   // STORAGE
   const ref = firebase.storage()
     .ref(`stories/${storyId}`);
@@ -4122,8 +4145,10 @@ async function publishStory() {
 
   // DATABASE
   await firebase.database().ref(`stories/${storyId}`).set({
-    uid: user.uid,
+    uid: uid,
     url: url,
+    name: authorName,
+    avatar: authorAvatarUrl,
     type: selectedStoryFile.type.startsWith("video") ? "video" : "image",
     createdAt: Date.now(),
     expiresAt: Date.now() + 24 * 60 * 60 * 1000
@@ -4133,6 +4158,11 @@ async function publishStory() {
 
   alert("Story опубліковано ✅");
   captureStop();
+} catch (err) {
+    console.error("Помилка при отриманні даних користувача:", err);
+    showNotificationModal();
+    message.innerHTML = "Не вдалося отримати дані профілю." + err.message;
+  }
 }
 async function loadStories() {
   const snap = await firebase.database().ref("stories").once("value");
