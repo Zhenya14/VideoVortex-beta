@@ -6453,6 +6453,17 @@ function clearFeedCache() {
     .filter(k => k.startsWith("video_cache_"))
     .forEach(k => localStorage.removeItem(k));
 }
+function cleanupExpiredStories() {
+    database.ref("stories").once("value", snap => {
+        snap.forEach(child => {
+            const s = child.val();
+
+            if (s.expiresAt && Date.now() > s.expiresAt) {
+                child.ref.remove();
+            }
+        });
+    });
+}
 async function loadVideos() {
     const videoGallery = document.getElementById("video-gallery");
     if (!videoGallery) return;
@@ -7960,6 +7971,7 @@ auth.onAuthStateChanged(async (user) => {
         updateColorsPhotosAuthor(user);
         updateColorsVideosAuthor(user);
         cleanupExpiredVideos();
+        cleanupExpiredStories();
         updateVideosAuthor();
         updatePhotosAuthor();
         await updateNameBlockedUsers();
