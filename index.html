@@ -93,7 +93,7 @@ if ("serviceWorker" in navigator) {
   transform: translateX(-70%);
   width: 15%;
   height: 8%;
-  display: none;
+display: none;
   justify-content: center;
   align-items: center;
   padding: 0px 0px;
@@ -349,7 +349,7 @@ cursor: pointer;
 
 }
     @supports not (hanging-punctuation:first) {
-        .bg-liquid-glass, .btn-liquid-glass, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input, .tab-liquid-glass, .open-liquid-glass-menu {
+        .bg-liquid-glass, #plus-button, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input, .tab-liquid-glass, .open-liquid-glass-menu {
             backdrop-filter: url(#displacementFilter) blur(3px);
         }
     }
@@ -1582,7 +1582,7 @@ box-shadow: 0 0 10px red; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
 }
-#smart-settings, #account-link, .btn-liquid-glass {
+#smart-settings, #account-link {
   display: none;
 }
 .nsfw-label {
@@ -2442,6 +2442,9 @@ nav {
         #upload-link {
         display: none;
     }
+    #btn-liquid-glass {
+      display: none;
+    }
     #plus-desktop-button {
       display: none;
     }
@@ -2652,13 +2655,29 @@ text-decoration: none;
 
 #plus-button {
   border-radius: 89px;
- bottom: 10px;
+ bottom: 20px;
 
  text-decoration: none;
   font-size: 32px;
-  z-index: 1000;
+  z-index: 1;
   color: white;
-  
+  position: fixed;
+  left: 94%;
+  transform: translateX(-70%);
+  width: 15%;
+  height: 8%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 0px;
+  border-radius: 89px;
+  background: rgba(255,255,255,0.05);
+  /* Тінь і обведення для глибини */
+  z-index: 1000;
+  isolation: isolate;
+        backdrop-filter: blur(3px) saturate(140%);
+        -webkit-backdrop-filter: blur(3px);
+        @apply bg-muted/25;
 }
 #upload-progress {
   -webkit-appearance: none;
@@ -3312,9 +3331,7 @@ text-decoration: none;
     </a>
 </div>
 </div>
-          <div class="btn-liquid-glass">
             <a href="#" id="plus-button"><i class="material-symbols">add</i></a>
-          </div>
 <button id="update-app-btn">Оновити VideoVortex</button>
                 <div class="menu" style="align-items: center;">
     <a href="#" id="close-menu" onclick="closeSidebar()">
@@ -3786,9 +3803,6 @@ function checkUpdateButton() {
 
 function updateMenuPosition() {
 
-    const plusBtn =
-        document.getElementById("plus-button");
-
     const updateBtn =
         document.getElementById("update-app-btn");
 
@@ -3806,7 +3820,6 @@ function updateMenuPosition() {
         !btnGlass ||
         !smartMenu ||
         !bgGlass ||
-        !plusBtn
     ) return;
 
     if (updateBtn.style.display !== "none") {
@@ -3814,14 +3827,12 @@ function updateMenuPosition() {
         smartMenu.style.bottom = "30px";
         bgGlass.style.bottom = "30px";
         btnGlass.style.bottom = "60px";
-        plusBtn.style.bottom = "60px";
 
     } else {
 
         smartMenu.style.bottom = "10px";
         bgGlass.style.bottom = "10px";
         btnGlass.style.bottom = "20px";
-        plusBtn.style.bottom = "20px";
     }
 }
 
@@ -7593,95 +7604,150 @@ function toggleUploadVisibility() {
 
     const plusPost = document.getElementById("plus-button");
     const plusDesktopPost = document.getElementById("plus-desktop-button");
+    const logoutLink = document.getElementById("logout-link");
     const openMenu = document.getElementById("open-menu");
     const accountDesktopLink = document.getElementById("account-desktop-link");
-    const logoutLink = document.getElementById("logout-link");
 
-    // Перевірка на null, щоб уникнути помилок
-    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) return;
+    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) {
+        return;
+    }
 
+    const user = firebase.auth().currentUser;
+
+    // Користувач не авторизований
+    if (!user) {
+        plusPost.style.display = "none";
+        plusDesktopPost.style.display = "none";
+
+        if (logoutLink) {
+            logoutLink.style.display = "none";
+        }
+
+        openMenu.style.display = isMobile ? "none" : "flex";
+        accountDesktopLink.style.display = "none";
+
+        return;
+    }
+
+    // Користувач авторизований
     if (isMobile) {
         openMenu.style.display = "none";
+
         plusPost.style.display = "grid";
         plusDesktopPost.style.display = "none";
-        logoutLink.style.display= "none";
+
+        if (logoutLink) {
+            logoutLink.style.display = "none";
+        }
+
         accountDesktopLink.style.display = "none";
+
     } else {
         openMenu.style.display = "flex";
+
         plusPost.style.display = "none";
         plusDesktopPost.style.display = "flex";
-        logoutLink.style.display= "flex";
+
+        if (logoutLink) {
+            logoutLink.style.display = "flex";
+        }
+
         accountDesktopLink.style.display = "flex";
     }
 }
 
-window.addEventListener('load', toggleUploadVisibility);
-window.addEventListener('resize', toggleUploadVisibility);
+window.addEventListener("load", () => {
+    toggleUploadVisibility();
+});
 
-// Функція для оновлення інтерфейсу
+window.addEventListener("resize", () => {
+    toggleUploadVisibility();
+});
+
+
 function updateUI(user) {
-  if (user) {
-    currentUserEmail = user.email;
-
-    // Інфо про користувача
     const userInfoEl = document.getElementById("user-info");
-    if (userInfoEl) userInfoEl.textContent = `Ви увійшли як: ${user.email}`;
+    const logoutLink = document.getElementById("logout-link");
 
-    // Кнопки/посилання
-    document.getElementById("auth-link")?.style?.setProperty("display", "none");
-    document.getElementById("register-link")?.style?.setProperty("display", "none");
-    document.getElementById("logout-link")?.style?.setProperty("display", "flex");
-    document.getElementById("smart-settings")?.style?.setProperty("display", "grid");
-    document.getElementById("account-link")?.style?.setProperty("display", "block");
-    document.querySelector(".btn-liquid-glass")?.style?.setProperty("display", "flex");
-    document.querySelector(".bg-liquid-glass")?.style?.setProperty("left", "41%");
-    document.getElementById("account-desktop-link")?.style?.setProperty("display", "none");
-    document.getElementById("upload-link")?.style?.setProperty("display", "flex");
-    document.getElementById("upload-link-photo")?.style?.setProperty("display", "flex");
-    document.getElementById("smart-upload-link")?.style?.setProperty("display", "grid");
-    document.getElementById("smart-upload-link-photo")?.style?.setProperty("display", "grid");
+    if (user) {
+        currentUserEmail = user.email;
 
-    // Показати поля коментарів для всіх відео
-    document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
-      el.style.display = "flex";
-    });
+        if (userInfoEl) {
+            userInfoEl.textContent = `Ви увійшли як: ${user.email}`;
+        }
 
-    // Доступ тільки для певного домену
-    const domainRestrictContainer = document.getElementById("domain-restrict-container");
-    if (domainRestrictContainer) {
-      if (currentUserEmail.endsWith("@kfccte-nau.ukr.education")) {
-        domainRestrictContainer.style.display = "block";
-      } else {
-        domainRestrictContainer.style.display = "none";
-      }
+        document.getElementById("auth-link")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("register-link")
+            ?.style.setProperty("display", "none");
+
+        if (logoutLink) {
+            logoutLink.style.display = "flex";
+        }
+
+        document.getElementById("smart-settings")
+            ?.style.setProperty("display", "grid");
+
+        document.getElementById("account-link")
+            ?.style.setProperty("display", "block");
+
+        document.querySelector(".bg-liquid-glass")
+            ?.style.setProperty("left", "41%");
+
+        // Коментарі
+        document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
+            el.style.display = "flex";
+        });
+
+        // Обмеження домену
+        const domainRestrictContainer =
+            document.getElementById("domain-restrict-container");
+
+        if (domainRestrictContainer) {
+            domainRestrictContainer.style.display =
+                currentUserEmail.endsWith("@kfccte-nau.ukr.education")
+                    ? "block"
+                    : "none";
+        }
+
+    } else {
+        currentUserEmail = null;
+
+        if (userInfoEl) {
+            userInfoEl.textContent = "";
+        }
+
+        document.getElementById("auth-link")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("register-link")
+            ?.style.setProperty("display", "none");
+
+        if (logoutLink) {
+            logoutLink.style.display = "none";
+        }
+
+        document.getElementById("smart-settings")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("account-link")
+            ?.style.setProperty("display", "none");
+
+        document.querySelector(".bg-liquid-glass")
+            ?.style.setProperty("left", "49%");
+
+        document.getElementById("account-desktop-link")
+            ?.style.setProperty("display", "none");
+
+        // Коментарі
+        document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
+            el.style.display = "none";
+        });
     }
 
-  } else {
-    currentUserEmail = null;
-
-    // Інфо про користувача
-    const userInfoEl = document.getElementById("user-info");
-    if (userInfoEl) userInfoEl.textContent = "";
-
-    // Кнопки/посилання
-    document.getElementById("auth-link")?.style?.setProperty("display", "none");
-    document.getElementById("register-link")?.style?.setProperty("display", "none");
-    document.getElementById("logout-link")?.style?.setProperty("display", "none");
-    document.getElementById("smart-settings")?.style?.setProperty("display", "none");
-    document.getElementById("account-link")?.style?.setProperty("display", "none");
-    document.querySelector(".btn-liquid-glass")?.style?.setProperty("display", "none");
-    document.querySelector(".bg-liquid-glass")?.style?.setProperty("left", "49%");
-    document.getElementById("account-desktop-link")?.style?.setProperty("display", "none");
-    document.getElementById("upload-link")?.style?.setProperty("display", "none");
-    document.getElementById("upload-link-photo")?.style?.setProperty("display", "none");
-    document.getElementById("smart-upload-link")?.style?.setProperty("display", "none");
-    document.getElementById("smart-upload-link-photo")?.style?.setProperty("display", "none");
-
-    // Сховати коментарі
-    document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
-      el.style.display = "none";
-    });
-  }
+    // Оновлюємо адаптивний UI
+    toggleUploadVisibility();
 }
 async function backfillAuthorUidForUser() {
   const user = firebase.auth().currentUser;
