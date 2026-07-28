@@ -5436,7 +5436,8 @@ loadedStoryUsers.add(storiesData.uid);
 
         const storyItem = document.createElement("div");
         storyItem.classList.add("story-item");
-        
+        const storyAvatarRing = document.createElement("div");
+        storyAvatarRing.classList.add("avatar-ring");
         const storiesAvatar = document.createElement("img");
         storiesAvatar.classList.add("avatar-stories");
         if (storiesData.avatar) {
@@ -5448,7 +5449,8 @@ storiesAvatar.style.backgroundRepeat = "no-repeat";
             storiesAvatar.innerText = getInitials(storiesData.name);
             storiesAvatar.style.background = `${storiesData.authorColor}`;
         }
-        storyItem.appendChild(storiesAvatar);
+        storyAvatarRing.appendChild(storiesAvatar);
+        storyItem.appendChild(storyAvatarRing);
         const storiesAuthorName = document.createElement("div");
         storiesAuthorName.classList.add("name");
         storiesAuthorName.innerText = sanitizeHTML(storiesData.name);
