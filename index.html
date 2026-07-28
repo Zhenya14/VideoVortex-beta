@@ -2499,7 +2499,6 @@ text-decoration: none;
 
 /* Картка профілю користувача */
 .author-info {
-  display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
@@ -5021,7 +5020,7 @@ document.getElementById("all").addEventListener("click", loadVideos);
           document.getElementById("video-container").style.display = 'none';
            document.getElementById("photo-container").style.display = 'none';
            document.querySelector(".settings-page").style.display = 'none';
-           document.getElementById("author-info").style.display = 'flex';
+           document.getElementById("author-info").style.display = 'block';
         }
         document.getElementById("account-link").onclick = function() {
                      document.querySelector(".tab").style.display = 'none';
@@ -5033,7 +5032,7 @@ document.getElementById("all").addEventListener("click", loadVideos);
            document.getElementById("smart-video").classList.remove("button-liquid-glass");
           document.getElementById("smart-post").classList.remove("button-liquid-glass");
           document.getElementById("account-link").classList.add("button-liquid-glass");
-        document.getElementById("author-info").style.display = 'flex';
+        document.getElementById("author-info").style.display = 'block';
         }
             document.getElementById("smart-video").onclick = function() {
                          document.querySelector(".tab").style.display = 'flex';
