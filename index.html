@@ -5449,6 +5449,9 @@ storiesAvatar.style.backgroundRepeat = "no-repeat";
             storiesAvatar.innerText = getInitials(storiesData.name);
             storiesAvatar.style.background = `${storiesData.authorColor}`;
         }
+        storiesAvatar.onclick = () => {
+          openStories();
+        }
         storyAvatarRing.appendChild(storiesAvatar);
         storyItem.appendChild(storyAvatarRing);
         const storiesAuthorName = document.createElement("div");
