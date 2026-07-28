@@ -2678,6 +2678,10 @@ text-decoration: none;
         backdrop-filter: blur(3px) saturate(140%);
         -webkit-backdrop-filter: blur(3px);
         @apply bg-muted/25;
+        backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
+-webkit-backdrop-filter: blur(3px);
+filter: url(#glass-distortion);
+-webkit-filter: url(#glass-distortion);
 }
 #upload-progress {
   -webkit-appearance: none;
@@ -4159,6 +4163,7 @@ const uid = user.uid;
     uid: uid,
     url: url,
     name: authorName,
+    authorColor: userData.color,
     avatar: authorAvatarUrl,
     type: selectedStoryFile.type.startsWith("video") ? "video" : "image",
     createdAt: Date.now(),
@@ -4175,322 +4180,7 @@ const uid = user.uid;
     message.innerHTML = "Не вдалося отримати дані профілю." + err.message;
   }
 }
-async function loadStories() {
-    const storiesGallery = document.getElementById("stories-bar");
-    if (!videoGallery) return;
 
-    videoGallery.innerHTML = "";
-    const showNSFWGlobal = showNSFW;
-
-    database.ref("videos").on("child_added", async snapshot => {
-        const videoData = snapshot.val();
-        const videoKey = snapshot.key;
-
-        const isExpired =
-            videoData.autoDelete24h &&
-            videoData.expiresAt &&
-            Date.now() > videoData.expiresAt;
-
-        if (isExpired) return;
-
-        // =====================
-        // FIXED CACHE LOGIC
-        // =====================
-
-        let videoDataRaw = videoMemoryCache[videoKey];
-
-        if (!videoDataRaw) {
-            const local = getVideoCache(videoKey);
-
-            if (local) {
-                videoDataRaw = local;
-            } else {
-                videoDataRaw = videoData;
-                setVideoCache(videoKey, videoData);
-            }
-
-            videoMemoryCache[videoKey] = videoDataRaw;
-        } else {
-            // sync update fix
-            videoDataRaw = videoData;
-            videoMemoryCache[videoKey] = videoData;
-            setVideoCache(videoKey, videoData);
-        }
-
-        // 🔹 1. Фільтри
-        if (videoDataRaw.nsfw && !showNSFWGlobal) {
-          clearFeedCache();
-          return;
-}
-        if (videoDataRaw.authorUid) {
-          const blockedYou = await isUserBlockedByMe(videoDataRaw.authorUid);
-            const blockedMe = await didUserBlockMe(videoDataRaw.authorUid);
-            if (blockedMe || blockedYou) {
-              clearFeedCache();
-              return;
-            }
-        }
-
-        if (videoDataRaw.private && videoDataRaw.email !== currentUserEmail) {
-           clearFeedCache();
-          return;
-        }
-
-        if (
-            videoDataRaw.domainRestrict &&
-            (!currentUserEmail ||
-                !currentUserEmail.endsWith("@kfccte-nau.ukr.education"))
-        ) return;
-        // 🔹 2. Запобігання дублюванню
-        if (document.querySelector(`[data-id="${videoKey}"]`)) return;
-
-        const videoWrapper = document.createElement("div");
-        videoWrapper.className = "video-thumb-wrapper";
-
-        const videoElement = document.createElement("img");
-        videoElement.classList.add("video-item");
-        videoElement.src = videoData.thumbnail || "default.jpg";
-        videoElement.dataset.title = videoData.title || "";
-        videoElement.dataset.description = videoData.description || "";
-        videoElement.dataset.author = videoData.author || "";
-        videoElement.style.filter = videoData.nsfw ? "blur(20px)" : "none";
-
-        cacheImage(videoElement.src);
-
-        // =====================
-        // FIXED TIMER (NO LEAK)
-        // =====================
-if (videoDataRaw.score > 15) {
-            const popular = document.createElement("div");
-            popular.className = "stories-timer";
-
-            const popularSpan = document.createElement("span");
-            popularSpan.textContent = "🔥 Popular";
-            popular.appendChild(popularSpan);
-            videoWrapper.appendChild(popular);
-}
-        if (videoDataRaw.autoDelete24h && videoDataRaw.expiresAt) {
-            const timer = document.createElement("div");
-            timer.className = "stories-timer";
-
-            const timeSpan = document.createElement("span");
-            timer.appendChild(timeSpan);
-
-            let interval;
-
-            const update = () => {
-                const diff = videoDataRaw.expiresAt - Date.now();
-
-                if (diff <= 0) {
-                    clearInterval(interval);
-                    videoWrapper.remove();
-                    return;
-                }
-
-                const h = Math.floor(diff / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-
-                timeSpan.textContent =
-                    `${String(h).padStart(2, "0")}:` +
-                    `${String(m).padStart(2, "0")}:` +
-                    `${String(s).padStart(2, "0")}`;
-            };
-
-            update();
-            interval = setInterval(update, 1000);
-
-            videoWrapper.appendChild(timer);
-        }
-
-        // 🔹 4. Клік по відео
-        videoElement.onclick = () => {
-            const viewedKey = `viewed_${videoKey}`;
-
-            if (!localStorage.getItem(viewedKey)) {
-                const newViewCount = (videoDataRaw.views || 0) + 1;
-
-                database.ref("videos/" + videoKey).update({ views: newViewCount })
-                    .then(() => localStorage.setItem(viewedKey, true))
-                    .catch(console.error);
-            }
-
-            const videoParams = new URLSearchParams({
-                key: videoKey
-            });
-
-            window.location.href = `video.html?${videoParams.toString()}`;
-        };
-
-        // 🔹 6. Інформація
-        const infoElement = document.createElement("div");
-        infoElement.classList.add("video-info");
-
-
-
-  const avatar = document.createElement("div");
-avatar.className = "avatar";
-
-const authorEl = document.createElement("span");
-authorEl.textContent = videoDataRaw?.author || "Анонім";
-
-        if (videoDataRaw.authorStatus == "frozen_soft") {
-          avatar.innerText = "👻";
-          avatar.style.background = `${videoDataRaw.authorColor}`;
-          } else if (videoDataRaw.authorAvatar) {
-            avatar.style.backgroundImage = `url(${videoDataRaw.authorAvatar})`;
-            avatar.style.backgroundSize = "cover";
-avatar.style.backgroundPosition = "center";
-avatar.style.backgroundRepeat = "no-repeat";
-          }  else {
-            avatar.innerText = getInitials(videoDataRaw.author);
-            avatar.style.background = `${videoDataRaw.authorColor}`;
-        }
-
-        avatar.onclick = () => {
-            const infoParams = new URLSearchParams({
-                uid: videoDataRaw.authorUid || "",
-            });
-            window.location.href = `profile.html?${infoParams.toString()}`;
-        };
-
-        const detailsElement = document.createElement("div");
-        detailsElement.classList.add("video-details");
-
-        const isFrozen = videoDataRaw.authorStatus === "frozen_soft";
-
-detailsElement.innerHTML = `
-    ${sanitizeHTML(videoDataRaw.title || "Без назви")}
-    ${videoDataRaw.private ? "<span style='color: orange;'>🔒 <span data-i18n='private'></span></span>" : ""}
-    ${videoDataRaw.nsfw ? "<span style='color: red;'>NSFW</span>" : ""}
-
-    <br>
-
-    Автор: ${
-        isFrozen
-            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
-            : sanitizeHTML(videoDataRaw.author || "Анонім")
-    }
-
-    ${
-        isFrozen
-            ? " <span style='color:#4aa3ff;' data-i18n='account-deleted'></span>"
-            : ""
-    }
-
-    ${videoDataRaw.owner === true && videoDataRaw.verifiedBadge
-        ? `<img class='adaptive-stroke' src='${videoDataRaw.verifiedBadge}'>`
-        : ""
-    }
-
-    <br>
-
-    ${getSafeBanduraHTML(videoDataRaw.banduraExtra)}
-<li><span data-i18n='views'>Переглядів</span>: ${videoDataRaw.views || 0}
-    <br></li>
-    
-
-    <span data-i18n='publish-date'>Дата публікації</span>: ${videoDataRaw.publishDate || "—"}
-`;
-
-        // 🔹 MENU
-        const moreBtn = document.createElement("a");
-        moreBtn.classList.add("more-btn");
-        moreBtn.innerHTML = `<i class="material-symbols">more_vert</i>`;
-
-        const actionMenu = document.createElement("div");
-        actionMenu.classList.add("action-menu");
-        actionMenu.style.display = "none";
-if (currentUserRole === "moderator") {
-
-            const freezeBtn = document.createElement("button");
-            freezeBtn.textContent = "❄ Заморозити";
-
-            freezeBtn.onclick = async () => {
-                await freezeUser(videoDataRaw.authorUid, "frozen_soft");
-            };
-           const unFreezeBtn = document.createElement("button");
-           
-            unFreezeBtn.textContent = "Розморозити";
-            unFreezeBtn.onclick = async () => {
-                await unFreezeUser(videoDataRaw.authorUid);
-            };
-            const banBtn = document.createElement("button");
-            banBtn.textContent = "⛔ Бан";
-
-            banBtn.onclick = async () => {
-                await freezeUser(videoDataRaw.authorUid, "frozen_hard");
-            };
-
-            actionMenu.appendChild(freezeBtn);
-            actionMenu.appendChild(unFreezeBtn);
-            actionMenu.appendChild(banBtn);
-        }
-
-        if (currentUserEmail === videoDataRaw.email || currentUserEmail === "zhuzhun2008@gmail.com") {
-            const deleteButton = document.createElement("button");
-            deleteButton.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;">
-                <i class="material-symbols">delete</i>Видалити</a>`;
-
-            deleteButton.onclick = () => {
-                deleteVideo(videoKey, videoDataRaw.url);
-                actionMenu.style.display = "none";
-            };
-
-            actionMenu.appendChild(deleteButton);
-        }
-
-        if (currentUserEmail === videoDataRaw.email) {
-            const editButton = document.createElement("button");
-            editButton.innerHTML = `<a style="padding:3px 8px; display:flex; align-items:center; justify-content:center;">
-                <i class="material-symbols">edit</i>Редагувати</a>`;
-
-            editButton.onclick = () => {
-                editVideo(videoKey, videoDataRaw);
-                actionMenu.style.display = "none";
-            };
-
-            actionMenu.appendChild(editButton);
-        }
-
-        moreBtn.onclick = e => {
-            e.stopPropagation();
-
-            document.querySelectorAll(".action-menu").forEach(m => {
-                if (m !== actionMenu) m.style.display = "none";
-            });
-
-            actionMenu.style.display =
-                actionMenu.style.display === "block" ? "none" : "block";
-        };
-
-        // FIX: listener only once
-        if (!videoGallery.dataset.listener) {
-            videoGallery.addEventListener("click", e => {
-                if (!e.target.closest(".action-menu") && !e.target.closest(".more-btn")) {
-                    document.querySelectorAll(".action-menu").forEach(m => m.style.display = "none");
-                }
-            });
-
-            videoGallery.dataset.listener = "true";
-        }
-
-        infoElement.appendChild(avatar);
-        infoElement.appendChild(detailsElement);
-        infoElement.appendChild(moreBtn);
-        infoElement.appendChild(actionMenu);
-
-        const container = document.createElement("div");
-        container.classList.add("video-container");
-        container.dataset.id = videoKey;
-
-        container.appendChild(infoElement);
-        videoWrapper.appendChild(videoElement);
-        container.appendChild(videoWrapper);
-
-        videoGallery.appendChild(container);
-    });
-}
 // Рендер прев’ю фото
 function renderPhotoPreviews() {
   const grid = document.getElementById("photoPreviewGrid");
@@ -5708,7 +5398,65 @@ function sanitizeHTML(str) {
     div.innerText = str;
     return div.innerHTML;
 }
+const loadedStoryUsers = new Set();
 
+async function loadStories() {
+    const storiesGallery = document.getElementById("stories-bar");
+    if (!storiesGallery) return;
+
+const user = firebase.auth().currentUser;
+
+    database.ref("stories").on("child_added", async snapshot => {
+      snapshot.forEach(async storySnapshot => {
+        const storiesData = snapshot.val();
+
+        const isExpired =
+            storiesData.expiresAt &&
+            Date.now() > storiesData.expiresAt;
+
+        if (isExpired) return;
+
+        // =====================
+        // FIXED CACHE LOGIC
+        // =====================
+        if (storiesData.uid) {
+          const blockedYou = await isUserBlockedByMe(storiesData.uid);
+            const blockedMe = await didUserBlockMe(storiesData.uid);
+            if (blockedMe || blockedYou) {
+              return;
+            }
+        }
+        if (storiesData.uid === currentUserUid) {
+        return;
+        }
+        if (loadedStoryUsers.has(storiesData.uid)) {
+                return;
+            }
+loadedStoryUsers.add(storiesData.uid);
+
+        const storyItem = document.createElement("div");
+        storyItem.classList.add("story-item");
+        
+        const storiesAvatar = document.createElement("img");
+        storiesAvatar.classList.add("avatar-stories");
+        if (storiesData.avatar) {
+            storiesAvatar.style.backgroundImage = `url(${storiesData.avatar})`;
+            storiesAvatar.style.backgroundSize = "cover";
+storiesAvatar.style.backgroundPosition = "center";
+storiesAvatar.style.backgroundRepeat = "no-repeat";
+          }  else {
+            storiesAvatar.innerText = getInitials(storiesData.name);
+            storiesAvatar.style.background = `${storiesData.authorColor}`;
+        }
+        storyItem.appendChild(storiesAvatar);
+        const storiesAuthorName = document.createElement("div");
+        storiesAuthorName.classList.add("name");
+        storiesAuthorName.innerText = sanitizeHTML(storiesData.name);
+        storyItem.appendChild(storiesAuthorName);
+        storiesGallery.appendChild(storyItem);
+    });
+    });
+}
 function getSafeBanduraHTML(banduraExtra) {
     if (!banduraExtra) return "";
     const s = str => str ? sanitizeHTML(str) : "";
@@ -6148,6 +5896,7 @@ async function forceLogout() {
 
     currentUser = null;
     currentUserEmail = null;
+    let currentUserUid = null;
     currentUserRole = "user";
     currentUserStatus = "active";
 
@@ -7967,7 +7716,7 @@ auth.onAuthStateChanged(async (user) => {
 
     currentUser = user;
     currentUserEmail = user.email;
-
+    currentUserUid = user.uid;
     try {
 
         // 👤 USER PROFILE (role тут)
@@ -9219,6 +8968,8 @@ setInterval(updateTimer, 1000);
 window.onload = function() {
         loadSettings();
         loadVideos();
+        loadStories();
+        
         loadPhotos();
         loadPopularVideos();
     };
