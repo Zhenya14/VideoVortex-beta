@@ -2570,7 +2570,13 @@ text-decoration: none;
 .archive:active, .edit:active, .your-profile:active {
   transform: scale(0.97); /* Легкий клік */
 }
-
+.avatar-stories-img {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 645px;
+}
 /* Іконки всередині кнопок */
 .archive .material-symbols, .edit .material-symbols, .your-profile .material-symbols {
   font-size: 26px;
@@ -2652,7 +2658,9 @@ text-decoration: none;
 .delete-history-views .material-symbols {
   font-size: 20px;
 }
-
+#storyView img {
+  border-radius: 16px;
+}
 #plus-button {
   border-radius: 89px;
  bottom: 20px;
@@ -5516,7 +5524,6 @@ database.ref("stories")
 
             if (!storyData) return;
 
-
             // Перевіряємо термін дії
             if (
                 storyData.expiresAt &&
@@ -5528,10 +5535,12 @@ database.ref("stories")
 
             // Додаємо Story
             stories.push({
+
                 storyId:
                     storyId,
 
                 ...storyData
+
             });
 
         });
@@ -5545,7 +5554,7 @@ database.ref("stories")
         ) {
 
             console.log(
-                "Stories не знайдені"
+                "Stories користувача не знайдені"
             );
 
             storiesView.style.display =
@@ -5582,7 +5591,7 @@ database.ref("stories")
         }
 
         console.log(
-            "Stories:",
+            "Stories користувача:",
             stories
         );
 
@@ -5597,10 +5606,14 @@ database.ref("stories")
 
         function showStory(index) {
 
+            // Якщо Stories закінчилися
             if (
                 index >=
                 stories.length
             ) {
+
+                storiesView.innerHTML =
+                    "";
 
                 storiesView.style.display =
                     "none";
@@ -5613,6 +5626,45 @@ database.ref("stories")
 
             storiesView.innerHTML =
                 "";
+
+            // =========================
+            // АВАТАР КОРИСТУВАЧА
+            // =========================
+
+            const storiesAvatar =
+                document.createElement(
+                    "div"
+                );
+
+            storiesAvatar.classList.add(
+                "stories-avatar"
+            );
+           storiesAvatar.style.borderRadius = "64px";
+            if (
+                storyData.avatar
+            ) {
+
+                const avatarImg =
+                    document.createElement(
+                        "img"
+                    );
+
+                avatarImg.src =
+                    storyData.avatar;
+
+                avatarImg.classList.add(
+                    "avatar-stories-img"
+                );
+
+                storiesAvatar.appendChild(
+                    avatarImg
+                );
+
+            }
+
+            storiesView.appendChild(
+                storiesAvatar
+            );
 
             // =========================
             // ФОТО
@@ -7339,7 +7391,6 @@ async function uploadVideo() {
       thumbnail: tempThumbnailUrl,
       uploading: true
     });
-loadVideos();
     const progressContainer =
       document.getElementById("progress-container");
 
