@@ -7661,7 +7661,7 @@ function getActivePhotoChannelData() {
 
 function toggleUploadVisibility() {
     const isMobile = window.innerWidth <= 1024;
-
+    const addStory = document.getElementById("add-story");
     const plusPost = document.getElementById("plus-button");
     const plusDesktopPost = document.getElementById("plus-desktop-button");
     const logoutLink = document.getElementById("logout-link");
@@ -7692,7 +7692,7 @@ function toggleUploadVisibility() {
     // Користувач авторизований
     if (isMobile) {
         openMenu.style.display = "none";
-
+        addStory.style.display = "flex";
         plusPost.style.display = "grid";
         plusDesktopPost.style.display = "none";
 
@@ -7704,7 +7704,7 @@ function toggleUploadVisibility() {
 
     } else {
         openMenu.style.display = "flex";
-
+        addStory.style.display = "none";
         plusPost.style.display = "none";
         plusDesktopPost.style.display = "flex";
 
