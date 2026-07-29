@@ -4006,11 +4006,6 @@ async function openCamera() {
   cameraActive = true;
 }
 function captureStop() {
-  if (stream) {
-    stream.getTracks().forEach(t => t.stop());
-  }
-  cameraActive = false;
-
   document.getElementById("story-camera").style.display = "none";
   document.querySelector(".bg-liquid-glass").style.display = "flex";
   document.querySelector(".btn-liquid-glass").style.display = "flex";
@@ -4138,8 +4133,7 @@ const uid = user.uid;
     let authorAvatarUrl = null;
 
       authorName =
-        `${userData.name || ""} ${userData.supername || ""}`.trim() ||
-        "Основний канал";
+        `${userData.name || ""} ${userData.supername || ""}`.trim();
 
       const mainAvatar = userData.avatarId;
 
