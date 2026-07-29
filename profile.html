@@ -150,6 +150,12 @@ ios-modal {
   box-shadow: 0 20px 40px rgba(0,0,0,0.5);
   animation: scaleIn 0.25s ease;
 }
+.adaptive-stroke {
+  width: 28px;
+  height: 28px;
+  display: inline-block;
+  vertical-align: middle;
+}
 .ios-modal-content {
   width: 90%;
 max-width: 420px;
@@ -477,7 +483,11 @@ const backgroundProfile = document.querySelector(".profile-header");
 const avatar = document.getElementById("avatar");
   const userName = document.getElementById("userName");
   let realBlockedUserName = "";
-  
+function sanitizeHTML(str) {
+    const div = document.createElement("div");
+    div.innerText = str;
+    return div.innerHTML;
+}  
 function showNotFound() {
   document.getElementById("video-gallery").innerHTML = `<h3>🎬 Публікації відсутні</h3>`;
 }
@@ -587,8 +597,9 @@ async function loadProfile() {
     // NAME
     // ======================
     const name = `${data.name || "Користувач"} ${data.supername || ""}`.trim();
-
-    userName.textContent = isFrozen ? "❄️ Видалений акаунт" : name;
+const verifiedBadge = `${data.owner === true && data.verifiedBadge ? `<img class='adaptive-stroke' src='${data.verifiedBadge}'>`
+        : ""}`;
+    userName.innerHTML = isFrozen ? "❄️ Видалений акаунт" : sanitizeHTML(name) + verifiedBadge;
     nameAccount = name;
 
     if (isFrozen) {
@@ -701,8 +712,10 @@ async function loadVideos() {
     img.onclick = () => {
       location.href = `video.html?key=${v.key}`;
     };
-
+const title = document.createElement("span");
+    title.src = v.title;
     container.appendChild(img);
+    container.appendChild(title);
     videoGallery.appendChild(container);
   }
 }
