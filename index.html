@@ -2834,6 +2834,7 @@ filter: url(#glass-distortion);
   <i class="material-symbols">search</i>
 </button>
 </div>
+    </div>
 <!-- CAMERA SCREEN -->
 <div id="story-camera" style="display:none; position:fixed; inset:0; background:black; z-index:999;">
 
@@ -2867,7 +2868,9 @@ filter: url(#glass-distortion);
     </button>
 
 </div>
-
+<div id="storyView"
+         style="position:fixed; inset:0; display: none; width:100%; height:100%; z-index:999;">
+    </div>
 <input id="galleryInput" type="file" accept="image/*,video/*" hidden>
         <div style="display: flex; gap: 15px; margin-left: auto;">
                 <a href="#" class="notification" style="display: none;"><i class="material-symbols">notifications</i></a>
@@ -5488,70 +5491,282 @@ storyAvatarRing.classList.add("avatar-ring");
 });
 }
 
-
 function openStories(uid, startStoryId) {
 
-    database.ref("stories").once("value")
-        .then(snapshot => {
+const storiesView =
+    document.getElementById("storyView");
 
-            const stories = [];
+if (!storiesView) return;
 
-            snapshot.forEach(storySnapshot => {
+storiesView.innerHTML = "";
+storiesView.style.display = "block";
 
-                const storyId =
-                    storySnapshot.key;
+database.ref("stories")
+    .once("value")
+    .then(snapshot => {
 
-                const storyData =
-                    storySnapshot.val();
+        const stories = [];
 
-                if (
-                    storyData.uid !== uid
-                ) {
-                    return;
-                }
+        // =========================
+        // ЗБИРАЄМО STORIES КОРИСТУВАЧА
+        // =========================
 
-                if (
-                    storyData.expiresAt &&
-                    Date.now() >
-                    storyData.expiresAt
-                ) {
-                    return;
-                }
+        snapshot.forEach(storySnapshot => {
 
-                stories.push({
+            // ID конкретної Story
+            const storyId =
+                storySnapshot.key;
+
+            // Дані конкретної Story
+            const storyData =
+                storySnapshot.val();
+
+            if (!storyData) return;
+
+            // Перевіряємо автора
+            if (
+                storyData.uid !== uid
+            ) {
+                return;
+            }
+
+            // Перевіряємо термін дії
+            if (
+                storyData.expiresAt &&
+                Date.now() >
+                storyData.expiresAt
+            ) {
+                return;
+            }
+
+            // Додаємо Story
+            stories.push({
+                storyId:
                     storyId,
-                    ...storyData
-                });
 
+                ...storyData
             });
 
-            // Сортуємо Stories
-            stories.sort(
-                (a, b) =>
-                    (a.createdAt || 0) -
-                    (b.createdAt || 0)
+        });
+
+        // =========================
+        // ЯКЩО STORIES НЕМАЄ
+        // =========================
+
+        if (
+            stories.length === 0
+        ) {
+
+            console.log(
+                "Stories не знайдені"
             );
 
-            // Знаходимо Story, на яку натиснули
-            const startIndex =
-                stories.findIndex(
-                    story =>
-                        story.storyId ===
-                        startStoryId
+            storiesView.style.display =
+                "none";
+
+            return;
+        }
+
+        // =========================
+        // СОРТУВАННЯ
+        // =========================
+
+        stories.sort(
+            (a, b) =>
+                (a.createdAt || 0) -
+                (b.createdAt || 0)
+        );
+
+        // =========================
+        // ЗНАХОДИМО ПОЧАТКОВУ STORY
+        // =========================
+
+        let startIndex =
+            stories.findIndex(
+                story =>
+                    story.storyId ===
+                    startStoryId
+            );
+
+        if (
+            startIndex === -1
+        ) {
+            startIndex = 0;
+        }
+
+        console.log(
+            "Stories:",
+            stories
+        );
+
+        console.log(
+            "Початкова Story:",
+            stories[startIndex]
+        );
+
+        // =========================
+        // ПОКАЗ STORY
+        // =========================
+
+        function showStory(index) {
+
+            if (
+                index >=
+                stories.length
+            ) {
+
+                storiesView.style.display =
+                    "none";
+
+                return;
+            }
+
+            const storyData =
+                stories[index];
+
+            storiesView.innerHTML =
+                "";
+
+            // =========================
+            // ФОТО
+            // =========================
+
+            if (
+                storyData.type ===
+                "image"
+            ) {
+
+                const img =
+                    document.createElement(
+                        "img"
+                    );
+
+                img.src =
+                    storyData.url;
+
+                img.style.width =
+                    "100%";
+
+                img.style.height =
+                    "100%";
+
+                img.style.objectFit =
+                    "cover";
+
+                storiesView.appendChild(
+                    img
                 );
 
-            console.log(
-                "Stories:",
-                stories
+                // Через 5 секунд
+                // наступна Story
+                setTimeout(
+                    () => {
+
+                        showStory(
+                            index + 1
+                        );
+
+                    },
+                    5000
+                );
+
+            }
+
+            // =========================
+            // ВІДЕО
+            // =========================
+
+            else if (
+                storyData.type ===
+                "video"
+            ) {
+
+                const video =
+                    document.createElement(
+                        "video"
+                    );
+
+                video.src =
+                    storyData.url;
+
+                video.autoplay =
+                    true;
+
+                video.loop =
+                    false;
+
+                video.muted =
+                    true;
+
+                video.playsInline =
+                    true;
+
+                video.controls =
+                    false;
+
+                video.style.width =
+                    "100%";
+
+                video.style.height =
+                    "100%";
+
+                video.style.objectFit =
+                    "cover";
+
+                storiesView.appendChild(
+                    video
+                );
+
+                video.play()
+                    .catch(
+                        error => {
+
+                            console.error(
+                                "Не вдалося відтворити відео:",
+                                error
+                            );
+
+                        }
+                    );
+
+                // Після завершення
+                // наступна Story
+                video.onended =
+                    () => {
+
+                        showStory(
+                            index + 1
+                        );
+
+                    };
+
+            }
+
+        }
+
+        // =========================
+        // ПОКАЗУЄМО ПОЧАТКОВУ STORY
+        // =========================
+
+        showStory(
+            startIndex
+        );
+
+    })
+    .catch(
+        error => {
+
+            console.error(
+                "Помилка завантаження Stories:",
+                error
             );
 
-            console.log(
-                "Початкова Story:",
-                startIndex
-            );
+            storiesView.style.display =
+                "none";
 
-            // Тут запускаєш переглядач
-        });
+        }
+    );
+
 }
 function getSafeBanduraHTML(banduraExtra) {
     if (!banduraExtra) return "";
