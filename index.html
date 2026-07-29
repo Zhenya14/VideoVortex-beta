@@ -1240,11 +1240,13 @@ img.video-item {
   border-radius: 14px;
   width: 100%;
   height: auto;
+  object-fit: cover; /* Обрізає зображення для заповнення контейнера */
 }
 video.video-item {
   border-radius: 14px;
   width: 100%;
   height: auto;
+  object-fit: cover; /* Обрізає зображення для заповнення контейнера */
 }
         .video-info { 
             text-align: left; 
@@ -2424,7 +2426,6 @@ nav {
     padding: 0px 20px;
 
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
     position: fixed;
     z-index: 100;
     width: 97%;
@@ -4029,10 +4030,7 @@ let storyPreviewURL = null;
 function openGallery() {
     document.getElementById("galleryInput").click();
 }
-function openStories() {
-  const viewsContainer = document.getElementById("story-camera");
-    const view = document.getElementById("storyPreview");
-}
+
 function previewStory(file) {
 
     const container = document.getElementById("story-camera");
@@ -5400,66 +5398,160 @@ function sanitizeHTML(str) {
 const loadedStoryUsers = new Set();
 
 async function loadStories() {
-    const storiesGallery = document.getElementById("stories-bar");
+
+    const storiesGallery =
+        document.getElementById("stories-bar");
+
     if (!storiesGallery) return;
 
-const user = firebase.auth().currentUser;
+    const user =
+        firebase.auth().currentUser;
 
     database.ref("stories").on("child_added", async snapshot => {
-      snapshot.forEach(async storySnapshot => {
-        const storiesData = snapshot.val();
 
-        const isExpired =
-            storiesData.expiresAt &&
-            Date.now() > storiesData.expiresAt;
+    const storyId = snapshot.key;
+    const storiesData = snapshot.val();
 
-        if (isExpired) return;
+    if (!storiesData) return;
 
-        // =====================
-        // FIXED CACHE LOGIC
-        // =====================
-        if (storiesData.uid) {
-          const blockedYou = await isUserBlockedByMe(storiesData.uid);
-            const blockedMe = await didUserBlockMe(storiesData.uid);
-            if (blockedMe || blockedYou) {
-              return;
-            }
-        }
-        if (storiesData.uid === currentUserUid) {
-        return;
-        }
-        if (loadedStoryUsers.has(storiesData.uid)) {
-                return;
-            }
-loadedStoryUsers.add(storiesData.uid);
+    // storyId — це ID конкретної Story
+    console.log("Story ID:", storyId);
 
-        const storyItem = document.createElement("div");
-        storyItem.classList.add("story-item");
-        const storyAvatarRing = document.createElement("div");
-        storyAvatarRing.classList.add("avatar-ring");
-        const storiesAvatar = document.createElement("img");
-        storiesAvatar.classList.add("avatar-stories");
-        if (storiesData.avatar) {
-            storiesAvatar.style.backgroundImage = `url(${storiesData.avatar})`;
-            storiesAvatar.style.backgroundSize = "cover";
-storiesAvatar.style.backgroundPosition = "center";
-storiesAvatar.style.backgroundRepeat = "no-repeat";
-          }  else {
-            storiesAvatar.innerText = getInitials(storiesData.name);
-            storiesAvatar.style.background = `${storiesData.authorColor}`;
-        }
-        storiesAvatar.onclick = () => {
-          openStories();
-        }
-        storyAvatarRing.appendChild(storiesAvatar);
-        storyItem.appendChild(storyAvatarRing);
-        const storiesAuthorName = document.createElement("div");
-        storiesAuthorName.classList.add("name");
-        storiesAuthorName.innerText = sanitizeHTML(storiesData.name);
-        storyItem.appendChild(storiesAuthorName);
-        storiesGallery.appendChild(storyItem);
-    });
-    });
+    const isExpired =
+        storiesData.expiresAt &&
+        Date.now() > storiesData.expiresAt;
+
+    if (isExpired) return;
+
+    if (!storiesData.uid) return;
+
+    const blockedYou =
+        await isUserBlockedByMe(storiesData.uid);
+
+    const blockedMe =
+        await didUserBlockMe(storiesData.uid);
+
+    if (blockedMe || blockedYou) return;
+
+    if (storiesData.uid === currentUserUid) return;
+
+    // Не дублювати автора
+    if (loadedStoryUsers.has(storiesData.uid)) return;
+
+    loadedStoryUsers.add(storiesData.uid);
+const storyAvatarRing = document.createElement("div");
+storyAvatarRing.classList.add("avatar-ring");
+    // Створюємо аватар
+    const storyItem = document.createElement("div");
+    storyItem.classList.add("story-item");
+
+    const storiesAvatar =
+        document.createElement("img");
+
+    storiesAvatar.classList.add("avatar-stories");
+
+    if (storiesData.avatar) {
+        storiesAvatar.style.backgroundImage =
+            `url(${storiesData.avatar})`;
+
+        storiesAvatar.style.backgroundSize = "cover";
+        storiesAvatar.style.backgroundPosition = "center";
+        storiesAvatar.style.backgroundRepeat = "no-repeat";
+    }
+
+    // Передаємо UID автора
+    // і Story ID
+    storiesAvatar.onclick = () => {
+        openStories(
+            storiesData.uid,
+            storyId
+        );
+    };
+   storyAvatarRing.appendChild(storiesAvatar);
+    storyItem.appendChild(storyAvatarRing);
+
+    const storiesAuthorName =
+        document.createElement("div");
+
+    storiesAuthorName.classList.add("name");
+
+    storiesAuthorName.innerText =
+        sanitizeHTML(storiesData.name);
+
+    storyItem.appendChild(
+        storiesAuthorName
+    );
+
+    storiesGallery.appendChild(
+        storyItem
+    );
+});
+}
+
+
+function openStories(uid, startStoryId) {
+
+    database.ref("stories").once("value")
+        .then(snapshot => {
+
+            const stories = [];
+
+            snapshot.forEach(storySnapshot => {
+
+                const storyId =
+                    storySnapshot.key;
+
+                const storyData =
+                    storySnapshot.val();
+
+                if (
+                    storyData.uid !== uid
+                ) {
+                    return;
+                }
+
+                if (
+                    storyData.expiresAt &&
+                    Date.now() >
+                    storyData.expiresAt
+                ) {
+                    return;
+                }
+
+                stories.push({
+                    storyId,
+                    ...storyData
+                });
+
+            });
+
+            // Сортуємо Stories
+            stories.sort(
+                (a, b) =>
+                    (a.createdAt || 0) -
+                    (b.createdAt || 0)
+            );
+
+            // Знаходимо Story, на яку натиснули
+            const startIndex =
+                stories.findIndex(
+                    story =>
+                        story.storyId ===
+                        startStoryId
+                );
+
+            console.log(
+                "Stories:",
+                stories
+            );
+
+            console.log(
+                "Початкова Story:",
+                startIndex
+            );
+
+            // Тут запускаєш переглядач
+        });
 }
 function getSafeBanduraHTML(banduraExtra) {
     if (!banduraExtra) return "";
@@ -8608,22 +8700,33 @@ if (photoData.authorUid) {
         // 🔹 Інформація про фото
         const infophotoElement = document.createElement("div");
         infophotoElement.classList.add("photo-info");
-
+const authorEl = document.createElement("span");
+authorEl.textContent = photoData?.author || "Анонім";
         // Аватар автора
         const avatar = document.createElement("div");
         avatar.classList.add("avatar");
         avatar.title = photoData.author || "Анонім";
 
-        if (photoData.authorAvatar) {
+        
+        if (photoData.authorStatus == "frozen_soft") {
+          avatar.innerText = "👻";
+          avatar.style.background = `${photoData.authorColor}`;
+          } else if (photoData.authorAvatar) {
                    avatar.style.backgroundImage = `url(${photoData.authorAvatar})`;
                     avatar.style.backgroundSize = "cover";
 avatar.style.backgroundPosition = "center";
 avatar.style.backgroundRepeat = "no-repeat";
         } else {
             avatar.innerText = getInitials(photoData.author);
-    avatar.style.backgroundColor = stringToColor(photoData.author || "?");
+    avatar.style.backgroundColor = stringToColor(photoData.authorColor || "?");
         }
-
+avatar.onclick = () => {
+            const infoParams = new URLSearchParams({
+                uid: photoData.authorUid || "",
+            });
+            window.location.href = `profile.html?${infoParams.toString()}`;
+        };
+        const isFrozen = photoData.authorStatus === "frozen_soft";
         const detailsphotoElement = document.createElement("div");
         detailsphotoElement.classList.add("photo-details");
         const safephotoTitle = sanitizeHTML(photoData.title || "Без назви");
@@ -8631,7 +8734,25 @@ avatar.style.backgroundRepeat = "no-repeat";
         const safephotoDescription = sanitizeHTML(photoData.description || "Без опису");
         detailsphotoElement.innerHTML = `
             <strong>${safephotoTitle}</strong><br>
-            Автор: ${safephotoAuthor}<br>
+            Автор: ${
+        isFrozen
+            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
+            : sanitizeHTML(photoData.author || "Анонім")
+    }
+
+    ${
+        isFrozen
+            ? " <span style='color:#4aa3ff;' data-i18n='account-deleted'></span>"
+            : ""
+    }
+
+    ${photoData.owner === true && photoData.verifiedBadge
+        ? `<img class='adaptive-stroke' src='${photoData.verifiedBadge}'>`
+        : ""
+    }
+
+    <br>
+
             Дата публікації: ${photoData.publishDate || "Не вказана"}<br>
             Опис: ${safephotoDescription}
         `;
