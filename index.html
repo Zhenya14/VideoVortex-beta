@@ -2659,7 +2659,6 @@ text-decoration: none;
 
  text-decoration: none;
   font-size: 32px;
-  z-index: 1;
   color: white;
   position: fixed;
   left: 94%;
@@ -4041,7 +4040,7 @@ function previewStory(file) {
     const camera = document.getElementById("cameraPreview");
 
     const bgGlassClose = document.querySelector(".bg-liquid-glass");
-    const btnGlassClose = document.querySelector(".btn-liquid-glass");
+    const btnGlassClose = document.getElementById("plus-button");
 
     // Зберігаємо поточний файл
     currentStoryFile = file;
@@ -5523,12 +5522,6 @@ database.ref("stories")
 
             if (!storyData) return;
 
-            // Перевіряємо автора
-            if (
-                storyData.uid !== uid
-            ) {
-                return;
-            }
 
             // Перевіряємо термін дії
             if (
