@@ -2658,7 +2658,7 @@ text-decoration: none;
 .delete-history-views .material-symbols {
   font-size: 20px;
 }
-#storyView img {
+.story-img, .story-video {
   border-radius: 16px;
 }
 #plus-button {
@@ -2734,7 +2734,7 @@ filter: url(#glass-distortion);
   align-items: center;
 }
 #storyPreview img {
-  border-radius: 0px;
+  border-radius: 16px;
 }
 .cancel-publish {
   position: absolute;
@@ -2876,7 +2876,7 @@ filter: url(#glass-distortion);
 
 </div>
 <div id="storyView"
-         style="position:fixed; inset:0; display: none; width:100%; height:100%; z-index:999;">
+         style="position:fixed; inset:0; display: none; width:100%; height:100%; border-radius: z-index:999;">
     </div>
 <input id="galleryInput" type="file" accept="image/*,video/*" hidden>
         <div style="display: flex; gap: 15px; margin-left: auto;">
@@ -5679,7 +5679,7 @@ database.ref("stories")
                     document.createElement(
                         "img"
                     );
-
+                img.classList.add("story-img");
                 img.src =
                     storyData.url;
 
@@ -5724,7 +5724,7 @@ database.ref("stories")
                     document.createElement(
                         "video"
                     );
-
+                video.classList.add("story-video");
                 video.src =
                     storyData.url;
 
