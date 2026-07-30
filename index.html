@@ -1353,7 +1353,7 @@ body {
 
 /* bar */
 .stories-bar {
-  display: flex;
+  display: none;
   gap: 14px;
   padding: 12px;
 
@@ -2570,12 +2570,18 @@ text-decoration: none;
 .archive:active, .edit:active, .your-profile:active {
   transform: scale(0.97); /* Легкий клік */
 }
-.avatar-stories-img {
+.avatar-stories-view {
   position: fixed;
   display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 645px;
+}
+.stories-author {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 /* Іконки всередині кнопок */
 .archive .material-symbols, .edit .material-symbols, .your-profile .material-symbols {
@@ -5653,7 +5659,7 @@ database.ref("stories")
                     storyData.avatar;
 
                 avatarImg.classList.add(
-                    "avatar-stories-img"
+                    "avatar-stories-view"
                 );
 
                 storiesAvatar.appendChild(
@@ -5661,11 +5667,20 @@ database.ref("stories")
                 );
 
             }
-
+            const storiesAuthor = document.createElement("span");
+             storiesAuthor.classList.add("stories-author");
+            if (storyData.uid === currentUserUid){
+              storiesAuthor.innerHTML = `<p data-i18n='my-story'>Моя історія</p>`;
+            } else {
+              storiesAuthor.innerHTML = sanitizeHTML(storyData.name);
+            }
+            storiesView.appendChild(
+                storiesAuthor
+            );
             storiesView.appendChild(
                 storiesAvatar
             );
-
+           
             // =========================
             // ФОТО
             // =========================
@@ -7773,7 +7788,10 @@ function updateUI(user) {
         if (userInfoEl) {
             userInfoEl.textContent = `Ви увійшли як: ${user.email}`;
         }
-
+        
+        document.querySelector(".stories-bar")
+            ?.style.setProperty("display", "flex");
+        
         document.getElementById("auth-link")
             ?.style.setProperty("display", "none");
 
@@ -7815,6 +7833,9 @@ function updateUI(user) {
         if (userInfoEl) {
             userInfoEl.textContent = "";
         }
+
+       document.querySelector(".stories-bar")
+            ?.style.setProperty("display", "none");
 
         document.getElementById("auth-link")
             ?.style.setProperty("display", "none");
