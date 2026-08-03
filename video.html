@@ -318,7 +318,7 @@ height: 10px;
             outline: none;
             font-size: 1em;
         }
-                .random-comments, #button-name, #button-supername, #save-name, #save-supername, .save {
+                .random-comments, #button-name, #button-supername, #save-name, #save-supername, .save, .improve-text-comments {
 width: 100%; 
             background-color: black;
 border: 2px solid #333333;
@@ -887,11 +887,12 @@ display: flex;
 text-align: left;
 }
 .comment-liquid-glass {
-width: 80%;  /* Ширина поля вводу */
+width: 80%;
+
     padding: 10px;
     margin-right: 10px;  /* Відступ між полем вводу та кнопкою */
     border: 1px solid #c9c9c9;
-    border-radius: 5px;
+    border-radius: 64px;
     color: #333;
     background: rgba(255, 255, 255, 0.1);
     box-sizing: border-box;
@@ -920,6 +921,12 @@ width: 80%;  /* Ширина поля вводу */
  .comment-section {
     border-radius: 20px;
     margin-left: 0.5px;
+    padding-right: 10px; 
+    background-color: #2a2727;
+}
+.comments {
+    border-radius: 20px;
+    margin-left: 0.5px;
     overflow-y: auto;        /* вертикальний скрол */
     max-height: 100%;        /* повна висота */
     padding-right: 10px; 
@@ -937,8 +944,6 @@ width: 80%;  /* Ширина поля вводу */
 }
 
 .comment {
-  overflow-y: auto;        /* вертикальний скрол */
-    max-height: 100%;        /* повна висота */
     padding-right: 10px; 
     text-align: left;
 }
@@ -1457,6 +1462,7 @@ if (!videoKey) {
       </button>
       <div class="comment-section" id="comment-section-${videoKey}">
         <button id="random-comments-${videoKey}" onclick="insertRandomComment('${videoKey}')">🔁 Вставити випадковий текст</button>
+        <button class="improve-text-comments" id="improve-text-comments-${videoKey}" onclick="improveText()"><i class="material-symbols">stars_2</i><p data-i18n="generate-description">Покращити текст</p><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></button>
         <label id="private-checkbox-${videoKey}" style="display: none;">
           <input type="checkbox" id="private-comment-${videoKey}">
           Приватний
