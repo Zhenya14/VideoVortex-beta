@@ -5683,10 +5683,7 @@ database.ref("stories")
                 "stories-author"
             );
 
-            storiesAuthor.innerHTML =
-                `<p data-i18n="my-story">
-                    Моя історія
-                </p>`;
+            storiesAuthor.setAttribute("data-i18n", "my-story");
 
             storiesView.appendChild(
                 storiesAuthor
