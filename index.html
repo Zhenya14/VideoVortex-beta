@@ -5179,14 +5179,14 @@ async function saveWallpaperChanges() {
         
         await database.ref("users/" + user.uid).update({ wallpaperId});
                 const url = await storageRef.getDownloadURL();
-                showNotificationModal();
           message.setAttribute("data-i18n", "save-wallpapers-successfully");
           applyTranslations();
+          showNotificationModal();
     } catch (error) {
         console.error(error);
-        showNotificationModal();
         message.setAttribute("data-i18n", "wallpapers-save-error");
         applyTranslations();
+        showNotificationModal();
     }
 }
 function deleteAccount() {
