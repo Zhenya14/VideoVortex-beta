@@ -45,5 +45,6 @@
   "delete-account": "Konto löschen",
   "my-story": "meine Geschichte",
   "application-version": "Anwendungsversion:",
-  "wallpapers-save-successfully": "Hintergrundbild angewendet!"
+  "wallpapers-save-successfully": "Hintergrundbild angewendet!",
+  "wallpapers-save-error": "Fehler beim Hochladen des Hintergrundbilds."
 }
