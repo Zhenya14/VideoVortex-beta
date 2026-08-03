@@ -5180,9 +5180,12 @@ async function saveWallpaperChanges() {
         await database.ref("users/" + user.uid).update({ wallpaperId});
                 const url = await storageRef.getDownloadURL();
                 showNotificationModal();
+                applyTranslations();
           message.setAttribute("data-i18n", "save-wallpapers-successfully");
     } catch (error) {
         console.error(error);
+        showNotificationModal();
+        applyTranslations();
         message.setAttribute("data-i18n", "wallpapers-save-error");
     }
 }
