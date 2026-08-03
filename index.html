@@ -5179,14 +5179,14 @@ async function saveWallpaperChanges() {
         
         await database.ref("users/" + user.uid).update({ wallpaperId});
                 const url = await storageRef.getDownloadURL();
-          message.setAttribute("data-i18n", "save-wallpapers-successfully");
+          message.innerHTML = `<p data-i18n="save-wallpapers-successfully">Шпалери застосовано!</p>`;
           applyTranslations();
           showNotificationModal();
     } catch (error) {
         console.error(error);
-        message.setAttribute("data-i18n", "wallpapers-save-error");
-        applyTranslations();
-        showNotificationModal();
+       showNotificationModal();
+        message.innerHTML = `<p data-i18n="wallpapers-save-error">Помилка при завантаженні шпалер.</p>`;
+        
     }
 }
 function deleteAccount() {
@@ -5686,7 +5686,7 @@ database.ref("stories")
                 "stories-author"
             );
 applyTranslations();
-            storiesAuthor.setAttribute("data-i18n", "my-story");
+            storiesAuthor.innerHTML = `<p data-i18n="my-story">Моя історія</p>`;
 
             storiesView.appendChild(
                 storiesAuthor
