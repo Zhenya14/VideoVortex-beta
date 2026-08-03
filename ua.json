@@ -44,5 +44,6 @@
     "delete-account": "Видалити акаунт",
     "my-story": "Моя історія",
     "application-version": "Версія додатка:",
-    "wallpapers-save-successfully": "Шпалери застосовано!"
+    "wallpapers-save-successfully": "Шпалери застосовано!",
+    "wallpapers-save-error": "Помилка при завантаженні шпалер."
 }
