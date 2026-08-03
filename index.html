@@ -5180,11 +5180,10 @@ async function saveWallpaperChanges() {
         await database.ref("users/" + user.uid).update({ wallpaperId});
                 const url = await storageRef.getDownloadURL();
                 showNotificationModal();
-          message.innerHTML = `<p data-i18n="wallpapers-save-successfully">Шпалери застосовано!</p>`;
+          message.setAttribute("data-i18n", "save-wallpapers-successfully");
     } catch (error) {
         console.error(error);
-        message.innerHTML =
-            `<p data-i18n="wallpapers-save-error">Помилка при завантаженні шпалер.</p>`;
+        message.setAttribute("data-i18n", "wallpapers-save-error");
     }
 }
 function deleteAccount() {
