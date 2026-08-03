@@ -44,5 +44,6 @@
     "delete-account": "Delete Account",
     "my-story": "My story",
     "application-version": "Application version:",
-    "wallpapers-save-successfully": "Wallpaper applied!"
+    "wallpapers-save-successfully": "Wallpaper applied!",
+    "wallpapers-save-error": "Error uploading wallpaper."
 }
