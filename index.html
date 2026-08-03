@@ -5180,13 +5180,13 @@ async function saveWallpaperChanges() {
         await database.ref("users/" + user.uid).update({ wallpaperId});
                 const url = await storageRef.getDownloadURL();
                 showNotificationModal();
-                applyTranslations();
           message.setAttribute("data-i18n", "save-wallpapers-successfully");
+          applyTranslations();
     } catch (error) {
         console.error(error);
         showNotificationModal();
-        applyTranslations();
         message.setAttribute("data-i18n", "wallpapers-save-error");
+        applyTranslations();
     }
 }
 function deleteAccount() {
@@ -5687,7 +5687,7 @@ database.ref("stories")
             );
 
             storiesAuthor.setAttribute("data-i18n", "my-story");
-
+applyTranslations();
             storiesView.appendChild(
                 storiesAuthor
             );
