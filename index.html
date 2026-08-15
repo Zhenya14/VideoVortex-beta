@@ -7249,7 +7249,7 @@ detailsElement.innerHTML = `
     ${videoDataRaw.nsfw ? "<span style='color: red;'>NSFW</span>" : ""}
 
     <br>
-
+applyTranslations();
     Автор: ${
         isFrozen
             ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
@@ -7265,10 +7265,10 @@ detailsElement.innerHTML = `
 
     ${getSafeBanduraHTML(videoDataRaw.banduraExtra)}
     <div class='info-element'>
-<p style='display: flex; justify-content: centr; align-items: center;'><i class='material-symbols'>play_arrow</i>${videoDataRaw.views || 0}</p><li></li>
- <p style='display: flex; justify-content: centr; align-items: center;'><i class='material-symbols'>event</i>${videoDataRaw.publishDate || "—"}
+<p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>play_arrow</i>${videoDataRaw.views || 0}</p><li></li>
+ <p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>event</i>${videoDataRaw.publishDate || "—"}
 </p></div>`;
-    applyTranslations();
+    
 
         // 🔹 MENU
         const moreBtn = document.createElement("a");
