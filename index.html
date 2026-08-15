@@ -7249,7 +7249,7 @@ detailsElement.innerHTML = `
     ${videoDataRaw.nsfw ? "<span style='color: red;'>NSFW</span>" : ""}
 
     <br>
-applyTranslations();
+
     Автор: ${
         isFrozen
             ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
@@ -7367,6 +7367,7 @@ if (currentUserRole === "moderator") {
 
         videoGallery.appendChild(container);
     });
+  applyTranslations();
 }
 function cleanupExpiredVideos() {
     database.ref("videos").once("value", snap => {
