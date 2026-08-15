@@ -1542,10 +1542,9 @@ body {
     transform: scale(1.05); /* легке збільшення при наведенні */
 }
 .info-element {
-  display: block;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  padding 0 2px;
+  justify-content: left;
 }
 #account-form .avatar img {
     width: 100%;
@@ -2117,6 +2116,10 @@ position: fixed;
   box-shadow: 0 0 22px rgba(0, 255, 255, .07);
       animation: opacity 0.5s ease;
     }
+  .info-divider {
+    display: flex;
+   align-items: center;
+  }
 /* Контейнер для картинки, затемнення та кнопки */
 .image-container {
   position: relative;
@@ -7265,7 +7268,7 @@ detailsElement.innerHTML = `
 
     ${getSafeBanduraHTML(videoDataRaw.banduraExtra)}
     <div class='info-element'>
-<p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>play_arrow</i>${videoDataRaw.views || 0}</p><li></li>
+<p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>play_arrow</i>${videoDataRaw.views || 0}</p><span class='info-divider'>•</span>
  <p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>event</i>${videoDataRaw.publishDate || "—"}
 </p></div>`;
     
