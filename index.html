@@ -7366,8 +7366,8 @@ if (currentUserRole === "moderator") {
         container.appendChild(videoWrapper);
 
         videoGallery.appendChild(container);
+      applyTranslations();
     });
-  applyTranslations();
 }
 function cleanupExpiredVideos() {
     database.ref("videos").once("value", snap => {
