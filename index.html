@@ -7255,7 +7255,7 @@ detailsElement.innerHTML = `
             ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
             : sanitizeHTML(videoDataRaw.author || "Анонім")
     }
-applyTranslations();
+
     ${videoDataRaw.owner === true && videoDataRaw.verifiedBadge
         ? `<img class='adaptive-stroke' src='${videoDataRaw.verifiedBadge}'>`
         : ""
@@ -7268,7 +7268,7 @@ applyTranslations();
 <p style='display: flex; justify-content: centr; align-items: center;'><i class='material-symbols'>play_arrow</i>${videoDataRaw.views || 0}</p><li></li>
  <p style='display: flex; justify-content: centr; align-items: center;'><i class='material-symbols'>event</i>${videoDataRaw.publishDate || "—"}
 </p></div>`;
-    
+    applyTranslations();
 
         // 🔹 MENU
         const moreBtn = document.createElement("a");
