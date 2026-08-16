@@ -2992,7 +2992,7 @@ filter: url(#glass-distortion);
                 <a href="#" class="notification" style="display: none;"><i class="material-symbols">notifications</i></a>
            <a href="#" id="plus-desktop-button"><i class="material-symbols">add</i></a>
             <a href="auth.html" id="auth-link">
-                <i class="material-symbols">account_circle</i><span>Увійти</span>
+                <i class="material-symbols">account_circle</i><span data-i18n="signIn">Увійти</span>
             </a>
             <a href="#" id="logout-link" style="display: none;">
                 <i class="material-symbols">logout</i><span class="icon-text">Вийти</span>
@@ -4142,7 +4142,7 @@ async function openCamera() {
 function captureStop() {
   document.getElementById("story-camera").style.display = "none";
   document.querySelector(".bg-liquid-glass").style.display = "flex";
-  document.querySelector(".btn-liquid-glass").style.display = "flex";
+  document.getElementById("plus-button").style.display = "flex";
 }
 
 
@@ -5638,7 +5638,8 @@ if (!storiesView) return;
 
 storiesView.innerHTML = "";
 storiesView.style.display = "block";
-
+document.querySelector(".bg-liquid-glass").style.display = "none";
+  document.getElementById("plus-button").style.display = "none";
 database.ref("stories")
     .once("value")
     .then(snapshot => {
@@ -5815,10 +5816,10 @@ database.ref("stories")
                 "stories-author"
             );
             storiesAuthor.innerHTML = `
-            <p data-i18n="my-story">
+            <p data-i18n='my-story'>
             Моя історія
             </p>`;
-applyTranslations();
+
             storiesView.appendChild(
                 storiesAuthor
             );
@@ -5957,7 +5958,7 @@ applyTranslations();
         // =========================
 
         showStory(0);
-
+applyTranslations();
     })
     .catch(
         error => {
@@ -5983,7 +5984,8 @@ if (!storiesView) return;
 
 storiesView.innerHTML = "";
 storiesView.style.display = "block";
-
+document.querySelector(".bg-liquid-glass").style.display = "none";
+  document.getElementById("plus-button").style.display = "none";
 database.ref("stories")
     .once("value")
     .then(snapshot => {
