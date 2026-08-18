@@ -2944,7 +2944,7 @@ filter: url(#glass-distortion);
 </a>
 <img src="VideoVortex_logo.ico" id="logo" style="height: 50px; width: 50px; border-radius: 50%;">
             <a href="index.html">
-            <h1 style="padding-left: 5px;">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup><sup><div id="timer"></div></sup></a>
+            <h1 style="padding-left: 5px;" id="logo-text">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup><sup><div id="timer"></div></sup></a>
 
         <button class="search" onclick="openSearch()">
   <i class="material-symbols">search</i>
@@ -4543,6 +4543,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================= VALENTINE (OVERRIDE LAYER) ================= */
   const isValentine = month === 2 && (day === 13 || day === 14);
+  const isIndependenceUkraine = month === 8 && (day === 23 || day === 24);
 const isVyshyvanka = month === 5 && (day === 20 || day === 21);
   if (isValentine) {
     applyIcons(valentineIcons);
@@ -4552,6 +4553,13 @@ const isVyshyvanka = month === 5 && (day === 20 || day === 21);
     applyIcons(vyshyvankaIcons);
   } else {
     deactivateVyshyvankaMode();
+    restoreIcons();
+  }
+  if (isIndependenceUkraine) {
+    activateIndepedenceMode();
+    applyIcons(independenceIcons);
+  } else {
+    deactivateIndepedenceMode();
     restoreIcons();
   }
   const is = (month === 4 && day >= 10  && day <= 25);
@@ -4651,8 +4659,23 @@ function activateVyshyvankaMode() {
 
   styleButtons("#8B0000", "#1C1C1C");
 }
-
 function deactivateVyshyvankaMode() {
+  
+  const logo = document.getElementById("logo");
+  if (logo && logo.dataset.originalSrc) logo.src = logo.dataset.originalSrc;
+
+  resetButtonColors();
+}
+  function activateIndepedenceMode() {
+
+  const logo = document.getElementById("logo");
+  if (logo && !logo.dataset.originalSrc) logo.dataset.originalSrc = logo.src;
+  if (logo) logo.src = "VideoVortex_logo_indepedence.jpg";
+
+  styleButtons("#0057B7", "#FFDD00");
+}
+
+function deactivateIndepedenceMode() {
   
   const logo = document.getElementById("logo");
   if (logo && logo.dataset.originalSrc) logo.src = logo.dataset.originalSrc;
@@ -4715,7 +4738,7 @@ const halloweenIcons = {
   "account-desktop-link": (user) => `🕸<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "🕸",
   "logout-link": "🚪",
-  "auth-link": "🚪",
+  "auth-link": `🚪<span data-i18n="signIn">Увійти</span>`,
   "smart-post": `👻<span data-i18n="post">Дописи</span>`,
   "smart-video": `🦇<span data-i18n="video">Відео</span>`,
   "smart-settings": `🧪<span data-i18n="settings">Налаштування</span>`,
@@ -4730,7 +4753,7 @@ const newyearIcons = {
   "account-desktop-link": (user) => `⛄<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "⛄",
   "logout-link": "🚪",
-  "auth-link": "🚪",
+  "auth-link": `🚪<span data-i18n="signIn">Увійти</span>`,
   "smart-post": `❄️<span data-i18n="post">Дописи</span>`,
   "smart-video": `🎬<span data-i18n="video">Відео</span>`,
   "smart-settings": `🎁<span data-i18n="settings">Налаштування</span>`,
@@ -4745,7 +4768,7 @@ const valentineIcons = {
     `❤️<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "💖",
   "logout-link": "🚪",
-  "auth-link": "💘",
+  "auth-link": `💘<span data-i18n="signIn">Увійти</span>`,
   "smart-post": `💌<span data-i18n="post">Дописи</span>`,
   "smart-video": `💞<span data-i18n="video">Відео</span>`,
   "smart-settings": `💌<span data-i18n="settings">Налаштування</span>`,
@@ -4760,7 +4783,7 @@ const Icons = {
     `🐣<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "🥚",
   "logout-link": "🚪",
-  "auth-link": "🐰",
+  "auth-link": `🐰<span data-i18n="signIn">Увійти</span>`,
   "smart-post": `🌸<span data-i18n="post">Дописи</span>`,
   "smart-video": `🐥<span data-i18n="video">Відео</span>`,
   "smart-settings": `🐣<span data-i18n="settings">Налаштування</span>`,
@@ -4775,7 +4798,7 @@ const vyshyvankaIcons = {
     `🧵<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "🪡",
   "logout-link": "🚪",
-  "auth-link": "🧶",
+  "auth-link": `🧶<span data-i18n="signIn">Увійти</span>`,
   "smart-post": `🪢<span data-i18n="post">Дописи</span>`,
   "smart-video": `📽️<span data-i18n="video">Відео</span>`,
   "smart-settings": `🧵🪡<span data-i18n="settings">Налаштування</span>`,
@@ -4790,7 +4813,7 @@ const independenceIcons = {
     `🇺🇦<span class="icon-text">${user.name} ${user.supername}</span>`,
   "register-link": "💙💛",
   "logout-link": "🚪",
-  "auth-link": "🕊️",
+  "auth-link": `🕊️<span data-i18n="signIn">Увійти</span>`,
   "smart-post": `📝<span data-i18n="post">Дописи</span>`,
   "smart-video": `📹<span data-i18n="video">Відео</span>`,
   "smart-settings": `💙💛🕊️<span data-i18n="settings">Налаштування</span>`,
@@ -4798,7 +4821,8 @@ const independenceIcons = {
   "post": `📝<span data-i18n="post">Дописи</span>`,
   "video": `📹<span data-i18n="video">Відео</span>`,
   "plus-button": `<i class="icon">🌾</i>`,
-  "plus-desktop-button": "🌾"
+  "plus-desktop-button": "🌾",
+  "logo-text": "VideoVortex 💙💛"
 };
 function applyIcons(set, user = null) {
   for (const [id, icon] of Object.entries(set)) {
@@ -8670,6 +8694,7 @@ auth.onAuthStateChanged(async (user) => {
         const isHalloween = m === 10 && (d === 30 || d === 31);
         const isValentineDay = m === 2 && (d === 13 || d === 14);
         const isVyshyvankaDay = m === 5 && (d === 20 || d === 21);
+      const isIndependenceUkraineDay = m === 8 && (d === 23 || d === 24);
         const isWeek = (m === 4 && d >= 10 && d <= 25);
         const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
 
@@ -8689,8 +8714,18 @@ auth.onAuthStateChanged(async (user) => {
             if (!isValentineDay) restoreIcons();
             if (!isWeek) restoreIcons();
             if (!isVyshyvankaDay) restoreIcons();
+            if (!isIndependenceUkraineDay) restoreIcons();
         }
-
+if (isIndependenceUkraineDay) {
+            activateIndepedenceMode();
+            applyIcons(independenceIcons, userProfile);
+        } else {
+            deactivateIndepedenceMode();
+  if (!isValentineDay) restoreIcons();
+            if (!isWeek) restoreIcons();
+            if (!isVyshyvankaDay) restoreIcons();
+            if (!isNewYear) restoreIcons();
+}
         if (isValentineDay) applyIcons(valentineIcons, userProfile);
         if (isWeek) applyIcons(Icons, userProfile);
 
@@ -8700,6 +8735,7 @@ auth.onAuthStateChanged(async (user) => {
         } else {
             deactivateVyshyvankaMode();
         }
+
 
         // =========================
         // 🔹 UI
