@@ -3442,12 +3442,30 @@ filter: url(#glass-distortion);
   <div class="ios-modal-window">
 
     <div class="ios-modal-body">
-      <p id="deleted-information">Ви впевнені, що хочете видалити акаунт? Усі ваші публікації будуть видалені назавжди. Цю дію неможливо скасувати.</p>
+      <p id="deleted-information" data-i18n="deleted-information">Ви впевнені, що хочете видалити акаунт? Усі ваші публікації будуть видалені назавжди. Цю дію неможливо скасувати.</p>
     </div>
 
     <div class="ios-modal-footer">
       <button class="delete" data-i18n="deleted" onclick="deleteAccount()">Видалити акаунт</button>
       <button class="cancel" data-i18n="cancel" onclick="closeDeleteAccountModal()">Скасувати</button>
+    </div>
+  </div>
+</ios-modal>
+  <ios-modal id="support-author-modal">
+  <div class="ios-modal-window">
+<div class="modal-header">
+  <span data-i18n="support-question">💙 Вам зараз потрібна підтримка?</span>
+</div>
+    <div class="ios-modal-body">
+      <p id="support-information" data-i18n="support-information">Схоже, вам може бути непросто. Пам'ятайте: вам не обов'язково проходити через це наодинці.
+
+Якщо ви переживаєте складний момент, спробуйте поговорити з людиною, якій довіряєте, або звернутися по професійну допомогу.
+</p>
+    </div>
+
+    <div class="ios-modal-footer">
+      <button data-i18n="needSupport" onclick="needSupport()">Мені потрібна допомога</button>
+      <button data-i18n="IAmFine" onclick="closeSupportModal()">Я в порядку</button>
     </div>
   </div>
 </ios-modal>
@@ -7072,6 +7090,65 @@ async function freezeUser(uid, status = "frozen_soft") {
         return false;
     }
 }
+      function needSupport() {
+    const modal = document.getElementById("support-author-modal");
+    const content = modal?.querySelector(".support-modal-content");
+
+    if (!modal || !content) return;
+
+    content.innerHTML = `
+        <button
+            class="support-modal-close"
+            onclick="closeSupportModal()"
+            aria-label="Закрити"
+        >
+            ×
+        </button>
+
+        <div class="support-icon">💙</div>
+
+        <h2>Ви не самі</h2>
+
+        <p>
+            Добре, що ви сказали про це.
+            Спробуйте зараз звернутися до людини,
+            якій довіряєте.
+        </p>
+
+        <p>
+            Якщо вам безпосередньо загрожує небезпека,
+            зверніться до місцевих екстрених служб
+            або попросіть дорослого, якому довіряєте,
+            залишитися поруч.
+        </p>
+
+        <div class="support-actions">
+
+            <button
+                class="support-help"
+                onclick="openSupportResources()"
+            >
+                Ресурси підтримки
+            </button>
+
+            <button
+                class="support-ok"
+                onclick="closeSupportModal()"
+            >
+                Закрити
+            </button>
+
+        </div>
+    `;
+
+    modal.classList.add("active");
+}
+
+
+function openSupportResources() {
+    // Тут можна відкрити окрему сторінку VideoVortex
+    window.location.href = "support.html";
+}
 function clearFeedCache() {
   Object.keys(localStorage)
     .filter(k => k.startsWith("video_cache_"))
@@ -9465,10 +9542,15 @@ if (photoData.authorUid) {
         }
         // 🔹 Фото елемент
         const photoElement = document.createElement("img");
-        photoElement.src = photoData.url;
+        if(!photoData.images) {
+      photoElement.src = photoData.url;
         photoElement.alt = photoData.title || "Фото";
         photoElement.classList.add("photo-item");
-
+        } else {
+          photoElement.src = photoData.images;
+        photoElement.alt = photoData.title || "Фото";
+        photoElement.classList.add("photo-item");
+        }
         // 🔹 Збільшення переглядів при кліку
         photoElement.addEventListener("click", () => {
             const newViewCount = (photoData.views || 0) + 1;
@@ -9543,7 +9625,7 @@ avatar.onclick = () => {
             deletePhotoButton.style.backgroundColor = "red";
             deletePhotoButton.style.color = "white";
             deletePhotoButton.style.marginTop = "10px";
-            deletePhotoButton.onclick = () => deletePhoto(photoKey, photoData.url);
+            deletePhotoButton.onclick = () => deletePhoto(photoKey, photoData.url, photoData.images);
             infophotoElement.appendChild(deletePhotoButton);
         }
 
@@ -9561,27 +9643,54 @@ avatar.onclick = () => {
     });
 }
 
-function deletePhoto(photoKey, photoURL) {
-    if (confirm("Ви впевнені, що хочете видалити це фото?")) {
-        // Видалення файлу зі сховища
-        const storageRef = storage.refFromURL(photoURL);
-        storageRef.delete().then(() => {
-            // Видалення запису з бази даних
-            database.ref(`photos/${photoKey}`).remove().then(() => {
-              showNotificationModal();
-                message.innerHTML = "Фото успішно видалено.";
-                loadPhotos();
-            }).catch((error) => {
-              showNotificationModal();
-                message.innerHTML = "Помилка при видаленні фото з бази даних: " + error.message;
-            });
-        }).catch((error) => {
-          showNotificationModal();
-            message.innerHTML = "Помилка при видаленні фото зі сховища: " + error.message;
-        });
+async function deletePhoto(photoKey, photoURL, photoImages) {
+    if (!confirm("Ви впевнені, що хочете видалити це фото?")) {
+        return;
     }
-}
 
+    try {
+        // 1. Видаляємо основне фото зі Storage
+        if (photoURL) {
+            const storageRef = storage.refFromURL(photoURL);
+            await storageRef.delete();
+        }
+
+        // 2. Якщо є додаткові фото — видаляємо їх
+        if (Array.isArray(photoImages)) {
+            for (const imageURL of photoImages) {
+                if (!imageURL) continue;
+
+                try {
+                    const imageRef = storage.refFromURL(imageURL);
+                    await imageRef.delete();
+                } catch (error) {
+                    console.warn(
+                        "Не вдалося видалити додаткове фото:",
+                        imageURL,
+                        error
+                    );
+                }
+            }
+        }
+
+        // 3. Видаляємо запис із Realtime Database
+        await database.ref(`photos/${photoKey}`).remove();
+
+        // 4. Повідомлення
+        showNotificationModal();
+        message.innerHTML = "Фото успішно видалено.";
+
+        // 5. Оновлюємо галерею
+        loadPhotos();
+
+    } catch (error) {
+        console.error("Помилка видалення фото:", error);
+
+        showNotificationModal();
+        message.innerHTML =
+            "Помилка при видаленні фото: " + error.message;
+    }
+              }
 function loadPhotoChannelSelect() {
     const select = document.getElementById("photo-channel-select");
     if (!select) return;
