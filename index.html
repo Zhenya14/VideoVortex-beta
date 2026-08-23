@@ -309,6 +309,7 @@ height: 50px;
 align-items: center;
     justify-content: space-between;
 display: flex;
+          white-space: nowrap;
     padding: 0px 1px;
     border-radius: 50px;
     text-align: center;
@@ -8769,49 +8770,69 @@ auth.onAuthStateChanged(async (user) => {
         const d = today.getDate();
 
         const isHalloween = m === 10 && (d === 30 || d === 31);
-        const isValentineDay = m === 2 && (d === 13 || d === 14);
-        const isVyshyvankaDay = m === 5 && (d === 20 || d === 21);
-      const isIndependenceUkraineDay = m === 8 && (d === 23 || d === 24);
-        const isWeek = (m === 4 && d >= 10 && d <= 25);
-        const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
+const isValentineDay = m === 2 && (d === 13 || d === 14);
+const isVyshyvankaDay = m === 5 && (d === 20 || d === 21);
+const isIndependenceUkraineDay = m === 8 && (d === 23 || d === 24);
+const isWeek = m === 4 && d >= 10 && d <= 25;
+const isNewYear = (m === 12 && d >= 15) || (m === 1 && d <= 25);
 
-        if (isHalloween) {
-            activateHalloweenMode();
-            applyIcons(halloweenIcons, userProfile);
-        } else deactivateHalloweenMode();
 
-        if (isNewYear) {
-            activateGirland();
-            activateNewYearMode();
-            applyIcons(newyearIcons, userProfile);
-        } else {
-            deactivateGirland();
-            deactivateNewYearMode();
-
-            if (!isValentineDay) restoreIcons();
-            if (!isWeek) restoreIcons();
-            if (!isVyshyvankaDay) restoreIcons();
-            if (!isIndependenceUkraineDay) restoreIcons();
-        }
-if (isIndependenceUkraineDay) {
-            activateIndepedenceMode();
-            applyIcons(independenceIcons, userProfile);
-        } else {
-            deactivateIndepedenceMode();
-  if (!isValentineDay) restoreIcons();
-            if (!isWeek) restoreIcons();
-            if (!isVyshyvankaDay) restoreIcons();
-            if (!isNewYear) restoreIcons();
+// Halloween
+if (isHalloween) {
+    activateHalloweenMode();
+} else {
+    deactivateHalloweenMode();
 }
-        if (isValentineDay) applyIcons(valentineIcons, userProfile);
-        if (isWeek) applyIcons(Icons, userProfile);
 
-        if (isVyshyvankaDay) {
-            activateVyshyvankaMode();
-            applyIcons(vyshyvankaIcons, userProfile);
-        } else {
-            deactivateVyshyvankaMode();
-        }
+
+// New Year
+if (isNewYear) {
+    activateGirland();
+    activateNewYearMode();
+} else {
+    deactivateGirland();
+    deactivateNewYearMode();
+}
+
+
+// Independence Ukraine
+if (isIndependenceUkraineDay) {
+    activateIndepedenceMode();
+} else {
+    deactivateIndepedenceMode();
+}
+
+
+// Vyshyvanka
+if (isVyshyvankaDay) {
+    activateVyshyvankaMode();
+} else {
+    deactivateVyshyvankaMode();
+}
+
+
+// Вибір іконок
+if (isHalloween) {
+    applyIcons(halloweenIcons, userProfile);
+
+} else if (isNewYear) {
+    applyIcons(newyearIcons, userProfile);
+
+} else if (isIndependenceUkraineDay) {
+    applyIcons(independenceIcons, userProfile);
+
+} else if (isValentineDay) {
+    applyIcons(valentineIcons, userProfile);
+
+} else if (isWeek) {
+    applyIcons(Icons, userProfile);
+
+} else if (isVyshyvankaDay) {
+    applyIcons(vyshyvankaIcons, userProfile);
+
+} else {
+    restoreIcons();
+}
 
 
         // =========================
@@ -10204,4 +10225,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>                                                   
-        </html>
+</html>
