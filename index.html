@@ -8844,10 +8844,10 @@ if (isNewYear) {
 // 🇺🇦 INDEPENDENCE
 // =========================
 
-if (isIndependenceUkraineDay) {
-    activateIndepedenceMode();
-} else {
+if (!isIndependenceUkraineDay) {
     deactivateIndepedenceMode();
+} else {
+  activateIndepedenceMode();
 }
 
 
