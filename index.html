@@ -3025,7 +3025,7 @@ max-width: 420px;
     </nav>
 
     <div id="search-box" class="search-box-liquid-glass">
-  <input type="text" id="search-input" placeholder="Пошук..." oninput="searchVideos()">
+  <input type="text" id="search-input" placeholder="Пошук..." oninput="searchAll()">
 
   <button id="close-search" class="search-close">
     <i class="material-symbols">close</i>
@@ -3574,8 +3574,10 @@ max-width: 420px;
         <div class="photo-container" id="photo-gallery"></div>
 
     </div>
+
         <div id="author-info">
     </div>
+    <div id="search-users"></div>
         <div class="settings-page">
 
   <!-- HEADER -->
@@ -4425,14 +4427,17 @@ closeSearch.addEventListener("click", () => {
     searchBox.classList.remove("open");
     document.querySelector("nav").style.display = "flex";
     searchInput.value = "";
-    searchVideos();
+    searchAll();
 });
-function searchVideos() {
-    const query = document
-        .getElementById("search-input")
-        .value
-        .toLowerCase()
-        .trim();
+async function searchAll() {
+    const input = document.getElementById("search-input");
+    if (!input) return;
+
+    const query = input.value.toLowerCase().trim();
+
+    // =========================
+    // 🔎 ПОШУК ВІДЕО
+    // =========================
 
     const videos = document.querySelectorAll(".video-item");
 
@@ -4442,6 +4447,7 @@ function searchVideos() {
         const author = (video.dataset.author || "").toLowerCase();
 
         const matches =
+            !query ||
             title.includes(query) ||
             description.includes(query) ||
             author.includes(query);
@@ -4452,6 +4458,70 @@ function searchVideos() {
             container.style.display = matches ? "flex" : "none";
         }
     });
+
+    // =========================
+    // 👤 ПОШУК КОРИСТУВАЧІВ
+    // =========================
+
+    const usersContainer = document.getElementById("search-users");
+    if (!usersContainer) return;
+
+    usersContainer.innerHTML = "";
+
+    if (!query) return;
+
+    try {
+        const snapshot = await database.ref("users").once("value");
+        const users = snapshot.val() || {};
+
+        Object.entries(users).forEach(([uid, user]) => {
+
+            const name = (user.name || "").toLowerCase();
+            const supername = (user.supername || "").toLowerCase();
+            const username = (user.username || "").toLowerCase();
+
+            const matches =
+                name.includes(query) ||
+                supername.includes(query) ||
+                username.includes(query);
+
+            if (!matches) return;
+
+            const userElement = document.createElement("div");
+            userElement.className = "search-user";
+
+            userElement.innerHTML = `
+                <div class="search-user-name">
+                    ${sanitizeHTML(user.name || "")}
+                    ${sanitizeHTML(user.supername || "")}
+                </div>
+
+                ${
+                    user.username
+                        ? `<div class="search-user-username">
+                            @${sanitizeHTML(user.username)}
+                           </div>`
+                        : ""
+                }
+
+                ${
+                    user.privateProfile
+                        ? `<span>🔒 Приватний профіль</span>`
+                        : ""
+                }
+            `;
+
+            userElement.onclick = () => {
+                window.location.href =
+                    `profile.html?uid=${encodeURIComponent(uid)}`;
+            };
+
+            usersContainer.appendChild(userElement);
+        });
+
+    } catch (error) {
+        console.error("Помилка пошуку користувачів:", error);
+    }
 }
         </script>
         <script defer>
