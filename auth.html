@@ -539,9 +539,14 @@ document.getElementById("auth-form").addEventListener("submit", (e) => {
                 email,
                 birthdate,
                 birthYear,
+                privateProfile: false,
                 createdAt: new Date().toISOString()
             });
-
+await database.ref(`userSearch/${user.uid}`).set({
+    name: name || "",
+    supername: supername || "",
+    privateProfile: false
+});
             registerNotification.innerHTML = "✅ Реєстрація успішна!";
             registerNotification.style.color = "green";
 

@@ -7759,6 +7759,49 @@ async function deleteVideo(videoKey, videoURL) {
         message.innerHTML = "Помилка: " + error.message;
     }
 }
+async function migrateUsersToSearch() {
+    try {
+        console.log("🔄 Починаємо міграцію...");
+
+        const snapshot = await database
+            .ref("users")
+            .once("value");
+
+        const users = snapshot.val() || {};
+        const updates = {};
+
+        let count = 0;
+
+        Object.entries(users).forEach(([uid, user]) => {
+
+            if (!user) return;
+
+            updates[`userSearch/${uid}`] = {
+                name: user.name || "",
+                supername: user.supername || "",
+                username: user.username || "",
+                privateProfile: user.privateProfile === true
+            };
+
+            count++;
+        });
+
+        if (count === 0) {
+            console.log("ℹ️ Користувачів для міграції немає.");
+            return;
+        }
+
+        await database.ref().update(updates);
+
+        console.log(
+            `✅ Міграція завершена. Перенесено: ${count} користувачів.`
+        );
+
+    } catch (error) {
+        console.error("❌ Помилка міграції:", error);
+    }
+}
+migrateUsersToSearch();
 function createSecondChannel() {
   const name = document.getElementById("second-channel-name").value.trim();
   if (!name) return showNotificationModal();
