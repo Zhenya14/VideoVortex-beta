@@ -6500,6 +6500,18 @@ function createThumbnail(file) {
 
  });
 }
+const migrateUsersToPublicUsers =
+    firebase.functions().httpsCallable(
+        "migrateUsersToPublicUsers"
+    );
+
+migrateUsersToPublicUsers()
+    .then(result => {
+        console.log("✅ Міграція:", result.data);
+    })
+    .catch(error => {
+        console.error("❌ Міграція:", error);
+    });
 const avatarLibrary = document.getElementById("avatar-library");
 async function deleteAllViewsHistory() {
   if (!confirm("Ви впевнені, що хочете видалити історію переглядів?")) return;
