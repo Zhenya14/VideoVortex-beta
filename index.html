@@ -4471,7 +4471,7 @@ async function searchAll() {
     if (!query) return;
 
     try {
-        const snapshot = await database.ref("users").once("value");
+        const snapshot = await database.ref("publicUsers").once("value");
         const users = snapshot.val() || {};
 
         Object.entries(users).forEach(([uid, user]) => {
