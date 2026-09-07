@@ -298,136 +298,7 @@ function sEffect() {
 flowersEffect();
 
 
-function isNewVersion(current, saved) {
 
-    const currentParts =
-        current.split(".").map(Number);
-
-    const savedParts =
-        saved.split(".").map(Number);
-
-    for (
-        let i = 0;
-        i < Math.max(currentParts.length, savedParts.length);
-        i++
-    ) {
-
-        const c = currentParts[i] || 0;
-        const s = savedParts[i] || 0;
-
-        if (c > s) return true;
-        if (c < s) return false;
-    }
-
-    return false;
-}
-
-function checkUpdateButton() {
-
-    const lastVersion =
-        localStorage.getItem("lastUpdateVersion") || "0.0.0";
-
-    const updateBtn =
-        document.getElementById("update-app-btn");
-
-    if (!updateBtn) return;
-
-    if (isNewVersion(APP_VERSION, lastVersion)) {
-
-        updateBtn.style.display = "block";
-
-    } else {
-
-        updateBtn.style.display = "none";
-    }
-}
-
-function updateMenuPosition() {
-
-    const updateBtn =
-        document.getElementById("update-app-btn");
-
-    const smartMenu =
-        document.querySelector(".smart-menu");
-
-    const bgGlass =
-        document.querySelector(".bg-liquid-glass");
-
-    const btnGlass =
-        document.getElementById("plus-button");
-
-    if (
-        !updateBtn ||
-        !btnGlass ||
-        !smartMenu ||
-        !bgGlass
-    ) return;
-
-    if (updateBtn.style.display !== "none") {
-
-        smartMenu.style.bottom = "30px";
-        bgGlass.style.bottom = "30px";
-        btnGlass.style.bottom = "60px";
-
-    } else {
-
-        smartMenu.style.bottom = "10px";
-        bgGlass.style.bottom = "10px";
-        btnGlass.style.bottom = "20px";
-    }
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-
-    checkUpdateButton();
-
-    updateMenuPosition();
-});
-
-function showUpdateButton() {
-
-    const btn =
-        document.getElementById("update-app-btn");
-
-    if (!btn) return;
-
-    btn.style.display = "block";
-
-    updateMenuPosition();
-}
-
-function hideUpdateButton() {
-
-    const btn =
-        document.getElementById("update-app-btn");
-
-    if (!btn) return;
-
-    btn.style.display = "none";
-
-    updateMenuPosition();
-}
-
-document
-    .getElementById("update-app-btn")
-    ?.addEventListener("click", () => {
-
-        clearLocalStorageExceptAuth();
-
-        localStorage.setItem(
-            "lastUpdateAt",
-            new Date().toISOString()
-        );
-
-        localStorage.setItem(
-            "lastUpdateVersion",
-            APP_VERSION
-        );
-
-        hideUpdateButton();
-
-        location.reload();
-    });
 
 let selectedPhotos = [];
 let selectedVideos = [];
@@ -3094,34 +2965,34 @@ function showBlockedUsersModal() {
     if (event.target === modal) modal.style.display = "none";
   });
 }
-// function showAccountNotificationsModal() {
-//   const modal = document.getElementById("account-notifications-modal");
-//   const list = document.getElementById("accountNotificationsList");
-//   const user = firebase.auth().currentUser;
+ function showAccountNotificationsModal() {
+   const modal = document.getElementById("account-notifications-modal");
+   const list = document.getElementById("accountNotificationsList");
+   const user = firebase.auth().currentUser;
 
-//   if (!modal || !list) return console.error("Модальне вікно не знайдено");
-//   if (!user) return alert("Спочатку увійдіть у акаунт");
+   if (!modal || !list) return console.error("Модальне вікно не знайдено");
+   if (!user) return alert("Спочатку увійдіть у акаунт");
 
-//   const uid = user.uid;
-//   list.innerHTML = "";
+   const uid = user.uid;
+   list.innerHTML = "";
 
-//   database.ref(`notifications/${uid}`).once("value")
-//     .then(snapshot => {
-//       const notificationsData = snapshot.val() || {};
-//       modal.style.display = "flex";
-//     })
-//     .catch(console.error);
+   database.ref(`notifications/${uid}`).once("value")
+     .then(snapshot => {
+       const notificationsData = snapshot.val() || {};
+       modal.style.display = "flex";
+     })
+       .catch(console.error);
 
-//   // Закриття модалки по X
-//   document.querySelector(".close-account-notifications-modal")?.addEventListener("click", () => {
-//     modal.style.display = "none";
-//   });
+   // Закриття модалки по X
+   document.querySelector(".close-account-notifications-modal")?.addEventListener("click", () => {
+     modal.style.display = "none";
+   });
 
-//   // Закриття по кліку поза модаллю
-//   window.addEventListener("click", (event) => {
-//     if (event.target === modal) modal.style.display = "none";
-//   });
-// }
+   // Закриття по кліку поза модаллю
+   window.addEventListener("click", (event) => {
+     if (event.target === modal) modal.style.display = "none";
+   });
+ }
 function showEditWallpaperProfileModal() {
   document.getElementById("edit-wallpaper-profile-modal").style.display = "flex";
 }
@@ -6474,3 +6345,4 @@ window.onload = function() {
         loadPhotos();
         loadPopularVideos();
     };
+=
