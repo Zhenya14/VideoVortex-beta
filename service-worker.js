@@ -23,7 +23,10 @@ const ASSETS_TO_CACHE = [
   "index.html",
   "manifest.json",
   LOGO_NAME, // Використовуємо нове ім'я
-  "VideoVortex_logo_512x512.png"
+  "VideoVortex_logo_512x512.png",
+  "js/app.js",
+  "js/select-language.js",
+  "js/update.js"
 ];
 
 // Решта коду Firebase...

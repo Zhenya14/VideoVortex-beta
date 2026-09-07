@@ -297,47 +297,6 @@ function sEffect() {
 
 flowersEffect();
 
-
-
-
-let selectedPhotos = [];
-let selectedVideos = [];
-
-// Відкрити модалки
-openPhotoPicker.onclick = () => document.getElementById("photoModal").style.display = "flex";
-openVideoPicker.onclick = () => document.getElementById("videoModal").style.display = "flex";
-
-function closePhotoModal() {
-  document.getElementById("photoModal").style.display = "none";
-}
-
-function closeVideoModal() {
-  document.getElementById("videoModal").style.display = "none";
-}
-
-// Кнопки вибору файлів
-pickPhotos.onclick = () => photoInput.click();
-pickVideos.onclick = () => videoInput.click();
-
-// Фото
-photoInput.addEventListener("change", e => {
-  for (const file of e.target.files) {
-    if (file.type.startsWith("image/")) {
-      selectedPhotos.push(file);
-    }
-  }
-  renderPhotoPreviews();
-});
-
-// Відео
-videoInput.addEventListener("change", e => {
-  for (const file of e.target.files) {
-    if (file.type.startsWith("video/")) {
-      selectedVideos.push(file);
-    }
-  }
-  renderVideoPreviews();
-});
 let storyBlob = null;
 let stream = null;
 let cameraActive = false;
@@ -6345,4 +6304,3 @@ window.onload = function() {
         loadPhotos();
         loadPopularVideos();
     };
-=
