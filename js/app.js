@@ -1,6 +1,33 @@
   const messageNotification = document.getElementById("message-ai");
   const notificationAI = document.getElementById("notification-ai-modal");
-                  
+let currentEditKey = null;
+let maxTimeInMinutes = null;
+let timeLeftInSeconds = null;
+let sleepStart = null;
+let sleepEnd = null;
+let userAge = null;
+
+ // Конвертуємо час в секунди
+    let currentUser = null;
+let currentUserEmail = null;
+let currentUserRole = "user";
+let currentUserStatus = "active";
+    let showNSFW = false; // Track whether the user wants to view NSFW content
+
+firebase.initializeApp({
+  apiKey: "AIzaSyBkPYP3bnDy61NFjRSboRZrfTVNTdIMWbY",
+  authDomain: "videovortex-235cd.firebaseapp.com",
+  databaseURL: "https://videovortex-235cd-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "videovortex-235cd",
+  storageBucket: "videovortex-235cd.appspot.com",
+  messagingSenderId: "681594250269",
+  appId: "1:681594250269:web:1176b21fcc8fe2a7d052f4"
+});
+const auth = firebase.auth();
+const database = firebase.database();
+const storage = firebase.storage();
+const messaging = firebase.messaging();
+
 function showNotificationAIModal() {
   notificationAI.style.display = "flex";
 }
@@ -65,7 +92,7 @@ async function generateDescription() {
 
   if (!data?.result) {
     console.error("BAD RESPONSE:", data);
-    textarea.value = "❌ Empty AI response";
+    description.value = "❌ Empty AI response";
     return;
   }
 
@@ -1387,34 +1414,6 @@ function closeSidebar() {
     sidebar.style.width = "0";
     content.style.marginLeft = "0";
 }
-
-let currentEditKey = null;
-let maxTimeInMinutes = null;
-let timeLeftInSeconds = null;
-let sleepStart = null;
-let sleepEnd = null;
-let userAge = null;
-
- // Конвертуємо час в секунди
-    let currentUser = null;
-let currentUserEmail = null;
-let currentUserRole = "user";
-let currentUserStatus = "active";
-    let showNSFW = false; // Track whether the user wants to view NSFW content
-
-firebase.initializeApp({
-  apiKey: "AIzaSyBkPYP3bnDy61NFjRSboRZrfTVNTdIMWbY",
-  authDomain: "videovortex-235cd.firebaseapp.com",
-  databaseURL: "https://videovortex-235cd-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "videovortex-235cd",
-  storageBucket: "videovortex-235cd.appspot.com",
-  messagingSenderId: "681594250269",
-  appId: "1:681594250269:web:1176b21fcc8fe2a7d052f4"
-});
-const auth = firebase.auth();
-const database = firebase.database();
-const storage = firebase.storage();
-const messaging = firebase.messaging();
 
 // ==========================
 // Реєстрація Service Worker
@@ -4973,9 +4972,9 @@ const settingsAvatar = document.getElementById("settingsAvatar");
 const settingsName = document.getElementById("settingsName");
 const settingsEmail = document.getElementById("settingsEmail");
 const input = document.getElementById("avatar-input");
-const btn = document.getElementById("change-avatar");
+const btnAvatar = document.getElementById("change-avatar");
 
-btn.onclick = () => input.click();
+btnAvatar.onclick = () => input.click();
 document.getElementById("nsfw").onclick = function(event) {
   if (userAge < 18) {
     showNotificationModal();
