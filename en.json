@@ -49,5 +49,6 @@
     "help-zone": "Help",
     "need-support": "I need help",
     "i-am-fine": "I am fine",
-    "private-video-checkbox": "Private Video"
+    "private-video-checkbox": "Private Video",
+    "private-photo-checkbox": "Private Photo"
 }
