@@ -4763,4 +4763,2242 @@ function getActivePhotoChannelData() {
         name: option.dataset.name,
         avatar: option.dataset.avatar || ""
     };
+  } 
+async function convertToMp4(file, onStatus) {
+  if (!window.ffmpeg.loaded) {
+    onStatus?.("Завантаження відео-движка…");
+    await window.ffmpeg.load(); // БЕЗ coreURL тут
   }
+
+  onStatus?.("Підготовка файлу…");
+  const data = await window.fetchFile(file);
+  window.ffmpeg.FS("writeFile", "input.mp4", data);
+
+  onStatus?.("Конвертація у MP4 (H.264)…");
+  await window.ffmpeg.run(
+    "-i", "input.mp4",
+    "-c:v", "libx264",
+    "-preset", "veryfast",
+    "-pix_fmt", "yuv420p",
+    "-movflags", "faststart",
+    "-c:a", "aac",
+    "-b:a", "128k",
+    "output.mp4"
+  );
+
+  const out = window.ffmpeg.FS("readFile", "output.mp4");
+  return new File([out.buffer], "converted.mp4", { type: "video/mp4" });
+}
+document.getElementById("video-file").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // якщо вже mp4 — нічого не робимо
+  if (file.type === "video/mp4") return;
+
+  const statusEl = document.getElementById("progress-text");
+  document.getElementById("progress-container").style.display = "block";
+
+  try {
+    const converted = await convertToMp4(file, (status) => {
+      statusEl.innerText = status;
+    });
+
+    // 🔁 ПІДМІНА ФАЙЛУ В INPUT
+    const dt = new DataTransfer();
+    dt.items.add(converted);
+    e.target.files = dt.files;
+
+    statusEl.innerText = "Готово до  ✔";
+  } catch (err) {
+    console.error("❌ Конвертація не вдалася:", err);
+   showNotificationModal();
+    message.innerHTML = "Помилка конвертації відео";
+  }
+});
+function updateUploadUI(id, progress, timeLeftSec) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const percent = el.querySelector(".upload-progress-text");
+  const time = el.querySelector(".upload-time-left");
+
+  if (percent) percent.innerText = `${Math.round(progress)}%`;
+  if (time) time.innerText = `~${Math.round(timeLeftSec)}s left`;
+}
+function addVideoToFeed(video) {
+  const container = document.getElementById("video-gallery");
+
+  if (!container) {
+    console.warn("videos-feed container not found");
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.className = "video-card";
+  card.id = video.id;
+
+  card.innerHTML = `
+    <img src="${video.thumbnail}" class="video-thumb"/>
+
+    <div class="video-meta">
+      <div class="video-title">${video.title}</div>
+      <div class="video-author">${video.author}</div>
+
+      ${
+        video.uploading
+          ? `
+        <div class="upload-status">
+          <div class="upload-progress-text">0%</div>
+          <div class="upload-time-left">calculating...</div>
+        </div>
+      `
+          : ""
+      }
+    </div>
+  `;
+
+  container.prepend(card);
+}
+function finalizeUpload(tempId, data) {
+  const el = document.getElementById(tempId);
+  if (!el) return;
+
+  el.querySelector(".upload-box")?.remove();
+
+  el.querySelector("h3").innerText = data.title;
+  el.querySelector("p").innerText = data.author;
+
+  el.id = data.realId;
+}
+function createPublishVideo({ id, title, author, thumbnail }) {
+  const videoGallery = document.getElementById("video-gallery");
+  if (!videoGallery) return;
+
+  const el = document.createElement("div");
+  el.className = "video-details";
+  el.id = id;
+
+  el.innerHTML = `
+    <img src="${thumbnail}" style="width:120px;" />
+
+    <div>${title}</div>
+    <div>${author}</div>
+
+    <div id="${id}-status">Очікування...</div>
+
+    <progress id="${id}-progress" value="0" max="100"></progress>
+  `;
+
+  videoGallery.prepend(el);
+  return el;
+}
+async function uploadVideo() {
+  const startTime = Date.now();
+
+  const isBandura =
+    document.getElementById("bandura-video")?.checked || false;
+
+  const autoDelete24h =
+    document.getElementById("auto-delete-24h")?.checked || false;
+
+  const banduraExtra = isBandura ? {
+    style: document.getElementById("bandura-style").value || "Соло",
+    key: document.getElementById("bandura-key").value || "",
+    difficulty: document.getElementById("bandura-difficulty").value || "Початковий",
+    tempo: document.getElementById("bandura-tempo").value || "",
+    slowMode: document.getElementById("bandura-slow").checked,
+    event: document.getElementById("bandura-event").value || "",
+    year: document.getElementById("bandura-year").value || "",
+    performer: document.getElementById("bandura-performer").value || "",
+    tags: document.getElementById("bandura-tags").value || "",
+    markers: document.getElementById("bandura-markers").value || ""
+  } : null;
+
+  const videoTitle = document.getElementById("video-title").value;
+  const videoDescription = document.getElementById("video-description").value;
+  const videoFile = document.getElementById("video-file").files[0];
+
+  const isNSFW = document.getElementById("nsfw").checked;
+  const safeVideo = document.getElementById("save-video-checkbox").checked;
+  const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
+  const privateVideo = document.getElementById("private-checkbox").checked;
+  const domainRestrict = document.getElementById("domain-restrict-checkbox")?.checked || false;
+
+  if (!videoTitle || !videoFile) {
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, заповніть всі поля!";
+    return;
+  }
+
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    showNotificationModal();
+    message.innerHTML = "Потрібно увійти в акаунт";
+    return;
+  }
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const selectedChannel =
+      document.getElementById("video-channel-select").value || "main";
+
+    let authorName;
+    let authorAvatarUrl = null;
+
+    if (selectedChannel === "second" && userData.channels?.second) {
+      authorName = userData.channels.second.name || "Другий канал";
+
+      const secondAvatar = userData.channels.second.avatarId;
+
+      if (secondAvatar) {
+        try {
+          authorAvatarUrl =
+            await storage.ref(`avatars/${secondAvatar}.webp`).getDownloadURL();
+        } catch {}
+      }
+
+    } else {
+      authorName =
+        `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+        "Основний канал";
+
+      const mainAvatar = userData.avatarId;
+
+      if (mainAvatar) {
+        try {
+          authorAvatarUrl =
+            await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
+        } catch {}
+      }
+    }
+
+    const storageRef =
+      storage.ref(`videos/${Date.now()}_${videoFile.name}`);
+
+    const uploadTask = storageRef.put(videoFile);
+
+    const tempId = "temp_" + Date.now();
+    const tempThumbnailUrl = URL.createObjectURL(videoFile);
+
+    createPublishVideo({
+      id: tempId,
+      title: videoTitle,
+      author: "Uploading...",
+      thumbnail: tempThumbnailUrl,
+      uploading: true
+    });
+    const progressContainer =
+      document.getElementById("progress-container");
+
+    progressContainer.style.display = "block";
+
+    localStorage.setItem("activeUpload", JSON.stringify({
+      fileName: videoFile.name,
+      fileSize: videoFile.size,
+      bytesTransferred: 0,
+      startedAt: Date.now(),
+      status: "uploading"
+    }));
+
+    uploadTask.on(
+      "state_changed",
+
+      snapshot => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+        const timeElapsed =
+          (Date.now() - startTime) / 1000;
+
+        const speed =
+          snapshot.bytesTransferred / (timeElapsed || 0.001);
+
+        const remainingBytes =
+          snapshot.totalBytes - snapshot.bytesTransferred;
+
+        const timeLeftSec =
+          remainingBytes / Math.max(speed, 1);
+
+        updateUploadUI(tempId, progress, timeLeftSec);
+
+        const uploadData =
+          JSON.parse(localStorage.getItem("activeUpload"));
+
+        if (uploadData) {
+          uploadData.bytesTransferred =
+            snapshot.bytesTransferred;
+
+          localStorage.setItem(
+            "activeUpload",
+            JSON.stringify(uploadData)
+          );
+        }
+
+        document.getElementById("time-left").innerText =
+          `${Math.round(timeLeftSec)}s`;
+
+        document.getElementById("upload-progress").value =
+          progress;
+
+        document.getElementById("progress-text").innerText =
+          `Завантаження: ${Math.round(progress)}%`;
+      },
+
+      error => {
+        console.error(error);
+        showNotificationModal();
+        message.innerHTML = "Помилка завантаження відео.";
+      },
+
+      async () => {
+        const uploadData =
+          JSON.parse(localStorage.getItem("activeUpload"));
+
+        if (uploadData) {
+          uploadData.status = "processing";
+
+          localStorage.setItem(
+            "activeUpload",
+            JSON.stringify(uploadData)
+          );
+        }
+
+        try {
+          const downloadURL =
+            await uploadTask.snapshot.ref.getDownloadURL();
+
+          const thumbnailBlob =
+            await createThumbnail(videoFile);
+
+          const thumbRef =
+            storage.ref(`thumbnails/${Date.now()}_${videoFile.name}.jpg`);
+
+          await thumbRef.put(thumbnailBlob);
+
+          const thumbnailURL =
+            await thumbRef.getDownloadURL();
+
+          const now = new Date();
+
+          const currentDate =
+            `${now.getDate().toString().padStart(2,'0')}.` +
+            `${(now.getMonth()+1).toString().padStart(2,'0')}.` +
+            `${now.getFullYear()}`;
+
+          const ref = await database.ref("videos").push({
+            title: videoTitle,
+            author: authorName,
+            authorAvatar: authorAvatarUrl,
+            authorUid: uid,
+            authorColor: userData.color,
+            videoColor: randomGradient(),
+            email: user.email,
+
+            disabledComments,
+            url: downloadURL,
+            thumbnail: thumbnailURL,
+            description: videoDescription,
+            saveVideo: safeVideo,
+
+            views: 0,
+            private: privateVideo,
+            domainRestrict,
+            nsfw: isNSFW,
+
+            createdAt: Date.now(),
+            autoDelete24h,
+            publishDate: currentDate,
+
+            banduraExtra,
+            expiresAt: autoDelete24h
+              ? Date.now() + 86400000
+              : null
+          });
+
+          finalizeUpload(tempId, {
+            realId: ref.key,
+            title: videoTitle,
+            author: authorName
+          });
+
+          URL.revokeObjectURL(tempThumbnailUrl);
+
+          localStorage.removeItem("activeUpload");
+document.getElementById("upload-modal").style.display = "none";
+          showPopup();
+
+          document.getElementById("message-notification").innerHTML =
+            "Відео завантажено!";
+
+          progressContainer.style.display = "none";
+
+          
+
+        } catch (err) {
+          console.error(err);
+          showNotificationModal();
+          message.innerHTML =
+            "Помилка при завантаженні відео або мініатюри. " +
+            err.message;
+        }
+      }
+    );
+
+  } catch (err) {
+    console.error("Помилка при отриманні даних користувача:", err);
+    showNotificationModal();
+    message.innerHTML = "Не вдалося отримати дані профілю." + err.message;
+  }
+}
+
+
+
+// Просте шифрування/дешифрування (можна замінити на AES)
+
+
+// Відкрити форму редагування імені
+function editName() {
+  document.getElementById("form-edit-name").style.display = "block";
+  document.getElementById("name").style.display = "none";
+  document.getElementById("button-name").style.display = "none";
+
+  const currentName = document.getElementById("name").textContent.replace("Ім'я: ", "");
+  document.getElementById("edit-name").value = currentName;
+}
+
+// Відкрити форму редагування прізвища
+function editSuperName() {
+  document.getElementById("form-edit-supername").style.display = "block";
+  document.getElementById("supername").style.display = "none";
+  document.getElementById("button-supername").style.display = "none";
+
+  const currentSuperName = document.getElementById("supername").textContent.replace("Прізвище: ", "");
+  document.getElementById("edit-supername").value = currentSuperName;
+}
+
+// Зберегти зміну імені
+function saveEditName() {
+  const newName = document.getElementById("edit-name").value.trim();
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, увійдіть.";
+    return;
+  }
+
+  const uid = user.uid;
+  database.ref("users/" + uid).update({ name: newName })
+    .then(() => {
+      showNotificationModal();
+      message.innerHTML = "Ім’я змінено!";
+      document.getElementById("form-edit-name").style.display = "none";
+      document.getElementById("name").style.display = "block";
+      document.getElementById("button-name").style.display = "block";
+      document.getElementById("name").textContent = "Ім'я: " + newName;
+      updateVideosAuthor();
+      updatePhotosAuthor();
+      updateCommentsAuthor();
+      updateNameBlockedUsers();
+    })
+    .catch(err => {
+      showNotificationModal();
+      message.innerHTML = "Помилка: " + err.message;
+    });
+}
+
+// Зберегти зміну прізвища
+function saveEditSuperName() {
+  const newSuperName = document.getElementById("edit-supername").value.trim();
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    showNotificationModal();
+    message.innerHTML = "Будь ласка, увійдіть.";
+    return;
+  }
+
+  const uid = user.uid;
+  database.ref("users/" + uid).update({ supername: newSuperName })
+    .then(() => {
+      showNotificationModal();
+      message.innerHTML = "Прізвище змінено!";
+      document.getElementById("form-edit-supername").style.display = "none";
+      document.getElementById("supername").style.display = "block";
+      document.getElementById("button-supername").style.display = "block";
+      document.getElementById("supername").textContent = "Прізвище: " + newSuperName;
+      updateVideosAuthor();
+      updatePhotosAuthor();
+      updateCommentsAuthor();
+      updateNameBlockedUsers();
+    })
+    .catch(err => {
+      showNotificationModal();
+      message.innerHTML = "Помилка: " + err.message;
+    });
+}
+function loadPhotoChannelSelect() {
+    const select = document.getElementById("photo-channel-select");
+    if (!select) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const uid = user.uid;
+    select.innerHTML = "";
+
+    database.ref(`users/${uid}`).once("value").then(snapshot => {
+        const userData = snapshot.val();
+        if (!userData) return;
+
+        // 🔹 Основний канал
+        const mainName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+        const mainOption = document.createElement("option");
+        mainOption.value = "main";
+        mainOption.textContent = mainName || "Основний канал";
+        mainOption.dataset.name = mainName;
+        mainOption.dataset.avatar = userData.avatar || "";
+        select.appendChild(mainOption);
+
+        // 🔹 Другий канал
+        if (userData.channels && userData.channels.second) {
+            const second = userData.channels.second;
+
+            const secondOption = document.createElement("option");
+            secondOption.value = "second";
+            secondOption.textContent = second.name || "Другий канал";
+            secondOption.dataset.name = second.name || "Другий канал";
+            secondOption.dataset.avatar = second.avatar || "";
+            select.appendChild(secondOption);
+        }
+    });
+}
+function getActivePhotoChannelData() {
+    const select = document.getElementById("photo-channel-select");
+    if (!select) return null;
+
+    const option = select.options[select.selectedIndex];
+    if (!option) return null;
+
+    return {
+        key: option.value,       // main | second
+        name: option.dataset.name,
+        avatar: option.dataset.avatar || ""
+    };
+}
+// Оновлення авторів у відео та коментарях
+
+// Відправка коментаря
+
+
+
+function toggleUploadVisibility() {
+    const isMobile = window.innerWidth <= 1024;
+    const addStory = document.getElementById("add-story");
+    const plusPost = document.getElementById("plus-button");
+    const plusDesktopPost = document.getElementById("plus-desktop-button");
+    const logoutLink = document.getElementById("logout-link");
+    const openMenu = document.getElementById("open-menu");
+    const accountDesktopLink = document.getElementById("account-desktop-link");
+
+    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) {
+        return;
+    }
+
+    const user = firebase.auth().currentUser;
+
+    // Користувач не авторизований
+    if (!user) {
+        plusPost.style.display = "none";
+        plusDesktopPost.style.display = "none";
+
+        if (logoutLink) {
+            logoutLink.style.display = "none";
+        }
+
+        openMenu.style.display = isMobile ? "none" : "flex";
+        accountDesktopLink.style.display = "none";
+
+        return;
+    }
+
+    // Користувач авторизований
+    if (isMobile) {
+        openMenu.style.display = "none";
+        addStory.style.display = "flex";
+        plusPost.style.display = "grid";
+        plusDesktopPost.style.display = "none";
+
+        if (logoutLink) {
+            logoutLink.style.display = "none";
+        }
+
+        accountDesktopLink.style.display = "none";
+
+    } else {
+        openMenu.style.display = "flex";
+        addStory.style.display = "none";
+        plusPost.style.display = "none";
+        plusDesktopPost.style.display = "flex";
+
+        if (logoutLink) {
+            logoutLink.style.display = "flex";
+        }
+
+        accountDesktopLink.style.display = "flex";
+    }
+}
+
+window.addEventListener("load", () => {
+    toggleUploadVisibility();
+});
+
+window.addEventListener("resize", () => {
+    toggleUploadVisibility();
+});
+
+
+function updateUI(user) {
+    const userInfoEl = document.getElementById("user-info");
+    const logoutLink = document.getElementById("logout-link");
+
+    if (user) {
+        currentUserEmail = user.email;
+
+        if (userInfoEl) {
+            userInfoEl.textContent = `Ви увійшли як: ${user.email}`;
+        }
+        
+        document.querySelector(".stories-bar")
+            ?.style.setProperty("display", "flex");
+        
+        document.getElementById("auth-link")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("register-link")
+            ?.style.setProperty("display", "none");
+
+        if (logoutLink) {
+            logoutLink.style.display = "flex";
+        }
+
+        document.getElementById("smart-settings")
+            ?.style.setProperty("display", "grid");
+
+        document.getElementById("account-link")
+            ?.style.setProperty("display", "block");
+
+        document.querySelector(".bg-liquid-glass")
+            ?.style.setProperty("left", "41%");
+
+        // Коментарі
+        document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
+            el.style.display = "flex";
+        });
+
+        // Обмеження домену
+        const domainRestrictContainer =
+            document.getElementById("domain-restrict-container");
+
+        if (domainRestrictContainer) {
+            domainRestrictContainer.style.display =
+                currentUserEmail.endsWith("@kfccte-nau.ukr.education")
+                    ? "block"
+                    : "none";
+        }
+
+    } else {
+        currentUserEmail = null;
+
+        if (userInfoEl) {
+            userInfoEl.textContent = "";
+        }
+
+       document.querySelector(".stories-bar")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("auth-link")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("register-link")
+            ?.style.setProperty("display", "none");
+
+        if (logoutLink) {
+            logoutLink.style.display = "none";
+        }
+
+        document.getElementById("smart-settings")
+            ?.style.setProperty("display", "none");
+
+        document.getElementById("account-link")
+            ?.style.setProperty("display", "none");
+
+        document.querySelector(".bg-liquid-glass")
+            ?.style.setProperty("left", "49%");
+
+        document.getElementById("account-desktop-link")
+            ?.style.setProperty("display", "none");
+
+        // Коментарі
+        document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
+            el.style.display = "none";
+        });
+    }
+
+    // Оновлюємо адаптивний UI
+    toggleUploadVisibility();
+}
+async function backfillAuthorUidForUser() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+  const email = user.email;
+
+  const paths = ["videos", "photos", "comments"];
+
+  for (const path of paths) {
+    const snap = await database.ref(path).once("value");
+
+    const updates = [];
+
+    snap.forEach(child => {
+      const data = child.val();
+
+      // Знаходимо ТІЛЬКИ контент цього користувача
+      if (data.email === email) {
+        // Якщо ще нема authorUid — додаємо
+        if (!data.authorUid) {
+          updates.push(
+            database.ref(`${path}/${child.key}`).update({
+              authorUid: uid
+            })
+          );
+        }
+      }
+    });
+
+    if (updates.length > 0) {
+      await Promise.all(updates);
+      console.log(`Оновлено ${updates.length} записів у ${path}`);
+    }
+  }
+}
+// Слухач стану автентифікації
+
+const avatarEl = document.querySelector(".avatar");
+const editWallpaperProfileAvatarEl = document.getElementById("avatar");
+const navAvatar = document.getElementById("nav-avatar");
+const settingsAvatar = document.getElementById("settingsAvatar");
+const settingsName = document.getElementById("settingsName");
+const settingsEmail = document.getElementById("settingsEmail");
+const input = document.getElementById("avatar-input");
+const btn = document.getElementById("change-avatar");
+
+btn.onclick = () => input.click();
+document.getElementById("nsfw").onclick = function(event) {
+  if (userAge < 18) {
+    showNotificationModal();
+    message.innerHTML = "Cталася помилка.";
+  document.getElementById("nsfw").checked = false;
+    
+  }
+  }
+  
+  function configureAgeUI(age) {
+
+    const nsfwCheckbox = document.getElementById('show-nsfw-videos');
+    const nsfwSlider = document.getElementById("slidernsfw");
+    const nsfwInfo = document.getElementById("information-nsfw");
+    const NSFW = document.getElementById("nsfw");
+    const nsfwContainer = document.getElementById("nsfw-container");
+    const privateVideo = document.getElementById("private-checkbox");
+
+    if (!nsfwCheckbox) return;
+
+    // < 13
+    if (age < 13) {
+
+        if (privateVideo) privateVideo.checked = true;
+
+        nsfwCheckbox.checked = false;
+        nsfwCheckbox.disabled = true;
+
+        if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
+        if (NSFW) NSFW.style.display = "none";
+        if (nsfwContainer) nsfwContainer.style.display = "none";
+        if (nsfwInfo) nsfwInfo.style.display = "block";
+
+        return;
+    }
+
+    // 13–17
+    if (age < 18) {
+
+        nsfwCheckbox.checked = false;
+        nsfwCheckbox.disabled = true;
+
+        if (nsfwSlider) nsfwSlider.style.backgroundColor = "gray";
+        if (NSFW) NSFW.style.display = "none";
+        if (nsfwContainer) nsfwContainer.style.display = "none";
+        if (nsfwInfo) nsfwInfo.style.display = "block";
+
+        return;
+    }
+
+    // 18+
+    nsfwCheckbox.disabled = false;
+
+    if (NSFW) NSFW.style.display = "block";
+    if (nsfwContainer) nsfwContainer.style.display = "block";
+    if (nsfwInfo) nsfwInfo.style.display = "none";
+
+    if (!nsfwCheckbox.dataset.listenerAdded) {
+        nsfwCheckbox.addEventListener("change", function () {
+            showNSFW = this.checked;
+        });
+        nsfwCheckbox.dataset.listenerAdded = "true";
+    }
+}
+async function uploadArchive() {
+  const file = document.getElementById("zip-file").files[0];
+
+  if (!file) {
+    showNotificationModal();
+    message.innerHTML = "Вибери файл.";
+    return;
+  }
+
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("Користувач не авторизований");
+    return;
+  }
+
+  const uid = user.uid;
+
+  // 🔥 Upload у Firebase Storage
+  const storageRef = firebase.storage().ref(
+    `archives/${Date.now()}_${file.name}`
+  );
+
+  try {
+    await storageRef.put(file);
+    const url = await storageRef.getDownloadURL();
+
+    // 🔥 Запис у Realtime Database
+    await firebase.database().ref("users/" + uid + "/archive").push({
+      url,
+      name: file.name,
+      createdAt: Date.now(),
+      uid
+    });
+
+    alert("Зашифровано і завантажено!");
+  } catch (e) {
+    console.error(e);
+    alert("Помилка завантаження" + e.message);
+  }
+}
+
+async function loadSecureFiles() {
+  const container = document.getElementById("secure-files");
+  container.innerHTML = "";
+
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+
+const snapshot = await firebase
+    .database()
+    .ref("users/" + uid + "/archive")
+    .limitToLast(50)
+    .once("value");
+
+  if (!snapshot.exists()) {
+  container.textContent = "Немає опублікованих архівів";
+  return;
+}
+  snapshot.forEach(child => {
+    const data = child.val();
+    const key = child.key;
+    
+    const item = document.createElement("div");
+    item.classList.add("secure-item");
+
+    item.innerHTML = `
+      <b>${data.name || "Без назви"}</b><br>
+      <button class="open-btn"><i class="material-symbols">lock_open</i>Відкрити</button>
+      <button class="delete-btn"><i class="material-symbols">delete</i>Видалити</button>
+    `;
+    const button = item.querySelector(".open-btn");
+const deleteButton = item.querySelector(".delete-btn");
+    button.onclick = async () => {
+      // 🔒 базова перевірка доступу
+      if (data.uid !== uid) {
+        alert("Нема доступу");
+        return;
+      }
+      window.location.href = data.url;
+    };
+  deleteButton.onclick = async () => {
+  deleteArchive(data.url, key);
+}
+    container.appendChild(item);
+  });
+}
+function calculateAge(birthdate) {
+            if (!birthdate) return null;
+            const [day, month, year] = birthdate.split(".").map(Number);
+            const today = new Date();
+            let age = today.getFullYear() - year;
+            if (today.getMonth() + 1 < month || 
+               (today.getMonth() + 1 === month && today.getDate() < day)) {
+                age--;
+            }
+            return age;
+        }
+async function checkSupportRequests(user) {
+    if (!user || !user.uid) {
+        console.log("❌ Немає авторизованого користувача");
+        return;
+    }
+
+    console.log("👤 Поточний UID:", user.uid);
+
+    try {
+        const ref = database.ref(`supportRequests/${user.uid}`);
+
+        const snapshot = await ref.once("value");
+
+        console.log("📦 Support snapshot exists:", snapshot.exists());
+        console.log("📦 Support data:", snapshot.val());
+
+        if (!snapshot.exists()) {
+            console.log("ℹ️ Запитів підтримки немає");
+            return;
+        }
+
+        const requests = snapshot.val();
+
+        const hasPendingSupport = Object.values(requests).some(
+            request =>
+                request &&
+                request.status === "pending"
+        );
+
+        console.log("💙 Є pending:", hasPendingSupport);
+
+        if (!hasPendingSupport) return;
+
+        const modal = document.getElementById("support-author-modal");
+
+        if (!modal) {
+            console.error("❌ Не знайдено #support-author-modal");
+            return;
+        }
+
+        modal.style.display = "flex";
+
+        console.log("✅ Модальне вікно показано");
+
+    } catch (error) {
+        console.error("❌ Support error:", error);
+    }
+          }
+auth.onAuthStateChanged(async (user) => {
+    if (!user) return;
+
+    currentUser = user;
+    currentUserEmail = user.email;
+    currentUserUid = user.uid;
+  await checkSupportRequests(user);
+    try {
+
+        // 👤 USER PROFILE (role тут)
+        const userSnap = await database
+            .ref(`users/${user.uid}`)
+            .once("value");
+
+        const userProfile = userSnap.val();
+
+        if (!userProfile) {
+            await auth.signOut();
+            return;
+        }
+
+        // 🛡 MODERATION STATUS
+        const modSnap = await database
+            .ref(`moderation/users/${user.uid}`)
+            .once("value");
+
+        const modData = modSnap.val() || {};
+
+        const role = userProfile.role || "user";
+        currentUserRole = role;
+
+        const status = modData.status || "active";
+        currentUserStatus = status;
+
+        // 🚫 BLOCK SYSTEM
+        if (status === "disabled") {
+            await auth.signOut();
+            showBlockedScreen("⛔ Акаунт заблоковано");
+            return;
+        }
+
+        if (status === "frozen_soft" || status === "frozen_hard") {
+            await auth.signOut();
+            showBlockedScreen("❄️ Акаунт заморожено");
+            return;
+        }
+// =========================
+// 💙 SUPPORT REQUESTS
+// =========================
+
+
+        // ✔️ EMAIL VERIFY GATE
+        if (!user.emailVerified) {
+            blockScreenForVerification();
+
+            const verificationInterval = setInterval(async () => {
+                await user.reload();
+
+                if (user.emailVerified) {
+                    clearInterval(verificationInterval);
+                    unblockScreenForVerification();
+                    updateUI(user);
+                }
+            }, 5000);
+        }
+
+        // =========================
+        // 🔹 INITIAL LOAD
+        // =========================
+
+        loadPhotoChannelSelect();
+        loadChannelSelect();
+        loadSecureFiles();
+        loadLibrary(user);
+       loadYouStories(user);
+        updateColorsAuthor(user);
+        updateColorsCommentsAuthor(user);
+        updateColorsPhotosAuthor(user);
+        updateColorsVideosAuthor(user);
+        cleanupExpiredVideos();
+        cleanupExpiredStories();
+        updateVideosAuthor();
+        updatePhotosAuthor();
+        await updateNameBlockedUsers();
+        updateCommentsAuthor();
+        backfillAuthorUidForUser();
+
+        enablePushNotifications(user.uid);
+
+        // =========================
+        // 🔹 AGE LOGIC
+        // =========================
+
+        const birthdateStr = userProfile.birthdate;
+        let birthYear = userProfile.birthYear;
+
+        let age = null;
+
+        if (birthdateStr) {
+            age = calculateAge(birthdateStr);
+
+            if (!birthYear) {
+                const [d, m, y] = birthdateStr.split(".").map(Number);
+                await database.ref(`users/${user.uid}`).update({ birthYear: y });
+            }
+        }
+
+        if (age !== null) {
+            configureAgeUI(age);
+        } else {
+            document.getElementById("birthdate-modal")
+                ?.style.setProperty("display", "flex");
+        }
+
+
+        // =========================
+        // 🔹 UI
+        // =========================
+
+        const viewBirthdate = document.getElementById("view");
+        if (viewBirthdate) {
+            viewBirthdate.textContent =
+                `Дата народження: ${birthdateStr || "не вказано"}`;
+        }
+
+        const emailEl = document.getElementById("email");
+        if (emailEl) {
+            emailEl.textContent =
+                `${userProfile.name || ""} ${userProfile.supername || ""}`;
+        }
+
+        const settingsNameEl = document.getElementById("settingsName");
+        if (settingsNameEl) {
+            settingsNameEl.textContent =
+                `${userProfile.name || ""} ${userProfile.supername || ""}`;
+        }
+
+        const settingsEmailEl = document.getElementById("settingsEmail");
+        if (settingsEmailEl) {
+            settingsEmailEl.textContent =
+                `${userProfile.email || ""}`;
+        }
+
+        const nameEl = document.getElementById("name");
+        if (nameEl) {
+            nameEl.textContent =
+                `Ім'я: ${userProfile.name || ""}`;
+        }
+
+        const supernameEl = document.getElementById("supername");
+        if (supernameEl) {
+            supernameEl.textContent =
+                `Прізвище: ${userProfile.supername || ""}`;
+        }
+       const editWallpaperProfileNameEl = document.getElementById("userName");
+       if (editWallpaperProfileNameEl) {
+       editWallpaperProfileNameEl.textContent =                 `${userProfile.name || ""} ${userProfile.supername || ""}`;
+       }
+       const wallpaperEl = document.querySelector(".profile-header");
+              if (!userProfile.wallpaperId) {
+      wallpaperEl.style.backgroundImage = "";
+    } else {
+      try {
+        const urlWallpaper = await firebase
+          .storage()
+          .ref(`wallpapers/${userProfile.wallpaperId}.webp`)
+          .getDownloadURL();
+
+        wallpaperEl.style.backgroundImage = `url(${urlWallpaper})`;
+        wallpaperEl.style.backgroundSize = "cover";
+        wallpaperEl.style.backgroundPosition = "center";
+      } catch (e) {
+        wallpaperEl.style.backgroundImage = "";
+      }
+    }
+        // =========================
+        // 🔹 AVATAR
+        // =========================
+
+        if (userProfile.avatarId) {
+    try {
+        // Отримуємо URL аватара з Firebase Storage
+        const url = await firebase.storage().ref(`avatars/${userProfile.avatarId}.webp`).getDownloadURL();
+
+        // 🔹 avatarEl
+        avatarEl.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Аватар користувача";
+        avatarEl.appendChild(img);
+
+        editWallpaperProfileAvatarEl.innerHTML = "";
+        const imgEditWallpaperProfileAvatar = document.createElement("img");
+        imgEditWallpaperProfileAvatar.src = url;
+        imgEditWallpaperProfileAvatar.alt = "Аватар користувача";
+        editWallpaperProfileAvatarEl.appendChild(imgEditWallpaperProfileAvatar);
+        // 🔹 navAvatar
+        navAvatar.innerHTML = "";
+        const imgNav = document.createElement("img");
+        imgNav.src = url;
+        imgNav.alt = "Аватар користувача";
+        navAvatar.prepend(imgNav);
+
+        // 🔹 settingsAvatar
+        settingsAvatar.innerHTML = "";
+        const imgSettings = document.createElement("img");
+        imgSettings.src = url;
+        imgSettings.alt = "Аватар користувача";
+        settingsAvatar.appendChild(imgSettings);
+
+        // 🔹 avatarLibrary
+
+        avatarLibraryEl.innerHTML = "";
+        const imgLibrary = document.createElement("img");
+        imgLibrary.src = url;
+        imgLibrary.alt = "Аватар користувача";
+        avatarLibraryEl.appendChild(imgLibrary);
+
+    } catch (err) {
+        console.error("Помилка завантаження аватара:", err);
+        settingsAvatar.style.background = userProfile.color;
+        settingsAvatar.innerText = userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+        avatarLibraryEl.style.background = userProfile.color;
+        avatarLibraryEl.innerText = userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+        editWallpaperProfileAvatarEl.style.background = userProfile.color;
+        editWallpaperProfileAvatarEl.innerText = userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+        avatarEl.style.background = userProfile.color;
+        avatarEl.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+        
+
+        const el = document.getElementById("avatar-library");
+        if (el) el.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+            if (el) el.style.background = userProfile.color;
+       navAvatar.style.background = userProfile.color;
+        navAvatar.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+    }
+
+} else {
+  settingsAvatar.style.background = userProfile.color;
+  settingsAvatar.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+  avatarLibraryEl.style.background = userProfile.color;
+        avatarLibraryEl.innerText = userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+        editWallpaperProfileAvatarEl.style.background = userProfile.color;
+        editWallpaperProfileAvatarEl.innerText = userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+    avatarEl.style.background = userProfile.color;
+    avatarEl.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+
+    const el = document.getElementById("avatar-library");
+    if (el) el.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+    if (el) el.style.background = userProfile.color;
+   navAvatar.style.background = userProfile.color;
+    navAvatar.innerText = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : "?";
+}
+
+
+        // =========================
+        // 🔹 FINAL LOADS
+        // =========================
+
+        updateVideosAuthor();
+        updatePhotosAuthor();
+        enableBanduraUI(role);
+
+        updateUI(user);
+        toggleUploadVisibility();
+
+    } catch (err) {
+        console.error("Auth init error:", err);
+    }
+});
+
+// 🔹 Завантаження нового аватара
+input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    let uploadFile = file;
+
+    // Перевірка HEIC
+    if (file.type === "image/heic" || file.name.endsWith(".heic")) {
+        try {
+            const blob = await heic2any({ blob: file, toType: "image/webp" });
+            uploadFile = new File([blob], file.name.replace(/\.heic$/i, ".webp"), { type: "image/webp" });
+        } catch (err) {
+            console.error("Помилка конвертації HEIC:", err);
+            showNotificationModal();
+            message.innerHTML = "Не вдалося конвертувати HEIC";
+            return;
+        }
+    }
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        showNotificationModal();
+        message.innerHTML = "Не авторизований";
+        return;
+    }
+
+    try {
+        const avatarId = `${user.uid}_${Date.now()}`;
+        const ref = firebase.storage().ref(`avatars/${avatarId}.webp`);
+        await ref.put(uploadFile);
+        await database.ref("users/" + user.uid).update({ avatarId });
+
+        const url = await ref.getDownloadURL();
+
+        // 🔹 avatarEl
+        avatarEl.innerHTML = "";
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Аватар користувача";
+        avatarEl.appendChild(img);
+
+        // 🔹 navAvatar
+        navAvatar.innerHTML = "";
+        const imgNav = document.createElement("img");
+        imgNav.src = url;
+        imgNav.alt = "Аватар користувача";
+        navAvatar.prepend(imgNav);
+
+        // 🔹 avatarLibrary
+        let avatarLibraryEl = document.getElementById("avatar-library");
+        if (!avatarLibraryEl) {
+            avatarLibraryEl = document.createElement("div");
+            avatarLibraryEl.classList.add("avatar");
+            avatarLibraryEl.id = "avatar-library";
+            const library = document.getElementById("library");
+            library.appendChild(avatarLibraryEl);
+        }
+        avatarLibraryEl.innerHTML = "";
+        const imgLibrary = document.createElement("img");
+        imgLibrary.src = url;
+        imgLibrary.alt = "Аватар користувача";
+        avatarLibraryEl.appendChild(imgLibrary);
+
+    } catch (err) {
+        console.error(err);
+        showNotificationModal();
+        message.innerHTML = "Не вдалося завантажити аватар";
+    }
+};
+updateVideosAuthor();
+updatePhotosAuthor();
+updateNameBlockedUsers();
+function submitBirthdate() {
+    const user = firebase.auth().currentUser;
+    const input = document.getElementById("birthdate-input").value; // "YYYY-MM-DD"
+    const nameInput = document.getElementById("name-input").value;
+    const supernameInput = document.getElementById("supername-input").value;
+
+    if (!input || !nameInput || !supernameInput) {
+        showNotificationModal();
+        message.innerHTML = "Будь ласка, заповніть всі поля.";
+        return;
+    }
+
+    const [year, month, day] = input.split("-");
+    const formattedDate = `${day}.${month}.${year}`; // "DD.MM.YYYY"
+    const age = calculateAge(formattedDate);
+
+    firebase.database().ref("users/" + user.uid).update({
+        birthdate: formattedDate,
+        email: user.email,
+        name: nameInput,
+        supername: supernameInput
+    }).then(() => {
+        showNotificationModal();
+        message.innerHTML = "Дата збережена.";
+        if (age !== null) configureAgeUI(age);
+        updateVideosAuthor();
+        updatePhotosAuthor();
+        updateNameBlockedUsers();
+    }).catch(err => console.error("Помилка збереження даних:", err));
+}
+
+// 🔹 Використовуємо calculateAge і в onAuthStateChanged
+function calculateAge(birthdate) {
+    if (!birthdate) return null;
+    const [day, month, year] = birthdate.split(".").map(Number);
+    const today = new Date();
+    let age = today.getFullYear() - year;
+    if (today.getMonth() + 1 < month || 
+       (today.getMonth() + 1 === month && today.getDate() < day)) {
+        age--;
+    }
+    return age;
+}
+async function updateNameBlockedUsers() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const uid = user.uid;
+
+    try {
+        // Отримуємо список користувачів, яких заблокував поточний користувач
+        const blockedSnapshot = await database
+            .ref(`users/${uid}/blockedUsers`)
+            .once("value");
+
+        if (!blockedSnapshot.exists()) {
+            console.log("Список заблокованих порожній");
+            return;
+        }
+
+        const updates = {};
+
+        blockedSnapshot.forEach((childSnapshot) => {
+            const blockedUid = childSnapshot.key;
+
+            // Отримуємо актуальне ім'я з users/{blockedUid}
+            const userData = childSnapshot.val() || {};
+
+            // Тут тільки створюємо список UID
+            updates[blockedUid] = userData;
+        });
+
+        // Для кожного заблокованого отримуємо актуальні дані
+        for (const blockedUid of Object.keys(updates)) {
+
+            const userSnapshot = await database
+                .ref(`users/${blockedUid}`)
+                .once("value");
+
+            if (!userSnapshot.exists()) continue;
+
+            const userData = userSnapshot.val() || {};
+
+            const fullName =
+                `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+                "Анонім";
+
+            // Оновлюємо userName у твоєму blockedUsers
+            await database
+                .ref(`users/${uid}/blockedUsers/${blockedUid}`)
+                .update({
+                    userName: fullName
+                });
+
+            console.log(
+                `Ім'я ${blockedUid} оновлено:`,
+                fullName
+            );
+        }
+
+    } catch (error) {
+        console.error(
+            "Помилка оновлення імен заблокованих:",
+            error
+        );
+    }
+}
+async function updateVideosAuthor() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {
+        console.warn("Аватар не знайдено");
+      }
+    }
+
+    const videoSnap = await database.ref("videos").once("value");
+
+    const updates = [];
+
+    videoSnap.forEach(child => {
+      const video = child.val();
+
+      if (video.authorUid === user.uid) {
+        updates.push(
+          database.ref("videos/" + child.key).update({
+            author: fullName || "Анонім",
+            authorAvatar: authorAvatarUrl,
+            owner: userData.owner === true,
+          verifiedBadge: userData.verifiedBadge || null
+          })
+        );
+      }
+    });
+
+    await Promise.all(updates);
+
+    console.log("Відео оновлено");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updatePhotosAuthor() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {
+        console.warn("Аватар не знайдено");
+      }
+    }
+
+    const photoSnap = await database.ref("photos").once("value");
+
+    const updates = [];
+
+    photoSnap.forEach(child => {
+      const photo = child.val();
+
+      if (photo.authorUid === user.uid) {
+        updates.push(
+          database.ref("photos/" + child.key).update({
+            author: fullName || "Анонім",
+            authorAvatar: authorAvatarUrl
+          })
+        );
+      }
+    });
+
+    await Promise.all(updates);
+
+    console.log("Відео оновлено");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    if (userData.color) return;
+
+    await database.ref("users/" + uid).update({
+      color: randomGradient()
+    });
+
+  } catch (error) {
+    console.error("Failed to update user color:", error);
+  }
+}
+async function updateColorsVideosAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const videoSnap = await database
+      .ref("videos")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    videoSnap.forEach(child => {
+      updates.push(
+        database.ref("videos/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null,
+          videoColor: randomGradient(),
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Videos updated");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsCommentsAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const commentSnap = await database
+      .ref("comments")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    commentSnap.forEach(child => {
+      updates.push(
+        database.ref("comments/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Videos updated");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsPhotosAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const photoSnap = await database
+      .ref("photos")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    photoSnap.forEach(child => {
+      updates.push(
+        database.ref("photos/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null,
+          owner: userData.owner === true,
+          verifiedBadge: userData.verifiedBadge || null
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Photos updated");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateColorsVideosAuthor(user) {
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await storage
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {}
+    }
+
+    const videoSnap = await database
+      .ref("videos")
+      .orderByChild("authorUid")
+      .equalTo(uid)
+      .once("value");
+
+    const updates = [];
+
+    videoSnap.forEach(child => {
+      updates.push(
+        database.ref("videos/" + child.key).update({
+          author: fullName || "Анонім",
+          authorAvatar: authorAvatarUrl,
+          authorColor: userData.color || null,
+          owner: userData.owner === true,
+          verifiedBadge: userData.verifiedBadge || null
+        })
+      );
+    });
+
+    await Promise.all(updates);
+
+    console.log("Photos updated");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+async function updateCommentsAuthor() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  try {
+    const snapshot = await database.ref("users/" + uid).once("value");
+    const userData = snapshot.val() || {};
+
+    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+    let authorAvatarUrl = null;
+
+    if (userData.avatarId) {
+      try {
+        authorAvatarUrl = await firebase
+          .storage()
+          .ref(`avatars/${userData.avatarId}.webp`)
+          .getDownloadURL();
+      } catch (e) {
+        console.warn("Аватар не знайдено");
+      }
+    }
+
+    const commentSnap = await database.ref("comments").once("value");
+
+    const updates = [];
+
+    commentSnap.forEach(child => {
+      const comment = child.val();
+
+      if (comment.authorUid === uid) {
+        updates.push(
+          database.ref("comments/" + child.key).update({
+            commentAuthor: fullName || "Анонім",
+            authorAvatar: authorAvatarUrl
+          })
+        );
+      }
+    });
+
+    await Promise.all(updates);
+
+    console.log("Відео оновлено");
+
+  } catch (err) {
+    console.error("Помилка оновлення:", err);
+  }
+}
+document.getElementById("logout-danger-link").onclick = function() {
+            auth.signOut().then(() => {
+              showNotificationModal();
+                message.innerHTML = "Ви вийшли з акаунту.";
+                location.reload();
+            });
+        };
+document.getElementById("logout-link").onclick = function() {
+            auth.signOut().then(() => {
+              showNotificationModal();
+                message.innerHTML = "Ви вийшли з акаунту.";
+                location.reload();
+            });
+        };
+async function loadPhotos() {
+    const photoGallery = document.getElementById("photo-gallery");
+    if (!photoGallery) return;
+    photoGallery.innerHTML = "";
+
+    // 🔹 Слухаємо нові фото у реальному часі
+    database.ref("photos").on("child_added", async snapshot => {
+        const photoData = snapshot.val();
+        const photoKey = snapshot.key;
+if (photoData.authorUid) {
+            const blockedYou = await isUserBlockedByMe(photoData.authorUid);
+            const blockedMe = await didUserBlockMe(photoData.authorUid);
+            if (blockedMe || blockedYou) return;
+        }
+        // 🔹 Фото елемент
+        const photoElement = document.createElement("img");
+        if(!photoData.images) {
+      photoElement.src = photoData.url;
+        photoElement.alt = photoData.title || "Фото";
+        photoElement.classList.add("photo-item");
+        } else {
+          photoElement.src = photoData.images;
+        photoElement.alt = photoData.title || "Фото";
+        photoElement.classList.add("photo-item");
+        }
+        // 🔹 Збільшення переглядів при кліку
+        photoElement.addEventListener("click", () => {
+            const newViewCount = (photoData.views || 0) + 1;
+            database.ref("photos/" + photoKey).update({ views: newViewCount })
+                .catch(error => console.error("Помилка оновлення переглядів:", error));
+        });
+
+        // 🔹 Інформація про фото
+        const infophotoElement = document.createElement("div");
+        infophotoElement.classList.add("photo-info");
+const authorEl = document.createElement("span");
+authorEl.textContent = photoData?.author || "Анонім";
+        // Аватар автора
+        const avatar = document.createElement("div");
+        avatar.classList.add("avatar");
+        avatar.title = photoData.author || "Анонім";
+
+        
+        if (photoData.authorStatus == "frozen_soft") {
+          avatar.innerText = "👻";
+          avatar.style.background = `${photoData.authorColor}`;
+          } else if (photoData.authorAvatar) {
+                   avatar.style.backgroundImage = `url(${photoData.authorAvatar})`;
+                    avatar.style.backgroundSize = "cover";
+avatar.style.backgroundPosition = "center";
+avatar.style.backgroundRepeat = "no-repeat";
+        } else {
+            avatar.innerText = getInitials(photoData.author);
+    avatar.style.backgroundColor = stringToColor(photoData.authorColor || "?");
+        }
+avatar.onclick = () => {
+            const infoParams = new URLSearchParams({
+                uid: photoData.authorUid || "",
+            });
+            window.location.href = `profile.html?${infoParams.toString()}`;
+        };
+        const isFrozen = photoData.authorStatus === "frozen_soft";
+        const detailsphotoElement = document.createElement("div");
+        detailsphotoElement.classList.add("photo-details");
+        const safephotoTitle = sanitizeHTML(photoData.title || "Без назви");
+        const safephotoAuthor = sanitizeHTML(photoData.author || "Анонім");
+        const safephotoDescription = sanitizeHTML(photoData.description || "Без опису");
+        detailsphotoElement.innerHTML = `
+            <strong>${safephotoTitle}</strong><br>
+            Автор: ${
+        isFrozen
+            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
+            : sanitizeHTML(photoData.author || "Анонім")
+    }
+
+    ${
+        isFrozen
+            ? " <span style='color:#4aa3ff;' data-i18n='account-deleted'></span>"
+            : ""
+    }
+
+    ${photoData.owner === true && photoData.verifiedBadge
+        ? `<img class='adaptive-stroke' src='${photoData.verifiedBadge}'>`
+        : ""
+    }
+
+    <br>
+
+            Дата публікації: ${photoData.publishDate || "Не вказана"}<br>
+            Опис: ${safephotoDescription}
+        `;
+
+        // 🔹 Кнопка видалення для власника
+        if (currentUserEmail === photoData.email || currentUserEmail === "zhuzhun2008@gmail.com") {
+            const deletePhotoButton = document.createElement("button");
+            deletePhotoButton.innerText = "Видалити";
+            deletePhotoButton.style.backgroundColor = "red";
+            deletePhotoButton.style.color = "white";
+            deletePhotoButton.style.marginTop = "10px";
+            deletePhotoButton.onclick = () => deletePhoto(photoKey, photoData.url, photoData.images);
+            infophotoElement.appendChild(deletePhotoButton);
+        }
+
+        infophotoElement.appendChild(avatar);
+        infophotoElement.appendChild(detailsphotoElement);
+
+        // 🔹 Контейнер фото
+        const Photocontainer = document.createElement("div");
+        Photocontainer.classList.add("photo-container");
+        Photocontainer.appendChild(infophotoElement);
+        Photocontainer.appendChild(photoElement);
+        
+        photoGallery.appendChild(Photocontainer);
+      applyTranslations();
+    });
+}
+
+async function deletePhoto(photoKey, photoURL, photoImages) {
+    if (!confirm("Ви впевнені, що хочете видалити це фото?")) {
+        return;
+    }
+
+    try {
+        // 1. Видаляємо основне фото зі Storage
+        if (photoURL) {
+            const storageRef = storage.refFromURL(photoURL);
+            await storageRef.delete();
+        }
+
+        // 2. Якщо є додаткові фото — видаляємо їх
+        if (Array.isArray(photoImages)) {
+            for (const imageURL of photoImages) {
+                if (!imageURL) continue;
+
+                try {
+                    const imageRef = storage.refFromURL(imageURL);
+                    await imageRef.delete();
+                } catch (error) {
+                    console.warn(
+                        "Не вдалося видалити додаткове фото:",
+                        imageURL,
+                        error
+                    );
+                }
+            }
+        }
+
+        // 3. Видаляємо запис із Realtime Database
+        await database.ref(`photos/${photoKey}`).remove();
+
+        // 4. Повідомлення
+        showNotificationModal();
+        message.innerHTML = "Фото успішно видалено.";
+
+        // 5. Оновлюємо галерею
+        loadPhotos();
+
+    } catch (error) {
+        console.error("Помилка видалення фото:", error);
+
+        showNotificationModal();
+        message.innerHTML =
+            "Помилка при видаленні фото: " + error.message;
+    }
+              }
+function loadPhotoChannelSelect() {
+    const select = document.getElementById("photo-channel-select");
+    if (!select) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const uid = user.uid;
+    select.innerHTML = "";
+
+    database.ref(`users/${uid}`).once("value").then(snapshot => {
+        const userData = snapshot.val();
+        if (!userData) return;
+
+        // 🔹 Основний канал
+        const mainName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+        const mainOption = document.createElement("option");
+        mainOption.value = "main";
+        mainOption.textContent = mainName || "Основний канал";
+        mainOption.dataset.name = mainName;
+        mainOption.dataset.avatar = userData.avatar || "";
+        select.appendChild(mainOption);
+
+        // 🔹 Другий канал
+        if (userData.channels && userData.channels.second) {
+            const second = userData.channels.second;
+
+            const secondOption = document.createElement("option");
+            secondOption.value = "second";
+            secondOption.textContent = second.name || "Другий канал";
+            secondOption.dataset.name = second.name || "Другий канал";
+            secondOption.dataset.avatar = second.avatar || "";
+            select.appendChild(secondOption);
+        }
+    });
+}
+    // Example of how video data might be stored with an 'nsfw' attribute
+async function uploadPhoto() {
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+        showNotificationModal();
+        message.innerHTML = "Увійдіть в акаунт";
+        return;
+    }
+
+    const photoDescription = document.getElementById("photo-description")?.value || "";
+    const photoTitle = document.getElementById("photo-title")?.value || "";
+    const photoFiles = document.getElementById("photo-file")?.files;
+
+    if (!photoTitle || !photoFiles || photoFiles.length === 0) {
+        showNotificationModal();
+        message.innerHTML = "Будь ласка, заповніть всі поля!";
+        return;
+    }
+
+    const uid = user.uid;
+
+    try {
+        const snapshot = await database.ref("users/" + uid).once("value");
+        const userData = snapshot.val() || {};
+
+        const selectedPhotoChannel =
+            document.getElementById("photo-channel-select").value || "main";
+
+        let authorName;
+        let authorAvatarUrl = null;
+
+        if (selectedPhotoChannel === "second" && userData.channels?.second) {
+            authorName = userData.channels.second.name || "Другий канал";
+
+            const secondAvatar = userData.channels.second.avatarId;
+
+            if (secondAvatar) {
+                try {
+                    authorAvatarUrl =
+                        await storage.ref(`avatars/${secondAvatar}.webp`).getDownloadURL();
+                } catch {}
+            }
+
+        } else {
+            authorName =
+                `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+                "Основний канал";
+
+            const mainAvatar = userData.avatarId;
+
+            if (mainAvatar) {
+                try {
+                    authorAvatarUrl =
+                        await storage.ref(`avatars/${mainAvatar}.webp`).getDownloadURL();
+                } catch {}
+            }
+        }
+
+        const imageUrls = [];
+
+        for (const file of photoFiles) {
+            const storageRef =
+                storage.ref(`photos/${Date.now()}_${file.name}`);
+
+            const uploadTask = storageRef.put(file);
+
+            const url = await new Promise((resolve, reject) => {
+                uploadTask.on(
+                    "state_changed",
+                    (snapshot) => {
+                        const progress =
+                            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+                        if (uploadProgress) {
+                            uploadProgress.value = progress;
+                            progressText.innerText = `${Math.round(progress)}%`;
+                            progressContainer.style.display = "block";
+                        }
+                    },
+                    reject,
+                    async () => {
+                        const downloadURL =
+                            await uploadTask.snapshot.ref.getDownloadURL();
+                        resolve(downloadURL);
+                    }
+                );
+            });
+
+            imageUrls.push(url);
+        }
+
+        const now = new Date();
+        const currentDate = `${now.getDate().toString().padStart(2, "0")}.${(
+            now.getMonth() + 1
+        )
+            .toString()
+            .padStart(2, "0")}.${now.getFullYear()}`;
+
+        await database.ref("photos").push({
+            title: photoTitle,
+            description: photoDescription,
+            images: imageUrls,
+            author: authorName,
+            authorAvatar: authorAvatarUrl,
+            email: user.email,
+            authorUid: user.uid,
+            publishDate: currentDate
+        });
+
+        showPopup();
+        message.innerHTML = "Фото завантажено!";
+        document.getElementById("upload-modal").style.display = "none";
+
+        if (progressContainer) progressContainer.style.display = "none";
+
+    } catch (err) {
+        console.error(err);
+        showNotificationModal();
+        message.innerHTML = "Помилка: " + err.message;
+    }
+}
+function showPopup() {
+var popup = document.getElementById('notification-popup');
+
+
+popup.classList.add("show");
+popup.style.display = "flex";
+setTimeout(function() {
+
+popup.classList.remove("show");
+popup.style.display = "none";
+}, 3000);
+}
+// Завантаження налаштувань
+function loadSettings() {
+    const savedMaxTime = localStorage.getItem('maxTimeInMinutes');
+    maxTimeInMinutes = savedMaxTime ? parseInt(savedMaxTime) : null;
+    const maxInput = document.getElementById('maxTimeInput');
+    if (maxInput) maxInput.value = maxTimeInMinutes ?? '';
+
+    const savedSleepStart = localStorage.getItem('sleepStart');
+    sleepStart = savedSleepStart !== '' ? savedSleepStart : null;
+    const sleepStartInput = document.getElementById('sleepStart');
+    if (sleepStartInput) sleepStartInput.value = sleepStart ?? '';
+
+    const savedSleepEnd = localStorage.getItem('sleepEnd');
+    sleepEnd = savedSleepEnd !== '' ? savedSleepEnd : null;
+    const sleepEndInput = document.getElementById('sleepEnd');
+    if (sleepEndInput) sleepEndInput.value = sleepEnd ?? '';
+
+    const savedDate = localStorage.getItem('lastUsedDate');
+    const currentDate = new Date().toDateString();
+
+    if (savedDate !== currentDate) {
+        localStorage.setItem('lastUsedDate', currentDate);
+        timeLeftInSeconds = maxTimeInMinutes ? maxTimeInMinutes * 60 : null;
+    } else {
+        timeLeftInSeconds = parseInt(localStorage.getItem('timeLeft')) || (maxTimeInMinutes ? maxTimeInMinutes * 60 : null);
+    }
+}
+
+
+// // Форматування часу для input type="time"
+function formatTime(hour) {
+    return hour !== null ? (hour < 10 ? '0' + hour + ':00' : hour + ':00') : '';
+}
+
+// Збереження налаштувань
+function saveSettings() {
+    const maxTime = parseInt(document.getElementById('maxTimeInput').value);
+    const sleepStartTime = document.getElementById('sleepStart').value;
+    const sleepEndTime = document.getElementById('sleepEnd').value;
+
+    maxTimeInMinutes = isNaN(maxTime) ? null : maxTime;
+    sleepStart = sleepStartTime ? parseInt(sleepStartTime.split(':')[0]) : null;
+    sleepEnd = sleepEndTime ? parseInt(sleepEndTime.split(':')[0]) : null;
+
+    localStorage.setItem('maxTimeInMinutes', maxTimeInMinutes ?? '');
+    localStorage.setItem('sleepStart', sleepStart ?? '');
+    localStorage.setItem('sleepEnd', sleepEnd ?? '');
+
+    if (timeLeftInSeconds === null) {
+        timeLeftInSeconds = maxTimeInMinutes ? maxTimeInMinutes * 60 : null;
+        if (timeLeftInSeconds !== null) {
+            localStorage.setItem('timeLeft', timeLeftInSeconds);
+        }
+    }
+}
+
+// // Перевірка часу сну
+function isSleepTime() {
+    if (!sleepStart || !sleepEnd) return false;
+
+    const [startH, startM] = sleepStart.split(':').map(Number);
+    const [endH, endM] = sleepEnd.split(':').map(Number);
+
+    if (isNaN(startH) || isNaN(endH)) return false;
+
+    const current = new Date();
+    const nowMinutes = current.getHours() * 60 + current.getMinutes();
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    return startMinutes < endMinutes
+        ? nowMinutes >= startMinutes && nowMinutes < endMinutes
+        : nowMinutes >= startMinutes || nowMinutes < endMinutes;
+}
+
+
+
+// // Оновлення таймера та фону
+function updateTimer() {
+    if (isSleepTime()) {
+        document.body.style.background = "background: radial-gradient(circle at left top, rgb(15, 23, 42), rgb(10, 14, 26))";
+        document.body.innerHTML = `<h1 style="color: white; text-align: center;">Час спати. Сайт розблокується о ${sleepEnd}:00</h1>`;
+        return;
+    } else {
+        document.body.style.background = "background: radial-gradient(circle at left top, rgb(15, 23, 42), rgb(10, 14, 26))";
+    }
+
+    if (timeLeftInSeconds !== null && timeLeftInSeconds > 0) {
+        const minutes = Math.floor(timeLeftInSeconds / 60);
+        const seconds = timeLeftInSeconds % 60;
+        document.getElementById('timer').textContent = `Залишилось часу: ${minutes} хв ${seconds} сек`;
+        timeLeftInSeconds--;
+        localStorage.setItem('timeLeft', timeLeftInSeconds);
+    } else if (timeLeftInSeconds !== null) {
+        document.body.style.background = "mediumseagreen";
+        document.body.innerHTML = `<h1 style="color: white; text-align: center;">Час закінчився. Ви можете вийти із сайту щоб не перевищувати екранний ліміт.</h1>`;
+        return;
+    }
+
+    // Скидання таймера після 00:00
+    const currentDate = new Date().toDateString();
+    if (localStorage.getItem('lastUsedDate') !== currentDate) {
+        localStorage.setItem('lastUsedDate', currentDate);
+        timeLeftInSeconds = maxTimeInMinutes ? maxTimeInMinutes * 60 : null;
+        localStorage.setItem('timeLeft', timeLeftInSeconds);
+    }
+}
+
+// Запуск таймера
+setInterval(updateTimer, 1000);
+
+
+
+
+        // Завантажуємо налаштування при завантаженні сторінки
+
+window.onload = function() {
+        loadSettings();
+        loadVideos();
+        loadStories();
+        
+        loadPhotos();
+        loadPopularVideos();
+    };
