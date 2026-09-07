@@ -45,8 +45,5 @@
     "my-story": "My story",
     "application-version": "Application version:",
     "wallpapers-save-successfully": "Wallpaper applied!",
-    "wallpapers-save-error": "Error uploading wallpaper.",
-    "help-zone": "Help",
-    "need-support": "I need help",
-    "i-am-fine": "I am fine"
+    "wallpapers-save-error": "Error uploading wallpaper."
 }
