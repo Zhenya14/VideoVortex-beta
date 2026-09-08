@@ -2027,7 +2027,7 @@ display: none;
   align-items: center;
   z-index: 99999;
 }
-.modal-overlay, .modal-account-overlay, .modal-edit-overlay, .modal-archive-overlay, .modal-edit-wallpaper-profile-overlay {
+.modal-overlay, .modal-account-overlay, .modal-edit-overlay, .modal-archive-overlay, .modal-account-notifications-overlay, .modal-edit-wallpaper-profile-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -2037,7 +2037,7 @@ display: none;
   align-items: center;
   z-index: 99999;
 }
-.modal-blocked-window, .modal-archive-window{
+.modal-blocked-window, .modal-archive-window, .modal-account-notifications-window {
   width: 90%;
   max-width: 450px;
   background: rgba(255,255,255,0.1);
@@ -2068,7 +2068,7 @@ display: none;
     max-height: 100%;        /* повна висота */
     padding-right: 10px;
 }
-.modal-account-body, .modal-body, .modal-edit-body, .modal-archive-body, .modal-edit-wallpaper-profile-body {
+.modal-account-body, .modal-body, .modal-edit-body, .modal-account-notifications-body, .modal-archive-body, .modal-edit-wallpaper-profile-body {
     overflow-y: auto;        /* вертикальний скрол */
     max-height: 100%;        /* повна висота */
     padding-right: 10px;     /* щоб скрол не перекривав контент */
@@ -2076,7 +2076,7 @@ display: none;
 /* Робимо фіксовану модалку */
 
 /* Прокрутка тільки всередині контенту */
-.modal-header, .modal-blocked-header, .modal-archive-header {
+.modal-header, .modal-blocked-header, .modal-account-notifications-header, .modal-archive-header {
   display: flex;
   justify-content: space-between;
   padding: 12px 15px;
