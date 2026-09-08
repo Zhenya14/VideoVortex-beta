@@ -547,16 +547,16 @@ const searchInput = document.getElementById("search-input");
 function openSearch() {
     searchBox.classList.add("open");
 document.querySelector("nav").style.display = "none";
-document.querySelector("tab").style.display = "none";
-document.querySelector("stories-bar").style.display = "none";
+document.querySelector(".tab").style.display = "none";
+document.querySelector(".stories-bar").style.display = "none";
     setTimeout(() => searchInput.focus(), 150);
 }
 
 closeSearch.addEventListener("click", () => {
     searchBox.classList.remove("open");
     document.querySelector("nav").style.display = "flex";
-    document.querySelector("tab").style.display = "flex";
-document.querySelector("stories-bar").style.display = "flex";
+    document.querySelector(".tab").style.display = "flex";
+document.querySelector(".stories-bar").style.display = "flex";
     searchInput.value = "";
     searchAll();
 });
