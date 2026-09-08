@@ -259,7 +259,7 @@ if ("serviceWorker" in navigator) {
       <div id="video-tab" class="tab-content active">
                 <div class="upload-form" id="upload-form">
             <h2 data-i18n="label-video">Завантажити відео</h2>
-            <input type="text" id="video-title" placeholder="Назва відео">
+            <input type="text" id="video-title" data-i18n-placeholder="video-title">
             <textarea id="video-description" data-i18n-placeholder="video-description"></textarea>
             <button style="display:flex; align-items: center; justify-content: center; margin: 0 0 0 70px; padding: 0 10px;" onclick="generateDescription()"><i class="material-symbols">smart_toy</i><p data-i18n="generate-description">Згенерувати опис</p><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
@@ -394,6 +394,7 @@ if ("serviceWorker" in navigator) {
             </div>
   
             <button id="upload-button" onclick="uploadVideo()">Завантажити</button>
+  <br>
 <label>Публікуючи відео, ви погоджуєтеся з <a href="https://app.notion.com/p/VideoVortex-283beb289348809183e8e8d185b3c469?source=copy_link" target="_blank">правилами спільноти.</a></label>
 </div>
       </div>
