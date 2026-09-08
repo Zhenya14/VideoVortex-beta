@@ -4224,7 +4224,7 @@ async function uploadVideo() {
   const isNSFW = document.getElementById("nsfw").checked;
   const safeVideo = document.getElementById("save-video-checkbox").checked;
   const disabledComments = document.getElementById("disabled-comments-checkbox").checked;
-  const privateVideo = document.getElementById("private-checkbox").checked;
+  const privateVideo = document.getElementById("private-video-checkbox").checked;
   const domainRestrict = document.getElementById("domain-restrict-checkbox")?.checked || false;
 
   if (!videoTitle || !videoFile) {
