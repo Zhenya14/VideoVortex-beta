@@ -1133,6 +1133,31 @@ function toggleReaction(type) {
   const ref = database.ref(`reactions/${videoKey}/${user.uid}`);
   currentReaction === type ? ref.remove() : ref.set(type);
 }
+document.getElementById('repostBtn').addEventListener('click', async () => {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  const repostsRef = firebase.database().ref("reposts/" + uid);
+
+  try {
+    
+    await repostsRef.set({
+      videoKey: videoKey,
+      title: currentVideo.title,
+      thumbnail: currentVideo.thumbnail,
+      createdAt: Date.now()
+    });
+
+    
+    showPopup();
+    document.getElementById("message-notification").innerHTML = "Репост зроблено.";
+
+  } catch (e) {
+    console.error("Помилка:", e);
+  }
+});
 
 /* ---------- UI ---------- */
 function updateReactionUI() {
@@ -1333,6 +1358,10 @@ function celebrate() {
   }
 }
 
+
+document.getElementById('sendSupportBtn').addEventListener('click', async () => {
+  document.getElementById("support-author-modal").style.display = "flex";
+});
 document.getElementById('popularBtn').addEventListener('click', async () => {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -1382,9 +1411,31 @@ document.getElementById('popularBtn').addEventListener('click', async () => {
     console.error("Помилка:", e);
   }
 });
+document.getElementById('repostBtn').addEventListener('click', async () => {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-document.getElementById('sendSupportBtn').addEventListener('click', async () => {
-  document.getElementById("support-author-modal").style.display = "flex";
+  const uid = user.uid;
+
+  const repostsRef = firebase.database().ref(`reposts/${uid}`);
+
+
+  try {
+    
+    await repoststRef.set({
+      videoKey: key,
+      title: currentVideo.title,
+      thumbnail: currentVideo.thumbnail,
+      createdAt: Date.now()
+    });
+
+    
+    showPopup();
+    message.innerHTML = "Репост зроблено.";
+
+  } catch (e) {
+    console.error("Помилка:", e);
+  }
 });
 document.getElementById('shareBtn').addEventListener('click', async () => {
   if (!currentVideo) {
