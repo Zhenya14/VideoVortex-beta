@@ -30,6 +30,8 @@
   "block": "Заблокувати",
   "shareBtn": "Поділитися",
   "popularBtn": "Просунути відео",
+  "repostBtn": "Зробити репост",
+  "supportBtn": "Підтрисати автора",
 "boost_1": "Ви забустили 1 раз",
     "boost_2": "Ви забустили 2 рази",
     "boost_3": "Ви забустили 3 рази",
@@ -51,5 +53,7 @@
     "need-support": "Мені потрібна допомога",
     "i-am-fine": "Я в порядку",
     "private-video-checkbox": "Приватне відео",
-    "private-photo-checkbox": "Приватне фото"
+    "private-photo-checkbox": "Приватне фото",
+    "similar-message": "Схожих відео немає 😔",
+    "similar-title": "Схожі відео:"
 }

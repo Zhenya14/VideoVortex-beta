@@ -30,6 +30,8 @@
   "block": "Blocked",
   "shareBtn": "Share",
   "popularBtn": "Advance video",
+  "repostBtn": "Repost",,,,а
+  "supportBtn": "Support the author",
 "boost_1": "You've boosted 1 time",
     "boost_2": "You've boosted 2 times",
     "boost_3": "You've boosted 3 times",
@@ -51,5 +53,7 @@
     "need-support": "I need help",
     "i-am-fine": "I am fine",
     "private-video-checkbox": "Private Video",
-    "private-photo-checkbox": "Private Photo"
+    "private-photo-checkbox": "Private Photo",
+    "similar-message": "No similar videos 😔",
+    "similar-title": "Similar videos:"
 }
