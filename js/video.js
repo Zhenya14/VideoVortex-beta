@@ -1143,7 +1143,7 @@ document.getElementById('repostBtn').addEventListener('click', async () => {
 
   try {
     
-    await repostsRef.set({
+    await repostsRef.push({
       videoKey: videoKey,
       title: currentVideo.title,
       thumbnail: currentVideo.thumbnail,
@@ -1406,32 +1406,6 @@ document.getElementById('popularBtn').addEventListener('click', async () => {
     celebrate();
     showPopup();
     setBoost("uk", newCount);
-
-  } catch (e) {
-    console.error("Помилка:", e);
-  }
-});
-document.getElementById('repostBtn').addEventListener('click', async () => {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
-
-  const uid = user.uid;
-
-  const repostsRef = firebase.database().ref(`reposts/${uid}`);
-
-
-  try {
-    
-    await repoststRef.push({
-      videoKey: key,
-      title: currentVideo.title,
-      thumbnail: currentVideo.thumbnail,
-      createdAt: Date.now()
-    });
-
-    
-    showPopup();
-    message.innerHTML = "Репост зроблено.";
 
   } catch (e) {
     console.error("Помилка:", e);
