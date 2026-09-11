@@ -1422,7 +1422,7 @@ document.getElementById('repostBtn').addEventListener('click', async () => {
 
   try {
     
-    await repoststRef.set({
+    await repoststRef.push({
       videoKey: key,
       title: currentVideo.title,
       thumbnail: currentVideo.thumbnail,
