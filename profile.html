@@ -617,6 +617,7 @@ async function loadReposts() {
       .once("value");
 
     if (!snapshot.exists()) {
+       document.getElementById("reposts").style.display = "none";
       return;
     }
 
@@ -636,12 +637,16 @@ async function loadReposts() {
     const filtered = [];
 
     for (const r of reposts) {
-      if (!r.authorUid) continue;
+      if (!r.authorUid) {
+         document.getElementById("reposts").style.display = "none";
+      continue;
+      }
+      const blockedMe = await didUserBlockMe(r.uid);
 
-      const blockedMe = await didUserBlockMe(r.authorUid);
-
-      if (blockedMe) continue;
-
+      if (blockedMe) {
+       document.getElementById("reposts").style.display = "none";
+      continue;
+      }
       filtered.push(r);
     }
 
@@ -649,7 +654,7 @@ async function loadReposts() {
       return;
     }
 
-    document.getElementById("reposts").style.display = "flex";
+   
 
     for (const r of filtered) {
       const container = document.createElement("div");
