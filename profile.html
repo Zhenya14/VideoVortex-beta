@@ -635,7 +635,7 @@ async function loadReposts() {
 
     const filtered = [];
 
-    for (const rcof reposts) {
+    for (const r of reposts) {
       if (!r.authorUid) continue;
 
       const blockedMe = await didUserBlockMe(r.authorUid);
