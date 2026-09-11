@@ -603,8 +603,9 @@ async function loadPosts() {
 }
 async function loadReposts() {
   const repostsGallery = document.getElementById("repost-gallery");
+  const repostsSection = document.getElementById("reposts");
 
-  if (!repostsGallery || !blockedUserUid) {
+  if (!repostsGallery || !repostsSection || !blockedUserUid) {
     return;
   }
 
@@ -617,7 +618,7 @@ async function loadReposts() {
       .once("value");
 
     if (!snapshot.exists()) {
-       document.getElementById("reposts").style.display = "none";
+      repostsSection.style.display = "none";
       return;
     }
 
@@ -638,23 +639,25 @@ async function loadReposts() {
 
     for (const r of reposts) {
       if (!r.uid) {
-         document.getElementById("reposts").style.display = "none";
-      continue;
+        continue;
       }
+
       const blockedMe = await didUserBlockMe(r.uid);
 
       if (blockedMe) {
-       document.getElementById("reposts").style.display = "none";
-      continue;
+        continue;
       }
+
       filtered.push(r);
     }
 
     if (filtered.length === 0) {
+      repostsSection.style.display = "none";
       return;
     }
 
-   
+    // Показуємо секцію, якщо є репости
+    repostsSection.style.display = "";
 
     for (const r of filtered) {
       const container = document.createElement("div");
@@ -662,7 +665,7 @@ async function loadReposts() {
 
       const img = document.createElement("img");
       img.src = r.thumbnail || "default.jpg";
-
+      img.alt = r.title || "Репост";
 
       img.onclick = () => {
         location.href = `video.html?key=${r.videoKey || r.key}`;
@@ -674,13 +677,15 @@ async function loadReposts() {
       container.appendChild(img);
       container.appendChild(title);
 
-      videoGallery.appendChild(container);
+      // ГОЛОВНЕ ВИПРАВЛЕННЯ
+      repostsGallery.appendChild(container);
     }
 
   } catch (error) {
     console.error("❌ Помилка завантаження репостів:", error);
+    repostsSection.style.display = "none";
   }
-  }
+}
 loadProfile();
 loadVideos();
 loadPosts();
