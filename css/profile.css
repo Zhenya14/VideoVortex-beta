@@ -232,21 +232,19 @@ button.cancel:active {
   color: #fff;
   background: linear-gradient(90deg, rgba(42,123,155,1) 0%, rgba(87,199,133,1) 50%, rgba(237,221,83,1) 100%);
 }
-tab {
+.tab {
   position: fixed;
-  z-index: 1;
-  margin-top: 390px;
-  margin: 12px;
+    z-index: 1;
+    margin-top: 390px;
     display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 1px;
-  width: 80%;
-  height: 20%;
-  backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
--webkit-backdrop-filter: blur(3px);
-filter: url(#glass-distortion);
--webkit-filter: url(#glass-distortion);
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    width: 80%;
+    backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
+    -webkit-backdrop-filter: blur(3px);
+    filter: url(#glass-distortion);
+    -webkit-filter: url(#glass-distortion);
 }
 .tab a {
   width: 100%;
@@ -257,26 +255,24 @@ filter: url(#glass-distortion);
     color: white;
     transition: 0.3s;
 }
-    .tab-liquid-glass {
-  position: fixed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-     margin-right: 30px; 
-  padding: 1px 1px;
-  width: 80%;
-  height: 6%;
-  border-radius: 65px;
-background: rgba(255,255,255,0.05);
-  /* Тінь і обведення для глибини */
-  z-index: 11;
-  isolation: isolate;
-        backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
--webkit-backdrop-filter: blur(3px);
-filter: url(#glass-distortion);
--webkit-filter: url(#glass-distortion);
-        @apply bg-muted/25;
-    }
+   .tab-liquid-glass {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0px;
+    
+    width: 80%;
+    height: 150%;
+    border-radius: 65px;
+    background: rgba(255, 255, 255, 0.05);
+    z-index: 11;
+    isolation: isolate;
+    backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
+    -webkit-backdrop-filter: blur(3px);
+    filter: url(#glass-distortion);
+    -webkit-filter: url(#glass-distortion);
+}
 .tab-button-liquid-glass {
     display: inline;
     transition: 0.3s;
