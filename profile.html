@@ -115,8 +115,10 @@
 </div>
 
 <div class="tab">
-  <button class="tablinks" onclick="openTab(event,'video')" id="defaultOpen">Відео</button>
-  <button class="tablinks" onclick="openTab(event,'post')">Дописи</button>
+  <div class="tab-liquid-glass">
+  <button class="tab-button-liquid-glass" onclick="openTab(event,'video')" id="defaultOpen">Відео</button>
+  <button class="tab-button-liquid-glass" onclick="openTab(event,'post')">Дописи</button>
+  </div>
 </div>
 
 <div id="video" class="tabcontent">
@@ -194,7 +196,7 @@
 function openTab(evt, tabName) {
   const tabcontent = document.getElementsByClassName("tabcontent");
   for (let i=0;i<tabcontent.length;i++) tabcontent[i].style.display="none";
-  const tablinks = document.getElementsByClassName("tablinks");
+  const tablinks = document.getElementsByClassName("tab-button-liquid-glass");
   for (let i=0;i<tablinks.length;i++) tablinks[i].classList.remove("active");
   document.getElementById(tabName).style.display="block";
   evt.currentTarget.classList.add("active");

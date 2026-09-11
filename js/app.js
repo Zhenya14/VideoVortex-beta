@@ -2956,6 +2956,20 @@ function showBlockedUsersModal() {
      if (event.target === modal) modal.style.display = "none";
    });
  }
+async function updateYearStat(stat, amount = 1) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const year = new Date().getFullYear();
+
+    const ref = firebase.database().ref(
+        `yearStats/${user.uid}/${year}/${stat}`
+    );
+
+    await ref.transaction(current => {
+        return (current || 0) + amount;
+    });
+}
 function showEditWallpaperProfileModal() {
   document.getElementById("edit-wallpaper-profile-modal").style.display = "flex";
 }
@@ -4500,14 +4514,21 @@ function saveEditName() {
   }
 
   const uid = user.uid;
-  database.ref("users/" + uid).update({ name: newName })
+
+  const updates = {};
+  updates[`users/${uid}/name`] = newName;
+  updates[`publicUsers/${uid}/name`] = newName;
+
+  database.ref().update(updates)
     .then(() => {
       showNotificationModal();
       message.innerHTML = "Ім’я змінено!";
+
       document.getElementById("form-edit-name").style.display = "none";
       document.getElementById("name").style.display = "block";
       document.getElementById("button-name").style.display = "block";
       document.getElementById("name").textContent = "Ім'я: " + newName;
+
       updateVideosAuthor();
       updatePhotosAuthor();
       updateCommentsAuthor();
@@ -4518,6 +4539,7 @@ function saveEditName() {
       message.innerHTML = "Помилка: " + err.message;
     });
 }
+
 
 // Зберегти зміну прізвища
 function saveEditSuperName() {
@@ -4531,14 +4553,21 @@ function saveEditSuperName() {
   }
 
   const uid = user.uid;
-  database.ref("users/" + uid).update({ supername: newSuperName })
+
+  const updates = {};
+  updates[`users/${uid}/supername`] = newSuperName;
+  updates[`publicUsers/${uid}/supername`] = newSuperName;
+
+  database.ref().update(updates)
     .then(() => {
       showNotificationModal();
       message.innerHTML = "Прізвище змінено!";
+
       document.getElementById("form-edit-supername").style.display = "none";
       document.getElementById("supername").style.display = "block";
       document.getElementById("button-supername").style.display = "block";
       document.getElementById("supername").textContent = "Прізвище: " + newSuperName;
+
       updateVideosAuthor();
       updatePhotosAuthor();
       updateCommentsAuthor();
