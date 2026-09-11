@@ -236,6 +236,7 @@ tab {
   position: fixed;
   z-index: 1;
   margin-top: 390px;
+  margin: 12px;
     display: flex;
   align-items: center;
   justify-content: center;
@@ -261,7 +262,7 @@ filter: url(#glass-distortion);
   display: flex;
   align-items: center;
   justify-content: center;
-      
+     margin-right: 30px; 
   padding: 1px 1px;
   width: 80%;
   height: 6%;
@@ -313,7 +314,20 @@ background: rgba(255,255,255,0.05);
   padding: 10px;
   margin-bottom: 10px;
 }
+#reposts {
+  display: none;
+}
 .video img {
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.post img {
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.reposts img {
   width: 100%;
   cursor: pointer;
   border-radius: 8px;
