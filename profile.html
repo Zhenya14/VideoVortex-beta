@@ -637,7 +637,7 @@ async function loadReposts() {
     const filtered = [];
 
     for (const r of reposts) {
-      if (!r.authorUid) {
+      if (!r.uid) {
          document.getElementById("reposts").style.display = "none";
       continue;
       }
