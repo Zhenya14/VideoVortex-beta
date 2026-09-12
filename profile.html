@@ -118,7 +118,7 @@
   <div class="tab-liquid-glass">
   <button data-i18n="video" class="tab-button-liquid-glass" onclick="openTab(event,'video')" id="defaultOpen">Відео</button>
   <button data-i18n="posts" class="tab-button-liquid-glass" onclick="openTab(event,'post')">Дописи</button>
-    <button id="reposts" data-i18n="reposts" class="tab-button-liquid-glass" onclick="openTab(event,'reposts')">Репости</button>
+    <button id="repost" data-i18n="reposts" class="tab-button-liquid-glass" onclick="openTab(event,'reposts')">Репости</button>
   </div>
 </div>
 
@@ -603,7 +603,7 @@ async function loadPosts() {
 }
 async function loadReposts() {
   const repostsGallery = document.getElementById("repost-gallery");
-  const repostsSection = document.getElementById("reposts");
+  const repostButton = document.getElementById("repost");
 
   if (!repostsGallery || !repostsSection || !blockedUserUid) {
     return;
@@ -618,7 +618,7 @@ async function loadReposts() {
       .once("value");
 
     if (!snapshot.exists()) {
-      repostsSection.style.display = "none";
+      repostButton.style.display = "none";
       return;
     }
 
@@ -628,10 +628,7 @@ async function loadReposts() {
       const r = child.val();
 
       if (r) {
-        reposts.push({
-          key: child.key,
-          ...r
-        });
+        reposts.push(r);
       }
     });
 
@@ -639,6 +636,7 @@ async function loadReposts() {
 
     for (const r of reposts) {
       if (!blockedUserUid) {
+  repostButton.style.display = "none";
         continue;
       }
 
@@ -652,22 +650,26 @@ async function loadReposts() {
     }
 
     if (filtered.length === 0) {
-      repostsSection.style.display = "none";
+      repostButton.style.display = "none";
       return;
     }
 
-    // Показуємо секцію, якщо є репости
-    repostsSection.style.display = "";
 
     for (const r of filtered) {
       const container = document.createElement("div");
       container.className = "video";
 
       const img = document.createElement("img");
+
       img.src = r.thumbnail || "default.jpg";
       img.alt = r.title || "Репост";
 
       img.onclick = () => {
+        if (!r.videoKey) {
+          console.error("❌ У репості немає videoKey:", r);
+          return;
+        }
+
         location.href = `video.html?key=${r.videoKey}`;
       };
 
@@ -677,7 +679,6 @@ async function loadReposts() {
       container.appendChild(img);
       container.appendChild(title);
 
-      // ГОЛОВНЕ ВИПРАВЛЕННЯ
       repostsGallery.appendChild(container);
     }
 
@@ -686,6 +687,8 @@ async function loadReposts() {
     repostsSection.style.display = "none";
   }
 }
+
+loadReposts();
 loadProfile();
 loadVideos();
 loadPosts();
