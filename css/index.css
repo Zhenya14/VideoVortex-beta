@@ -720,32 +720,6 @@ transform: scale(0.95); /* легке стиснення */
     font-size: 13px;
     font-weight: 600;
 }
-.video-label { 
-            display: inline-block;
-    padding: 12px 28px;
-    border-radius: 50px;
-    text-align: center;
-    text-decoration: none;
-    color: white;
-    background: #111111;
-    border: 2px solid #333333;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 0 rgb(59 130 246 / 0%);
-        }
-        .video-label:hover { 
-            border-color: #f472b6; /* підсвічування рамки блакитним */
-
-box-shadow: 0 0 15px #f472b6; /* світіння */
-
-transform: translateY(-2px); /* легке підняття */
-        }
-.video-label:active {
-border-color: #06b6d4; /* рамка рожевого кольору при натисканні */
-
-box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
-
-transform: scale(0.95); /* легке стиснення */
-}
 
 
 .video-container:hover {
@@ -2114,12 +2088,11 @@ display: none;
 
     gap: 12px;
 }
-.video-label {
+.video-label-upload {
     min-height: 150px;
-
+display: flex;
     align-items: center !important;
     justify-content: center;
-
     text-align: center;
 
     padding: 20px;
