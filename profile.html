@@ -613,6 +613,13 @@ async function loadReposts() {
   repostsGallery.innerHTML = "";
 
   try {
+    const blockedMe = await didUserBlockMe(blockedUserUid);
+
+    if (blockedMe) {
+      repostButton.style.display = "none";
+      repostsSection.style.display = "none";
+      return;
+  }
     const snapshot = await firebase
       .database()
       .ref("reposts/" + blockedUserUid)
