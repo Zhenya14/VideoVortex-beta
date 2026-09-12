@@ -2082,8 +2082,9 @@ display: none;
   animation: scaleIn .3s ease;
 }
 .upload-fields {
-    display: grid;
-
+    display: inline-block;
+  text-align: center;
+width: 70%;
     grid-template-columns: 1fr 1fr;
 
     gap: 12px;
@@ -2104,7 +2105,6 @@ display: flex;
     border: 1px dashed rgba(255,255,255,0.15);
 
     border-radius: 16px;
-
     transition: 0.25s ease;
 }
 
