@@ -603,9 +603,10 @@ async function loadPosts() {
 }
 async function loadReposts() {
   const repostsGallery = document.getElementById("repost-gallery");
+  const repostsSection = document.getElementById("reposts");
   const repostButton = document.getElementById("repost");
 
-  if (!repostsGallery || !repostsSection || !blockedUserUid) {
+  if (!repostsGallery || !repostsSection || !repostButton || !blockedUserUid) {
     return;
   }
 
@@ -617,8 +618,10 @@ async function loadReposts() {
       .ref("reposts/" + blockedUserUid)
       .once("value");
 
+    // Якщо репостів немає
     if (!snapshot.exists()) {
       repostButton.style.display = "none";
+      repostsSection.style.display = "none";
       return;
     }
 
@@ -635,12 +638,14 @@ async function loadReposts() {
     const filtered = [];
 
     for (const r of reposts) {
-      if (!blockedUserUid) {
-  repostButton.style.display = "none";
+
+      // Якщо немає UID автора репоста
+      if (!r.uid) {
         continue;
       }
 
-      const blockedMe = await didUserBlockMe(blockedUserUid);
+      // Перевіряємо, чи автор репоста заблокував нас
+      const blockedMe = await didUserBlockMe(r.uid);
 
       if (blockedMe) {
         continue;
@@ -649,13 +654,20 @@ async function loadReposts() {
       filtered.push(r);
     }
 
+    // Якщо після фільтрації нічого не залишилось
     if (filtered.length === 0) {
       repostButton.style.display = "none";
+      repostsSection.style.display = "none";
       return;
     }
 
+    // Є репости — показуємо кнопку
+    repostButton.style.display = "";
+    repostsSection.style.display = "";
 
+    // Виводимо репости
     for (const r of filtered) {
+
       const container = document.createElement("div");
       container.className = "video";
 
@@ -665,6 +677,7 @@ async function loadReposts() {
       img.alt = r.title || "Репост";
 
       img.onclick = () => {
+
         if (!r.videoKey) {
           console.error("❌ У репості немає videoKey:", r);
           return;
@@ -684,6 +697,8 @@ async function loadReposts() {
 
   } catch (error) {
     console.error("❌ Помилка завантаження репостів:", error);
+
+    repostButton.style.display = "none";
     repostsSection.style.display = "none";
   }
 }
