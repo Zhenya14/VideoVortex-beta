@@ -618,55 +618,28 @@ async function loadReposts() {
       .ref("reposts/" + blockedUserUid)
       .once("value");
 
-    // Якщо репостів немає
+    // Репостів немає
     if (!snapshot.exists()) {
       repostButton.style.display = "none";
       repostsSection.style.display = "none";
       return;
     }
 
-    const reposts = [];
+    let hasReposts = false;
 
     snapshot.forEach(child => {
       const r = child.val();
 
-      if (r) {
-        reposts.push(r);
-      }
-    });
-
-    const filtered = [];
-
-    for (const r of reposts) {
-
-      // Якщо немає UID автора репоста
-      if (!r.uid) {
-        continue;
+      if (!r) {
+        return;
       }
 
-      // Перевіряємо, чи автор репоста заблокував нас
-      const blockedMe = await didUserBlockMe(r.uid);
-
-      if (blockedMe) {
-        continue;
+      // Перевіряємо, що є videoKey
+      if (!r.videoKey) {
+        return;
       }
 
-      filtered.push(r);
-    }
-
-    // Якщо після фільтрації нічого не залишилось
-    if (filtered.length === 0) {
-      repostButton.style.display = "none";
-      repostsSection.style.display = "none";
-      return;
-    }
-
-    // Є репости — показуємо кнопку
-    repostButton.style.display = "";
-    repostsSection.style.display = "";
-
-    // Виводимо репости
-    for (const r of filtered) {
+      hasReposts = true;
 
       const container = document.createElement("div");
       container.className = "video";
@@ -677,12 +650,6 @@ async function loadReposts() {
       img.alt = r.title || "Репост";
 
       img.onclick = () => {
-
-        if (!r.videoKey) {
-          console.error("❌ У репості немає videoKey:", r);
-          return;
-        }
-
         location.href = `video.html?key=${r.videoKey}`;
       };
 
@@ -693,7 +660,18 @@ async function loadReposts() {
       container.appendChild(title);
 
       repostsGallery.appendChild(container);
+    });
+
+    // Якщо немає жодного нормального репоста
+    if (!hasReposts) {
+      repostButton.style.display = "none";
+      repostsSection.style.display = "none";
+      return;
     }
+
+    // Є репости
+    repostButton.style.display = "";
+    repostsSection.style.display = "";
 
   } catch (error) {
     console.error("❌ Помилка завантаження репостів:", error);
@@ -703,7 +681,6 @@ async function loadReposts() {
   }
 }
 
-loadReposts();
 loadProfile();
 loadVideos();
 loadPosts();
