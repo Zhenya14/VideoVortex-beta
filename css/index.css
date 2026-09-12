@@ -583,7 +583,7 @@ h2 {
             border-radius: 10px; 
             margin-top: 130px;
         }
-        input[type="text"], input[type="file"], input[type="email"], input[type="password"], #video-description, #photo-description { 
+        input[type="text"], input[type="file"], input[type="email"], input[type="password"] { 
             width: 100%; 
             background-color: black;
             color: white;
@@ -594,6 +594,21 @@ h2 {
             outline: none;
             font-size: 1em;
         }
+#video-description, #photo-description { 
+  width: 100%;
+
+    padding: 14px;
+
+    color: white;
+
+    background: rgba(255,255,255,0.055);
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    outline: none;
+}
 .more-btn {
 position: absolute;
     right: 20px;
@@ -688,6 +703,19 @@ border-color: #06b6d4; /* рамка рожевого кольору при на
 box-shadow: 0 0 10px #06b6d4; /* світіння при натисканні */
 
 transform: scale(0.95); /* легке стиснення */
+}
+#modal-window {
+      position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    color: #dce0e8;
+
+    font-size: 13px;
+    font-weight: 600;
 }
 .video-label { 
             display: inline-block;
@@ -2051,18 +2079,65 @@ display: none;
   animation: scaleIn .3s ease;
 }
 .modal-window, .modal-account-window {
+
+    gap: 25px;
+
+    padding: 32px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(40,124,255,0.12),
+            rgba(255,212,41,0.035)
+        );
+
+    border: 1px solid rgba(40,124,255,0.17);
+
+    border-radius: 25px;
   width: 90%;
   max-width: 450px;
-  background: rgba(255,255,255,0.1);
   padding: 0;
   border-radius: 18px;
   max-height: 90vh;        /* щоб не виходила за екран */
     overflow: hidden;        /* ховаємо зовнішній скрол */
     display: flex;
     flex-direction: column;
-  border: 1px solid rgba(255,255,255,0.25);
   animation: scaleIn .3s ease;
 }
+.upload-fields {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+.video-label {
+    min-height: 150px;
+
+    align-items: center !important;
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 20px;
+
+    cursor: pointer;
+
+    background: rgba(255,255,255,0.035);
+
+    border: 1px dashed rgba(255,255,255,0.15);
+
+    border-radius: 16px;
+
+    transition: 0.25s ease;
+}
+
+.video-label:hover {
+    background: rgba(40,124,255,0.06);
+
+    border-color: rgba(40,124,255,0.35);
+}
+
 .modal-blocked-body, .modal-archive-body {
   overflow-y: auto;        /* вертикальний скрол */
     max-height: 100%;        /* повна висота */

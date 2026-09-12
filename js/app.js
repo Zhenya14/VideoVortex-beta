@@ -1178,6 +1178,7 @@ const tabContents = document.querySelectorAll(".tab-content");
 const editAccount = document.getElementById("edit-profile");
 function showNotificationModal() {
   notification.style.display = "flex";
+  document.body.style.overflow = "hidden";
 }
 function closeNotificationModal() {
   notification.style.display = "none";
@@ -1533,6 +1534,7 @@ function resendVerification() {
 function deleteAccountModal() {
   const deleteAccountModal = document.getElementById("delete-account-modal");
   deleteAccountModal.style.display = "flex";
+  document.body.style.overflow = "hidden";
 }
 function closeDeleteAccountModal() {
   const deleteAccountModal = document.getElementById("delete-account-modal");
@@ -2915,6 +2917,7 @@ function showBlockedUsersModal() {
         });
       }
       modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
     })
     .catch(console.error);
 
@@ -2943,6 +2946,7 @@ function showBlockedUsersModal() {
      .then(snapshot => {
        const notificationsData = snapshot.val() || {};
        modal.style.display = "flex";
+       document.body.style.overflow = "hidden";
      })
        .catch(console.error);
 
@@ -2972,12 +2976,15 @@ async function updateYearStat(stat, amount = 1) {
 }
 function showEditWallpaperProfileModal() {
   document.getElementById("edit-wallpaper-profile-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
 }
 function showAccountModal() {
   document.getElementById("account-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
 }
 function showArchiveModal() {
   document.getElementById("archive-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
 }
 
 const videosLoaded = new Set(); // зверху скрипта

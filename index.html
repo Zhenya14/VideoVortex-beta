@@ -263,9 +263,27 @@ if ("serviceWorker" in navigator) {
             <textarea id="video-description" data-i18n-placeholder="video-description"></textarea>
             <button style="display:flex; align-items: center; justify-content: center; margin: 0 0 0 70px; padding: 0 10px;" onclick="generateDescription()"><i class="material-symbols">smart_toy</i><p data-i18n="generate-description">Згенерувати опис</p><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></button>
         <p id="video-file-name" style="margin-top:10px; font-size:14px; color:#ccc;">Файл не вибрано</p>
-  <label for="video-file" class="video-label">
-  <i class="material-symbols">cloud_upload</i><p data-i18n="label-video">Завантажити відео</p>
-</label>
+                  <div class="upload-fields">
+
+                <label class="video-label">
+
+                    <input
+                        type="file"
+                        id="video-file"
+                        accept="video/*"
+                        required
+                    >
+
+                    <span class="material-symbols">
+                        movie
+                    </span>
+
+                    <strong data-i18n="video">Відео</strong>
+
+        
+                </label>
+            </div>
+
 <button id="openVideoPicker" style="display: none;">📷 Додати фото</button>
 <input type="file" id="video-file" accept="video/*">
 <br>
