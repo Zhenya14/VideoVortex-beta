@@ -12,6 +12,7 @@ ios-modal {
 #player-container {
     position: relative;
     overflow: hidden;
+    width: stretch;
 }
 
 #video-container {
