@@ -670,7 +670,7 @@ transform: scale(0.95); /* легке стиснення */
   display: flex;
   align-items: center;
   justify-content: center;
-
+ font-size: 12px;
   text-align: center;
   text-decoration: none;
   color: #fff;
@@ -709,7 +709,7 @@ transform: scale(0.95); /* легке стиснення */
   display: flex;
   align-items: center;
   justify-content: center;
-
+ font-size: 12px;
   text-align: center;
   text-decoration: none;
   color: #fff;
