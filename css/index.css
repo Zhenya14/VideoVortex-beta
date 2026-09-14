@@ -1222,26 +1222,7 @@ body {
   font-size: 24px;
   cursor: pointer;
 }
-.smart-menu .avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-left: 35%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
 
-.smart-menu .avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  opacity: 0;
-  animation: fadeIn 0.4s ease forwards;
-}
 
 /* Анімація появи */
 @keyframes fadeIn {
@@ -1379,14 +1360,73 @@ transform: scale(0.95); /* легке стиснення */
 .smart-menu {
 display: none;
 }
+.smart-menu {
+    position: fixed;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+
+    width: max-content;
+    max-width: calc(100vw - 24px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+
+    z-index: 1000;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 62px;
+
+    backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
+    -webkit-backdrop-filter: blur(3px);
+
+    filter: url(#glass-distortion);
+    -webkit-filter: url(#glass-distortion);
+
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
+
+    transition: width 0.25s ease;
+}
+
 .smart-menu a {
-  width: 100%;
-    height: 100%;
-    padding: 10px 10px;
-    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    min-width: 78px;
+font-size: 12px;
     color: white;
-    display: grid;
-    transition: 0.3s;
+    background: transparent;
+    text-decoration: none;
+
+    flex: 0 0 auto;
+}
+
+.smart-menu .avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    overflow: hidden;
+
+    margin-left: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.smart-menu .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+
+    opacity: 0;
+    animation: fadeIn 0.4s ease forwards;
 }
 .tab a {
   width: 100%;
@@ -2575,21 +2615,7 @@ max-width: 420px;
   background: #07f;
   color: white;
 }
-      .smart-menu {
-  position: fixed;
-  bottom: 10px;
-  left: 52%;
-  transform: translateX(-50%);
-  width: 93%;
-  max-width: 600px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 10px 20px;
-  border-radius: 65px;
-  isolation: isolate;
-  z-index: 1000;
-}
+
 .settings-item, .settings-toggle {
   display: flex;
   justify-content: space-between;
@@ -2693,26 +2719,7 @@ isolation: isolate;
 
   transition: width 0.3s ease, opacity 0.3s ease;
 }
-    .bg-liquid-glass {
-  position: fixed;
-  bottom: 10px;
-  left: 49%;
-  transform: translateX(-52%);
-  width: 78%;
-  max-width: 600px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0px 0px;
-  border-radius: 65px;
-background: rgba(255,255,255,0.05);
-  /* Тінь і обведення для глибини */
-  z-index: 1000;
-  isolation: isolate;
-        backdrop-filter: blur(3px) saturate(140%);
-        -webkit-backdrop-filter: blur(3px);
-        @apply bg-muted/25;
-    }
+    
     .tab-liquid-glass {
   position: fixed;
   display: flex;
@@ -2821,28 +2828,40 @@ background: rgba(255,255,255,0.05);
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
   border: 1px solid rgba(255, 255, 255, 0.18);
 
-  z-index: 100;
+  z-index: 1000;
     }
-    .button-liquid-glass {
-      display: grid;
-    transition: 0.3s;
-    width: 100%;
-    height: 100%;
-    margin: 0px 0px 0px 0px;
+
+
+.button-liquid-glass {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+align-items: center;
+    min-width: 56px;
+width: max-content;
+  height: 90%;
+margin: 5px;
+  gap: 3px; 
+    z-index: 100;
+  
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 56px;
-    text-decoration: none;
 background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(3px) saturate(140%);
+
+    
+backdrop-filter: blur(3px) saturate(140%);
   -webkit-backdrop-filter: blur(3px);
   filter: url(#glass-distortion);
   -webkit-filter: url(#glass-distortion);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
 
-  /* Тінь і обведення для глибини */
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+}
 
-  z-index: 100;
-    }
+
 #search-input {
 transform: translateX(1%);
 background: rgba(255,255,255,0.05);

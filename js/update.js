@@ -69,9 +69,6 @@ function updateMenuPosition() {
     const smartMenu =
         document.querySelector(".smart-menu");
 
-    const bgGlass =
-        document.querySelector(".bg-liquid-glass");
-
     const btnGlass =
         document.getElementById("plus-button");
 
