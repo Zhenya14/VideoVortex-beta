@@ -304,7 +304,7 @@ let selectedStoryFile = null;
 
 async function openCamera() {
   if (cameraActive) return;
-  const bgGlassClose = document.querySelector(".bg-liquid-glass");
+  const bgGlassClose = document.querySelector(".smart-menu");
   const btnGlassClose = document.querySelector(".btn-liquid-glass");
   const camera = document.getElementById("story-camera");
   const video = document.getElementById("cameraPreview");
@@ -324,7 +324,7 @@ async function openCamera() {
 }
 function captureStop() {
   document.getElementById("story-camera").style.display = "none";
-  document.querySelector(".bg-liquid-glass").style.display = "flex";
+  document.querySelector(".smart-menu").style.display = "flex";
   document.getElementById("plus-button").style.display = "flex";
 }
 
@@ -351,7 +351,7 @@ function previewStory(file) {
     const preview = document.getElementById("storyPreview");
     const camera = document.getElementById("cameraPreview");
 
-    const bgGlassClose = document.querySelector(".bg-liquid-glass");
+    const bgGlassClose = document.querySelector(".smart-menu");
     const btnGlassClose = document.getElementById("plus-button");
 
     // Зберігаємо поточний файл
@@ -1886,7 +1886,7 @@ if (!storiesView) return;
 
 storiesView.innerHTML = "";
 storiesView.style.display = "block";
-document.querySelector(".bg-liquid-glass").style.display = "none";
+document.querySelector(".smart-menu").style.display = "none";
   document.getElementById("plus-button").style.display = "none";
 database.ref("stories")
     .once("value")
@@ -2232,7 +2232,7 @@ if (!storiesView) return;
 
 storiesView.innerHTML = "";
 storiesView.style.display = "block";
-document.querySelector(".bg-liquid-glass").style.display = "none";
+document.querySelector(".smart-menu").style.display = "none";
   document.getElementById("plus-button").style.display = "none";
 database.ref("stories")
     .once("value")
@@ -4737,7 +4737,7 @@ function updateUI(user) {
         document.getElementById("account-link")
             ?.style.setProperty("display", "block");
 
-        document.querySelector(".bg-liquid-glass")
+        document.querySelector(".smart-menu")
             ?.style.setProperty("left", "41%");
 
         // Коментарі
@@ -4782,7 +4782,7 @@ function updateUI(user) {
         document.getElementById("account-link")
             ?.style.setProperty("display", "none");
 
-        document.querySelector(".bg-liquid-glass")
+        document.querySelector(".smart-menu")
             ?.style.setProperty("left", "49%");
 
         document.getElementById("account-desktop-link")
