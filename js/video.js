@@ -1133,6 +1133,54 @@ function toggleReaction(type) {
   const ref = database.ref(`reactions/${videoKey}/${user.uid}`);
   currentReaction === type ? ref.remove() : ref.set(type);
 }
+document.getElementById('saveVideoBtn').addEventListener('click', async () => {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const uid = user.uid;
+
+  const saveVideoRef = firebase.database().ref("saveVideos/" + uid);
+
+  try {
+    // Перевіряємо, чи цей відео вже репостили
+    const snap = await saveVideoRef.once("value");
+
+    let alreadySaveVideo = false;
+
+    snap.forEach(child => {
+      const saveVideo = child.val();
+
+      if (saveVideo && saveVideo.videoKey === videoKey) {
+        alreadySaveVideo = true;
+      }
+    });
+
+    if (alreadySaveVideo) {
+      showPopup();
+      document.getElementById("message-notification").innerHTML =
+        "Ви вже зберегли це відео.";
+      return;
+    }
+
+    // Створюємо репост
+    await saveVideoRef.push({
+      videoKey: videoKey,
+      title: currentVideo.title,
+      thumbnail: currentVideo.thumbnail,
+      createdAt: Date.now()
+    });
+
+    showPopup();
+
+    document.getElementById("message-notification").innerHTML =
+      "Відео збережено.";
+
+    updateSaveVideoUI(videoKey);
+
+  } catch (e) {
+    console.error("Помилка:", e);
+  }
+});
 document.getElementById('repostBtn').addEventListener('click', async () => {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -1142,7 +1190,27 @@ document.getElementById('repostBtn').addEventListener('click', async () => {
   const repostsRef = firebase.database().ref("reposts/" + uid);
 
   try {
-    
+    // Перевіряємо, чи цей відео вже репостили
+    const snap = await repostsRef.once("value");
+
+    let alreadyReposted = false;
+
+    snap.forEach(child => {
+      const repost = child.val();
+
+      if (repost && repost.videoKey === videoKey) {
+        alreadyReposted = true;
+      }
+    });
+
+    if (alreadyReposted) {
+      showPopup();
+      document.getElementById("message-notification").innerHTML =
+        "Ви вже зробили репост цього відео.";
+      return;
+    }
+
+    // Створюємо репост
     await repostsRef.push({
       videoKey: videoKey,
       title: currentVideo.title,
@@ -1150,15 +1218,81 @@ document.getElementById('repostBtn').addEventListener('click', async () => {
       createdAt: Date.now()
     });
 
-    
     showPopup();
-    document.getElementById("message-notification").innerHTML = "Репост зроблено.";
+
+    document.getElementById("message-notification").innerHTML =
+      "Репост зроблено.";
+
+    updateRepostUI(videoKey);
 
   } catch (e) {
     console.error("Помилка:", e);
   }
 });
 
+function updateRepostUI(videoKey) {
+const user = firebase.auth().currentUser;
+if (!user || !videoKey) return;
+
+const uid = user.uid;
+const repostRef = firebase.database().ref("reposts/" + uid);
+
+saveVideoRef.once("value").then(snap => {
+let repostExists = false;
+
+snap.forEach(child => {  
+  const repost = child.val();  
+
+  if (repost && repost.videoKey === videoKey) {  
+    repostExists = true;  
+  }  
+});  
+
+const repostBtn = document.getElementById("repostBtn");  
+
+if (!repostBtn) return;  
+
+if (repostExists) {  
+  repostBtn.innerHTML = `<a class="repostBtn">
+  <i class="material-symbols">check</i><p class="icon-text" data-i18n="madeRepost" style="padding: 5px 0px;">Репост зроблено.</p>  
+    </a>`;  
+} else {  
+  return;  
+}
+
+});
+}
+function updateSaveVideoUI(videoKey) {
+  const user = firebase.auth().currentUser;
+  if (!user || !videoKey) return;
+
+  const uid = user.uid;
+  const saveVideoRef = firebase.database().ref("saveVideos/" + uid);
+
+  saveVideoRef.once("value").then(snap => {
+    let saveVideoExists = false;
+
+    snap.forEach(child => {
+      const saveVideo = child.val();
+
+      if (saveVideo && saveVideo.videoKey === videoKey) {
+        saveVideoExists = true;
+      }
+    });
+
+    const saveVideoIcon = document.getElementById("material-icon");
+
+    if (!saveVideoIcon) return;
+
+    if (saveVideoExists) {
+      saveVideoIcon.classList.add("filled");
+    } else {
+      saveVideoIcon.classList.remove("filled");
+    }
+  }).catch(error => {
+    console.error("Помилка перевірки збереженого відео:", error);
+  });
+}
 /* ---------- UI ---------- */
 function updateReactionUI() {
   likeBtn.classList.remove("liked");
@@ -1175,7 +1309,8 @@ auth.onAuthStateChanged(async user => {
     currentUserEmail = user.email;
     listenUserReaction();
     backfillAuthorUidForUser();
-    
+    updateRepostUI(videoKey);
+    updateSaveVideoUI(videoKey);
     database.ref("users/" + currentUid).once("value").then(async snapshot => {
       const userData = snapshot.val();
       const birthStr = userData?.birthdate;
