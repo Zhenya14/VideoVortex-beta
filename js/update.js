@@ -75,20 +75,17 @@ function updateMenuPosition() {
     if (
         !updateBtn ||
         !btnGlass ||
-        !smartMenu ||
-        !bgGlass
+        !smartMenu
     ) return;
 
     if (updateBtn.style.display !== "none") {
 
         smartMenu.style.bottom = "30px";
-        bgGlass.style.bottom = "30px";
         btnGlass.style.bottom = "60px";
 
     } else {
 
         smartMenu.style.bottom = "10px";
-        bgGlass.style.bottom = "10px";
         btnGlass.style.bottom = "20px";
     }
 }

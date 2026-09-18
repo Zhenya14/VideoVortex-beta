@@ -4648,9 +4648,10 @@ function toggleUploadVisibility() {
     const plusDesktopPost = document.getElementById("plus-desktop-button");
     const logoutLink = document.getElementById("logout-link");
     const openMenu = document.getElementById("open-menu");
+  const smartMenu = document.getElementById("smart-menu");
     const accountDesktopLink = document.getElementById("account-desktop-link");
 
-    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) {
+    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink || !smartMenu) {
         return;
     }
 
@@ -4664,7 +4665,7 @@ function toggleUploadVisibility() {
         if (logoutLink) {
             logoutLink.style.display = "none";
         }
-
+        smartMenu.style.display = isMobile ? "none" : "flex";
         openMenu.style.display = isMobile ? "none" : "flex";
         accountDesktopLink.style.display = "none";
 
@@ -4675,6 +4676,7 @@ function toggleUploadVisibility() {
     if (isMobile) {
         openMenu.style.display = "none";
         addStory.style.display = "flex";
+      smartMenu.style.display = "flex";
         plusPost.style.display = "grid";
         plusDesktopPost.style.display = "none";
 
@@ -4687,6 +4689,7 @@ function toggleUploadVisibility() {
     } else {
         openMenu.style.display = "flex";
         addStory.style.display = "none";
+      smartMenu.style.display = "none";
         plusPost.style.display = "none";
         plusDesktopPost.style.display = "flex";
 
@@ -4737,7 +4740,7 @@ function updateUI(user) {
         document.getElementById("account-link")
             ?.style.setProperty("display", "block");
 
-        document.querySelector(".smart-menu")
+        document.getElementById("smart-menu")
             ?.style.setProperty("left", "41%");
 
         // Коментарі
@@ -4782,7 +4785,7 @@ function updateUI(user) {
         document.getElementById("account-link")
             ?.style.setProperty("display", "none");
 
-        document.querySelector(".smart-menu")
+        document.getElementById("smart-menu")
             ?.style.setProperty("left", "49%");
 
         document.getElementById("account-desktop-link")

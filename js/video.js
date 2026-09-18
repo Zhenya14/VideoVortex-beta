@@ -269,7 +269,20 @@ async function decryptText(cipher, key) {
     return text.replace(key, ''); // віднімаємо ключ
 }
 
+function createNotification(uid, type, message, videoKey, fromUid) {
+    if (!uid || !type || !message) return;
 
+    return firebase.database()
+        .ref("notifications/" + uid)
+        .push({
+            type: type,
+            message: message,
+            videoKey: videoKey || null,
+            fromUid: fromUid || null,
+            createdAt: Date.now(),
+            read: false
+        });
+}
 async function uploadComment(videoKey, videoOwnerEmail) {
     const commentInput = document.getElementById(`comment-input-${videoKey}`);
     const commentText = commentInput.value.trim();
@@ -303,8 +316,23 @@ async function uploadComment(videoKey, videoOwnerEmail) {
     const publishDate = `${day}.${month}.${year}`;
 
     // 🔥 1. ЗБЕРІГАЄМО КОМЕНТ
-    
-
+    await database.ref("comments").push({
+        comment: commentData,
+        email: currentUserEmail,
+        commentAuthor: commentAuthor,
+        authorUid: uid,
+        videoOwner: videoOwnerEmail,
+        isPrivate: isPrivate,
+        publishDate: publishDate,
+        videoKey: videoKey
+    });
+await createNotification(
+    videoOwnerUid,
+    "comment",
+    "Новий коментар до вашого відео",
+    videoKey,
+    firebase.auth().currentUser.uid
+);
     // 🔥 2. ВІДПРАВКА PUSH
     try {
         const usersSnap = await database
@@ -1064,6 +1092,7 @@ const dislikeCountEl = dislikeBtn.querySelector("p");
 
 let currentReaction = null;
 let currentUid = null;
+
 async function backfillAuthorUidForUser() {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -1132,6 +1161,7 @@ function toggleReaction(type) {
 
   const ref = database.ref(`reactions/${videoKey}/${user.uid}`);
   currentReaction === type ? ref.remove() : ref.set(type);
+ 
 }
 document.getElementById('saveVideoBtn').addEventListener('click', async () => {
   const user = firebase.auth().currentUser;
@@ -1182,85 +1212,119 @@ document.getElementById('saveVideoBtn').addEventListener('click', async () => {
   }
 });
 document.getElementById('repostBtn').addEventListener('click', async () => {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
+    const user = firebase.auth().currentUser;
 
-  const uid = user.uid;
+    if (!user) return;
 
-  const repostsRef = firebase.database().ref("reposts/" + uid);
+    const uid = user.uid;
 
-  try {
-    // Перевіряємо, чи цей відео вже репостили
-    const snap = await repostsRef.once("value");
+    const repostsRef = firebase.database().ref("reposts/" + uid);
 
-    let alreadyReposted = false;
+    try {
+        // Перевіряємо, чи це відео вже репостили
+        const snap = await repostsRef.once("value");
 
-    snap.forEach(child => {
-      const repost = child.val();
+        let alreadyReposted = false;
 
-      if (repost && repost.videoKey === videoKey) {
-        alreadyReposted = true;
-      }
-    });
+        snap.forEach(child => {
+            const repost = child.val();
 
-    if (alreadyReposted) {
-      showPopup();
-      document.getElementById("message-notification").innerHTML =
-        "Ви вже зробили репост цього відео.";
-      return;
+            if (repost && repost.videoKey === videoKey) {
+                alreadyReposted = true;
+            }
+        });
+
+        if (alreadyReposted) {
+            showPopup();
+
+            document.getElementById("message-notification").innerHTML =
+                "Ви вже зробили репост цього відео.";
+
+            return;
+        }
+
+        // Створюємо репост
+        await repostsRef.push({
+            videoKey: videoKey,
+            title: currentVideo.title,
+            thumbnail: currentVideo.thumbnail,
+            createdAt: Date.now()
+        });
+
+        // 🔔 Створюємо in-app сповіщення автору
+        if (currentVideo.authorUid && currentVideo.authorUid !== uid) {
+            await createNotification(
+                currentVideo.uid,
+                "repost",
+                "Ваше відео репостнули",
+                videoKey,
+                uid
+            );
+        }
+
+        // Сповіщення тому, хто зробив репост
+        showPopup();
+
+        document.getElementById("message-notification").innerHTML =
+            "Репост зроблено.";
+
+        // Оновлюємо кнопку
+        updateRepostUI(videoKey);
+
+    } catch (e) {
+        console.error("REPOST_ERROR:", e);
+
+        showPopup();
+
+        document.getElementById("message-notification").innerHTML =
+            "Не вдалося зробити репост.";
     }
-
-    // Створюємо репост
-    await repostsRef.push({
-      videoKey: videoKey,
-      title: currentVideo.title,
-      thumbnail: currentVideo.thumbnail,
-      createdAt: Date.now()
-    });
-
-    showPopup();
-
-    document.getElementById("message-notification").innerHTML =
-      "Репост зроблено.";
-
-    updateRepostUI(videoKey);
-
-  } catch (e) {
-    console.error("Помилка:", e);
-  }
 });
 
 function updateRepostUI(videoKey) {
-const user = firebase.auth().currentUser;
-if (!user || !videoKey) return;
+    const user = firebase.auth().currentUser;
+    if (!user || !videoKey) return;
 
-const uid = user.uid;
-const repostRef = firebase.database().ref("reposts/" + uid);
+    const uid = user.uid;
+    const repostRef = firebase.database().ref("reposts/" + uid);
 
-saveVideoRef.once("value").then(snap => {
-let repostExists = false;
+    repostRef.once("value").then(snap => {
+        let repostExists = false;
 
-snap.forEach(child => {  
-  const repost = child.val();  
+        snap.forEach(child => {
+            const repost = child.val();
 
-  if (repost && repost.videoKey === videoKey) {  
-    repostExists = true;  
-  }  
-});  
+            if (repost && repost.videoKey === videoKey) {
+                repostExists = true;
+            }
+        });
 
-const repostBtn = document.getElementById("repostBtn");  
+        const repostBtn = document.getElementById("repostBtn");
 
-if (!repostBtn) return;  
+        if (!repostBtn) return;
 
-if (repostExists) {  
-  repostBtn.innerHTML = `<a class="repostBtn">
-  <i class="material-symbols">check</i><p class="icon-text" data-i18n="madeRepost" style="padding: 5px 0px;">Репост зроблено.</p>  
-    </a>`;  
-} else {  
-  return;  
-}
-
-});
+        if (repostExists) {
+            repostBtn.innerHTML = `
+                <a id="repostBtn">
+                    <i class="material-symbols">check</i>
+                    <p class="icon-text" data-i18n="madeRepost">
+                        Репост зроблено
+                    </p>
+                </a>
+            `;
+        } else {
+            repostBtn.innerHTML = `
+                <a id="repostBtn">
+                    <i class="material-symbols">repeat</i>
+                    <p class="icon-text" data-i18n="repostBtn">
+                        Зробити репост
+                    </p>
+                </a>
+            `;
+        }
+    }).catch(error => {
+        console.error("REPOST_UI_ERROR:", error);
+    });
 }
 function updateSaveVideoUI(videoKey) {
   const user = firebase.auth().currentUser;
