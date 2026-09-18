@@ -304,7 +304,7 @@ let selectedStoryFile = null;
 
 async function openCamera() {
   if (cameraActive) return;
-  const bgGlassClose = document.querySelector(".smart-menu");
+  const bgGlassClose = document.getElementById("smart-menu");
   const btnGlassClose = document.querySelector(".btn-liquid-glass");
   const camera = document.getElementById("story-camera");
   const video = document.getElementById("cameraPreview");
@@ -324,7 +324,7 @@ async function openCamera() {
 }
 function captureStop() {
   document.getElementById("story-camera").style.display = "none";
-  document.querySelector(".smart-menu").style.display = "flex";
+  document.getElementById("smart-menu").style.display = "flex";
   document.getElementById("plus-button").style.display = "flex";
 }
 
@@ -351,7 +351,7 @@ function previewStory(file) {
     const preview = document.getElementById("storyPreview");
     const camera = document.getElementById("cameraPreview");
 
-    const bgGlassClose = document.querySelector(".smart-menu");
+    const bgGlassClose = document.getElementById("smart-menu");
     const btnGlassClose = document.getElementById("plus-button");
 
     // Зберігаємо поточний файл
@@ -1466,7 +1466,7 @@ text-align: center;
                 box-shadow: 0 0 18px rgba(244, 114, 182, .65);
                 transform: translateY(-2px);
             }
-
+m
             .wrapper button:active {
                 border-color: #06b6d4;
                 transform: scale(0.96);
@@ -1886,7 +1886,7 @@ if (!storiesView) return;
 
 storiesView.innerHTML = "";
 storiesView.style.display = "block";
-document.querySelector(".smart-menu").style.display = "none";
+document.getElementById("smart-menu").style.display = "none";
   document.getElementById("plus-button").style.display = "none";
 database.ref("stories")
     .once("value")
@@ -2232,7 +2232,7 @@ if (!storiesView) return;
 
 storiesView.innerHTML = "";
 storiesView.style.display = "block";
-document.querySelector(".smart-menu").style.display = "none";
+document.getElementById("smart-menu").style.display = "none";
   document.getElementById("plus-button").style.display = "none";
 database.ref("stories")
     .once("value")
@@ -4648,10 +4648,9 @@ function toggleUploadVisibility() {
     const plusDesktopPost = document.getElementById("plus-desktop-button");
     const logoutLink = document.getElementById("logout-link");
     const openMenu = document.getElementById("open-menu");
-  const smartMenu = document.getElementById("smart-menu");
     const accountDesktopLink = document.getElementById("account-desktop-link");
 
-    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink || !smartMenu) {
+    if (!plusPost || !plusDesktopPost || !openMenu || !accountDesktopLink) {
         return;
     }
 
@@ -4665,7 +4664,6 @@ function toggleUploadVisibility() {
         if (logoutLink) {
             logoutLink.style.display = "none";
         }
-        smartMenu.style.display = isMobile ? "none" : "flex";
         openMenu.style.display = isMobile ? "none" : "flex";
         accountDesktopLink.style.display = "none";
 
@@ -4676,7 +4674,6 @@ function toggleUploadVisibility() {
     if (isMobile) {
         openMenu.style.display = "none";
         addStory.style.display = "flex";
-      smartMenu.style.display = "flex";
         plusPost.style.display = "grid";
         plusDesktopPost.style.display = "none";
 
@@ -4689,7 +4686,6 @@ function toggleUploadVisibility() {
     } else {
         openMenu.style.display = "flex";
         addStory.style.display = "none";
-      smartMenu.style.display = "none";
         plusPost.style.display = "none";
         plusDesktopPost.style.display = "flex";
 
