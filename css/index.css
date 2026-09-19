@@ -1415,7 +1415,7 @@ transform: scale(0.95); /* легке стиснення */
   margin-top: 8px;
   text-align: center;
 }
-.history-item {
+.history-item, .save-video-item{
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1435,7 +1435,19 @@ transform: scale(0.95); /* легке стиснення */
   font-size: 12px;
   color: #fff;
 }
-.history-info {
+.save-video-item img {
+  width: 80px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+.save-video-info p {
+  display: inline;
+  margin: 0;
+  font-size: 12px;
+  color: #fff;
+}
+.history-info, .save-video-info {
   text-align: left;
 }
 .edit, .delete-history-views {
@@ -1994,7 +2006,7 @@ display: none;
 
 /* Кнопка пошуку у navbar (опціонально) */
 
-.modal-blocked-overlay {
+.modal-blocked-overlay, .modal-account-notifications-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -2004,7 +2016,7 @@ display: none;
   align-items: center;
   z-index: 99999;
 }
-.modal-overlay, .modal-account-overlay, .modal-edit-overlay, .modal-archive-overlay, .modal-account-notifications-overlay, .modal-edit-wallpaper-profile-overlay {
+.modal-overlay, .modal-account-overlay, .modal-edit-overlay, .modal-archive-overlay, .modal-edit-wallpaper-profile-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -2099,14 +2111,14 @@ display: flex;
 /* Робимо фіксовану модалку */
 
 /* Прокрутка тільки всередині контенту */
-.modal-header, .modal-blocked-header, .modal-account-notifications-header, .modal-archive-header {
+.modal-header, .modal-blocked-header, .modal-account-notifications-header, .modal-archive-header, .modal-account-notifications-header{
   display: flex;
   justify-content: space-between;
   padding: 12px 15px;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
-.modal-account-header, .modal-edit-header, .modal-edit-wallpaper-profile-header, .modal-account-notifications-header {
+.modal-account-header, .modal-edit-header, .modal-edit-wallpaper-profile-header {
   display: flex;
   justify-content: right;
   padding: 12px 15px;
@@ -2144,6 +2156,21 @@ display: flex;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+}
+.modal-account-notifications {
+  width: 100%;
+  text-align: center;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+}
+.modal-account-notifications p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow-y: auto;        /* вертикальний скрол */
+    max-height: 100%;        /* повна висота */
+    padding-right: 10px;    
 }
 .modal-blocked {
   width: 100%;
@@ -2458,7 +2485,7 @@ line-height: 1;
 text-transform: uppercase;
 }
 /* Блок історії */
-.history-info {
+.history-info, .save-video-info {
 width: 100%;
 border-top: 1px solid #24303f;
 padding-top: 16px;

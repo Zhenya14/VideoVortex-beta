@@ -2679,6 +2679,7 @@ function loadLibrary(user) {
     const uid = firebase.auth().currentUser.uid;
     const userRef = database.ref("users/" + uid);
     const historyRef = database.ref("users/" + uid + "/history");
+const saveVideosRef = database.ref("saveVideos/" + uid);
 
     userRef.once("value")
         .then(snapshot => {
@@ -2793,8 +2794,70 @@ yourProfile.onclick = () => {
 }
 buttons.appendChild(yourProfile);
 authorInfo.appendChild(buttons);
+          const saveVideoInfo = document.createElement("div");
+saveVideoInfo.classList.add("save-video-info");
 
-// ▸ Контейнер для истории
+const saveVideoTitle = document.createElement("p");
+saveVideoTitle.innerHTML = `<span data-i18n="save-video">Збереженні відео:</span><sup class="badge-new" data-i18n="new">NEW</sup>:`;
+
+saveVideoInfo.appendChild(saveVideoTitle);
+        
+// Добавляем все в главный контейнер библиотеки
+
+            // ▸ Завантаження історії
+            saveVideosRef.once("value")
+                .then(snapshot => {
+                    const saveVideoData = snapshot.val() || {};
+                    if (Object.keys(saveVideoData).length === 0) {
+                        const emptyMsg = document.createElement("p");
+                        emptyMsg.textContent = "Немає збережених відео";
+                        saveVideoInfo.appendChild(emptyMsg);
+                        return;
+                    }
+
+                    Object.keys(saveVideoData).forEach(videoKey => {
+                        const video = saveVideoData[videoKey];
+
+                        // ▸ Контейнер одного відео в історії
+                        const saveVideoContainer = document.createElement("div");
+                        saveVideoContainer.classList.add("save-video-item");
+                        saveVideoContainer.style.display = "flex";
+                        saveVideoContainer.style.alignItems = "center";
+                        saveVideoContainer.style.marginBottom = "8px";
+                        saveVideoContainer.style.cursor = "pointer";
+
+                        // ▸ Прев’ю
+                        const thumbnail = document.createElement("img");
+                        thumbnail.src = video.thumbnail || "default.jpg";
+                        thumbnail.alt = video.title;
+                        thumbnail.style.width = "80px";
+                        thumbnail.style.height = "45px";
+                        thumbnail.style.objectFit = "cover";
+                        thumbnail.style.borderRadius = "6px";
+                        thumbnail.style.marginRight = "10px";
+                        videoContainer.appendChild(thumbnail);
+
+                        // ▸ Текстова інформація
+                        const info = document.createElement("div");
+                        info.innerHTML = `
+                            <p style="margin:0;font-weight:bold;">${video.title}</p>
+                            <p style="margin:0;font-size:0.9em;color:#ccc;">Автор: ${video.author}</p>
+                            <p style="margin:0;font-size:0.8em;color:#999;">Останній перегляд: ${new Date(video.lastPlayed).toLocaleString()}</p>
+                        `;
+                        videoContainer.appendChild(info);
+
+                        // ▸ Клік на відео
+                        videoContainer.onclick = () => {
+                            window.location.href = `video.html?key=${videoKey}`;
+                        };
+
+                        saveVideoInfo.appendChild(videoContainer);
+                    });
+                })
+                .catch(err => console.error("Помилка завантаження історії:", err));
+
+            applyTranslations();
+// Контейнер для истории
 const historyInfo = document.createElement("div");
 historyInfo.classList.add("history-info");
 
@@ -2810,6 +2873,7 @@ deleteHistoryViews.onclick = () => {
 
 historyInfo.appendChild(historyTitle);
 historyInfo.appendChild(deleteHistoryViews);
+authorInfo.appendChild(saveVideoInfo);
 authorInfo.appendChild(historyInfo);
 authorInfo.appendChild(moreMenu);
 
