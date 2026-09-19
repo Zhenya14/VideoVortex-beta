@@ -4737,7 +4737,7 @@ function updateUI(user) {
             ?.style.setProperty("display", "block");
 
         document.getElementById("smart-menu")
-            ?.style.setProperty("left", "41%");
+            ?.style.setProperty("left", "44%");
 
         // Коментарі
         document.querySelectorAll('[id^="comment-input-"]').forEach(el => {
