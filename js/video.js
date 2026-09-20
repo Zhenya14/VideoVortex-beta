@@ -1160,7 +1160,7 @@ const uid = user.uid;
   const ref = database.ref(`reactions/${videoKey}/${user.uid}`);
   currentReaction === type ? ref.remove() : ref.set(type);
   if (currentVideo?.authorUid && currentVideo.authorUid !== uid) {
-    await firebase.database()
+    firebase.database()
         .ref("notifications/" + currentVideo.authorUid)
         .push({
             type: "like",
@@ -1264,7 +1264,7 @@ document.getElementById('repostBtn').addEventListener('click', async () => {
 
         // 🔔 Створюємо in-app сповіщення автору
         if (currentVideo?.authorUid && currentVideo.authorUid !== uid) {
-    await firebase.database()
+     await firebase.database()
         .ref("notifications/" + currentVideo.authorUid)
         .push({
             type: "repost",

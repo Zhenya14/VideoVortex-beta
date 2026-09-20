@@ -4270,6 +4270,70 @@ function addVideoToFeed(video) {
 
   container.prepend(card);
 }
+function loadNotifications() {
+    const user = firebase.auth().currentUser;
+
+    if (!user) return;
+
+    const notificationsRef = firebase.database()
+        .ref("notifications/" + user.uid)
+        .orderByChild("createdAt");
+
+    notificationsRef.once("value")
+        .then(snapshot => {
+            const list = document.getElementById("accountNotificationsList");
+
+            if (!list) return;
+
+            list.innerHTML = "";
+
+            if (!snapshot.exists()) {
+                list.innerHTML = "<p>Немає сповіщень</p>";
+                return;
+            }
+
+            const notifications = [];
+
+            snapshot.forEach(child => {
+                notifications.push({
+                    key: child.key,
+                    ...child.val()
+                });
+            });
+
+            // Нові спочатку
+            notifications.reverse();
+
+            notifications.forEach(notification => {
+                const item = document.createElement("div");
+
+                item.className = "notification-item";
+
+                item.innerHTML = `
+                    <div>
+                        <strong>${notification.message || "Нове сповіщення"}</strong>
+                        <small>
+                            ${notification.createdAt
+                                ? new Date(notification.createdAt).toLocaleString()
+                                : ""}
+                        </small>
+                    </div>
+                `;
+
+                item.onclick = () => {
+                    if (notification.videoKey) {
+                        window.location.href =
+                            `video.html?key=${notification.videoKey}`;
+                    }
+                };
+
+                list.appendChild(item);
+            });
+        })
+        .catch(error => {
+            console.error("NOTIFICATIONS_LOAD_ERROR:", error);
+        });
+}
 function finalizeUpload(tempId, data) {
   const el = document.getElementById(tempId);
   if (!el) return;
@@ -5222,6 +5286,7 @@ auth.onAuthStateChanged(async (user) => {
         cleanupExpiredStories();
         updateVideosAuthor();
         updatePhotosAuthor();
+      loadNotifications();
         await updateNameBlockedUsers();
         updateCommentsAuthor();
         backfillAuthorUidForUser();
