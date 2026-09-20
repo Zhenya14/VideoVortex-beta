@@ -2680,7 +2680,6 @@ function loadLibrary(user) {
     const userRef = database.ref("users/" + uid);
     const historyRef = database.ref("users/" + uid + "/history");
 const saveVideosRef = database.ref("saveVideos/" + uid);
-
     userRef.once("value")
         .then(snapshot => {
             const userData = snapshot.val() || {};
@@ -2798,7 +2797,7 @@ authorInfo.appendChild(buttons);
 saveVideoInfo.classList.add("save-video-info");
 
 const saveVideoTitle = document.createElement("p");
-saveVideoTitle.innerHTML = `<span data-i18n="save-video">Збереженні відео:</span><sup class="badge-new" data-i18n="new">NEW</sup>:`;
+saveVideoTitle.innerHTML = `<span data-i18n="save-video">Збереженні відео</span><sup class="badge-new" data-i18n="new">NEW</sup>:`;
 
 saveVideoInfo.appendChild(saveVideoTitle);
         
@@ -2806,56 +2805,76 @@ saveVideoInfo.appendChild(saveVideoTitle);
 
             // ▸ Завантаження історії
             saveVideosRef.once("value")
-                .then(snapshot => {
-                    const saveVideoData = snapshot.val() || {};
-                    if (Object.keys(saveVideoData).length === 0) {
-                        const emptyMsg = document.createElement("p");
-                        emptyMsg.textContent = "Немає збережених відео";
-                        saveVideoInfo.appendChild(emptyMsg);
-                        return;
-                    }
+          .then(snapshot => {
+    const saveVideoData = snapshot.val() || {};
 
-                    Object.keys(saveVideoData).forEach(videoKey => {
-                        const video = saveVideoData[videoKey];
+    if (Object.keys(saveVideoData).length === 0) {
+        const emptyMsg = document.createElement("p");
+        emptyMsg.textContent = "Немає збережених відео";
+        saveVideoInfo.appendChild(emptyMsg);
+        return;
+    }
 
-                        // ▸ Контейнер одного відео в історії
-                        const saveVideoContainer = document.createElement("div");
-                        saveVideoContainer.classList.add("save-video-item");
-                        saveVideoContainer.style.display = "flex";
-                        saveVideoContainer.style.alignItems = "center";
-                        saveVideoContainer.style.marginBottom = "8px";
-                        saveVideoContainer.style.cursor = "pointer";
+    Object.keys(saveVideoData).forEach(videoKey => {
 
-                        // ▸ Прев’ю
-                        const thumbnail = document.createElement("img");
-                        thumbnail.src = video.thumbnail || "default.jpg";
-                        thumbnail.alt = video.title;
-                        thumbnail.style.width = "80px";
-                        thumbnail.style.height = "45px";
-                        thumbnail.style.objectFit = "cover";
-                        thumbnail.style.borderRadius = "6px";
-                        thumbnail.style.marginRight = "10px";
-                        videoContainer.appendChild(thumbnail);
+        const video = saveVideoData[videoKey];
 
-                        // ▸ Текстова інформація
-                        const info = document.createElement("div");
-                        info.innerHTML = `
-                            <p style="margin:0;font-weight:bold;">${video.title}</p>
-                            <p style="margin:0;font-size:0.9em;color:#ccc;">Автор: ${video.author}</p>
-                            <p style="margin:0;font-size:0.8em;color:#999;">Останній перегляд: ${new Date(video.lastPlayed).toLocaleString()}</p>
-                        `;
-                        videoContainer.appendChild(info);
+        // Контейнер одного збереженого відео
+        const saveVideoContainer = document.createElement("div");
 
-                        // ▸ Клік на відео
-                        videoContainer.onclick = () => {
-                            window.location.href = `video.html?key=${videoKey}`;
-                        };
+        saveVideoContainer.classList.add("save-video-item");
 
-                        saveVideoInfo.appendChild(videoContainer);
-                    });
-                })
-                .catch(err => console.error("Помилка завантаження історії:", err));
+        saveVideoContainer.style.display = "flex";
+        saveVideoContainer.style.alignItems = "center";
+        saveVideoContainer.style.marginBottom = "8px";
+        saveVideoContainer.style.cursor = "pointer";
 
+        // Прев'ю
+        const thumbnail = document.createElement("img");
+
+        thumbnail.src = video.thumbnail || "default.jpg";
+        thumbnail.alt = video.title || "Відео";
+
+        thumbnail.style.width = "80px";
+        thumbnail.style.height = "45px";
+        thumbnail.style.objectFit = "cover";
+        thumbnail.style.borderRadius = "6px";
+        thumbnail.style.marginRight = "10px";
+
+        saveVideoContainer.appendChild(thumbnail);
+
+        // Текстова інформація
+        const info = document.createElement("div");
+
+        info.innerHTML = `
+            <p style="margin:0;font-weight:bold;">
+                ${video.title || "Без назви"}
+            </p>
+
+            <p style="margin:0;font-size:0.9em;color:#ccc;">
+                Автор: ${video.author || "Невідомий"}
+            </p>
+
+            <p style="margin:0;font-size:0.8em;color:#999;">
+                Останній перегляд:
+                ${video.lastPlayed
+                    ? new Date(video.lastPlayed).toLocaleString()
+                    : "Невідомо"
+                }
+            </p>
+        `;
+
+        saveVideoContainer.appendChild(info);
+
+        // Клік на відео
+        saveVideoContainer.onclick = () => {
+            window.location.href = `video.html?key=${videoKey}`;
+        };
+
+        // Додаємо в список
+        saveVideoInfo.appendChild(saveVideoContainer);
+    });
+})
             applyTranslations();
 // Контейнер для истории
 const historyInfo = document.createElement("div");

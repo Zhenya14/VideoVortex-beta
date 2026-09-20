@@ -285,8 +285,15 @@ function createNotification(uid, type, message, videoKey, fromUid) {
 }
 async function uploadComment(videoKey, videoOwnerEmail) {
     const commentInput = document.getElementById(`comment-input-${videoKey}`);
+    const privateCheckbox = document.getElementById(`private-comment-${videoKey}`);
+
+    if (!commentInput || !privateCheckbox) {
+        console.error("COMMENT_INPUT_ERROR");
+        return;
+    }
+
     const commentText = commentInput.value.trim();
-    const isPrivate = document.getElementById(`private-comment-${videoKey}`).checked;
+    const isPrivate = privateCheckbox.checked;
 
     if (!commentText) {
         applyTranslations();
@@ -297,25 +304,38 @@ async function uploadComment(videoKey, videoOwnerEmail) {
     let commentData = commentText;
 
     if (isPrivate) {
-        const videoKeyLocal = getVideoKey(videoKey);
         commentData = await encryptText(commentText);
     }
 
-    const uid = firebase.auth().currentUser.uid;
+    const user = firebase.auth().currentUser;
+
+    if (!user) {
+        console.error("COMMENT_AUTH_ERROR");
+        return;
+    }
+
+    const uid = user.uid;
 
     // Дані користувача
-    const snapshot = await database.ref("users/" + uid).once("value");
-    const userData = snapshot.val();
-    const commentAuthor = `${userData.name} ${userData.supername}`;
+    const snapshot = await database
+        .ref("users/" + uid)
+        .once("value");
+
+    const userData = snapshot.val() || {};
+
+    const commentAuthor =
+        `${userData.name || ""} ${userData.supername || ""}`.trim();
 
     // Дата
     const now = new Date();
-    const day = now.getDate().toString().padStart(2, '0');
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+
+    const day = now.getDate().toString().padStart(2, "0");
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
     const year = now.getFullYear();
+
     const publishDate = `${day}.${month}.${year}`;
 
-    // 🔥 1. ЗБЕРІГАЄМО КОМЕНТ
+    // 🔥 ЗБЕРІГАЄМО КОМЕНТАР
     await database.ref("comments").push({
         comment: commentData,
         email: currentUserEmail,
@@ -326,50 +346,28 @@ async function uploadComment(videoKey, videoOwnerEmail) {
         publishDate: publishDate,
         videoKey: videoKey
     });
-await createNotification(
-    videoOwnerUid,
-    "comment",
-    "Новий коментар до вашого відео",
-    videoKey,
-    firebase.auth().currentUser.uid
-);
-    // 🔥 2. ВІДПРАВКА PUSH
-    try {
-        const usersSnap = await database
-            .ref("users")
-            .orderByChild("email")
-            .equalTo(videoOwnerEmail)
-            .once("value");
 
-        usersSnap.forEach(user => {
-            const token = user.val().fcmToken;
-
-            // не відправляємо собі
-            if (token && user.val().email !== currentUserEmail) {
-
-                fetch("https://fcm.googleapis.com/fcm/send", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "key=SERVER_KEY"
-                    },
-                    body: JSON.stringify({
-                        to: token,
-                        notification: {
-                            title: "Новий коментар 💬",
-                            body: `${commentAuthor}: ${commentText}`
-                        }
-                    })
-                });
-
-            }
+    // 🔔 IN-APP СПОВІЩЕННЯ
+    if (currentVideo?.authorUid && currentVideo.authorUid !== uid) {
+    firebase.database()
+        .ref("notifications/" + currentVideo.authorUid)
+        .push({
+            type: "comment",
+            message: `${commentAuthor}: ${commentText}`,
+            videoKey: videoKey,
+            fromUid: uid,
+            createdAt: Date.now(),
+            read: false
+        })
+        .catch(error => {
+            console.error("COMMENT_NOTIFICATION_ERROR:", error);
         });
-    } catch (e) {
-        console.error("Push error:", e);
     }
 
-    // 🔥 3. ОНОВЛЕННЯ UI
+    // Очищаємо поле
     commentInput.value = "";
+
+    // Оновлюємо коментарі
     await loadComments(videoKey, videoOwnerEmail);
 }
 /* ================= GET VIDEO KEY ================= */
@@ -1158,9 +1156,21 @@ function toggleReaction(type) {
     alert("Увійди, щоб ставити реакції");
     return;
   }
-
+const uid = user.uid;
   const ref = database.ref(`reactions/${videoKey}/${user.uid}`);
   currentReaction === type ? ref.remove() : ref.set(type);
+  if (currentVideo?.authorUid && currentVideo.authorUid !== uid) {
+    await firebase.database()
+        .ref("notifications/" + currentVideo.authorUid)
+        .push({
+            type: "like",
+            message: "Ваше відео вподобали",
+            videoKey: videoKey,
+            fromUid: uid,
+            createdAt: Date.now(),
+            read: false
+        });
+  }
  
 }
 document.getElementById('saveVideoBtn').addEventListener('click', async () => {
@@ -1196,6 +1206,7 @@ document.getElementById('saveVideoBtn').addEventListener('click', async () => {
     await saveVideoRef.push({
       videoKey: videoKey,
       title: currentVideo.title,
+      author: currentVideo.author,
       thumbnail: currentVideo.thumbnail,
       createdAt: Date.now()
     });
@@ -1252,14 +1263,17 @@ document.getElementById('repostBtn').addEventListener('click', async () => {
         });
 
         // 🔔 Створюємо in-app сповіщення автору
-        if (currentVideo.authorUid && currentVideo.authorUid !== uid) {
-            await createNotification(
-                currentVideo.uid,
-                "repost",
-                "Ваше відео репостнули",
-                videoKey,
-                uid
-            );
+        if (currentVideo?.authorUid && currentVideo.authorUid !== uid) {
+    await firebase.database()
+        .ref("notifications/" + currentVideo.authorUid)
+        .push({
+            type: "repost",
+            message: "Ваше відео репостнули",
+            videoKey: videoKey,
+            fromUid: uid,
+            createdAt: Date.now(),
+            read: false
+        });
         }
 
         // Сповіщення тому, хто зробив репост
