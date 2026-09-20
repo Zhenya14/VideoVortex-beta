@@ -1,5 +1,5 @@
 
-const APP_VERSION = "7.1.0";
+const APP_VERSION = "7.2.0";
 
 function clearLocalStorageExceptAuth() {
     const keepPrefixes = [
