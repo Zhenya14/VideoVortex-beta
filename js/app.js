@@ -3832,8 +3832,8 @@ if (currentUserRole === "moderator") {
             videoGallery.dataset.listener = "true";
         }
 
-        infoElement.appendChild(avatar);
         infoElement.appendChild(detailsElement);
+        infoElement.appendChild(avatar);
         infoElement.appendChild(moreBtn);
         infoElement.appendChild(actionMenu);
 
@@ -3841,9 +3841,9 @@ if (currentUserRole === "moderator") {
         container.classList.add("video-container");
         container.dataset.id = videoKey;
 
-        container.appendChild(infoElement);
-        videoWrapper.appendChild(videoElement);
+      videoWrapper.appendChild(videoElement);
         container.appendChild(videoWrapper);
+        container.appendChild(infoElement);
 
         videoGallery.appendChild(container);
       applyTranslations();
