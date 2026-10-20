@@ -3712,10 +3712,14 @@ avatar.style.backgroundRepeat = "no-repeat";
         }
 
         avatar.onclick = () => {
+            if(!videoDataRaw.authorUid) {
+            return;
+          } else {
             const infoParams = new URLSearchParams({
                 uid: videoDataRaw.authorUid || "",
             });
             window.location.href = `profile.html?${infoParams.toString()}`;
+            }
         };
 
         const detailsElement = document.createElement("div");
@@ -3842,10 +3846,11 @@ if (currentUserRole === "moderator") {
         container.dataset.id = videoKey;
 
       videoWrapper.appendChild(videoElement);
-        container.appendChild(videoWrapper);
-        container.appendChild(infoElement);
 
-        videoGallery.appendChild(container);
+container.appendChild(videoWrapper);
+container.appendChild(infoElement);
+
+videoGallery.appendChild(container);
       applyTranslations();
     });
 }
