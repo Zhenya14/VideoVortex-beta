@@ -3719,7 +3719,7 @@ avatar.style.backgroundRepeat = "no-repeat";
                 uid: videoDataRaw.authorUid || "",
             });
             window.location.href = `profile.html?${infoParams.toString()}`;
-            }
+          }
         };
 
         const detailsElement = document.createElement("div");
@@ -3749,8 +3749,8 @@ detailsElement.innerHTML = `
 
     ${getSafeBanduraHTML(videoDataRaw.banduraExtra)}
     <div class='info-element'>
-<p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>play_arrow</i>${videoDataRaw.views || 0}</p><span class='info-divider'>•</span>
- <p style='display: flex; justify-content: center; align-items: center;'><i class='material-symbols'>event</i>${videoDataRaw.publishDate || "—"}
+<p style='display: flex; justify-content: center; align-items: center;'>${videoDataRaw.views || 0}<i class='material-symbols'>play_arrow</i></p><span class='info-divider'>•</span>
+ <p style='display: flex; justify-content: center; align-items: center;'>${videoDataRaw.publishDate || "—"}<i class='material-symbols'>event</i>
 </p></div>`;
     
 
@@ -3814,6 +3814,7 @@ if (currentUserRole === "moderator") {
             actionMenu.appendChild(editButton);
         }
 
+
         moreBtn.onclick = e => {
             e.stopPropagation();
 
@@ -3835,7 +3836,6 @@ if (currentUserRole === "moderator") {
 
             videoGallery.dataset.listener = "true";
         }
-
         infoElement.appendChild(detailsElement);
         infoElement.appendChild(avatar);
         infoElement.appendChild(moreBtn);
@@ -3845,12 +3845,14 @@ if (currentUserRole === "moderator") {
         container.classList.add("video-container");
         container.dataset.id = videoKey;
 
-      videoWrapper.appendChild(videoElement);
+        
+         videoWrapper.appendChild(videoElement);
 
 container.appendChild(videoWrapper);
 container.appendChild(infoElement);
 
 videoGallery.appendChild(container);
+
       applyTranslations();
     });
 }
