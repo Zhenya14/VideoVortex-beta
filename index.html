@@ -435,7 +435,8 @@ if ("serviceWorker" in navigator) {
   <option value="main" data-i18n="main-channel">Основний канал</option>
   <option value="second" data-i18n="second-channel">Другий канал</option>
 </select>
-<span data-i18n="private-photo-checkbox">Приватне фото<label class="switch" for="private-photo-checkbox"><input type="checkbox" id="private-photo-checkbox"><span class="slider round"></span></label>
+
+<span data-i18n="private-photo-checkbox">Приватне фото</span><label class="switch" for="private-photo-checkbox"><input type="checkbox" id="private-photo-checkbox"><span class="slider round"></span></label>
 <br>
             <div id="progress-photo-container" style="display: none; margin-top: 10px;">
                 <progress id="upload-photo-progress" value="0" max="100"></progress>
@@ -727,7 +728,7 @@ if ("serviceWorker" in navigator) {
 </div>
 <div id="newyear--egg" class="ny-popup">
   <div class="ny-content">
-    <h2>🎆 З Новим 2026 роком! 🎆</h2>
+    <h2>🎆 З Новим 2027 роком! 🎆</h2>
     <p>
       ❄️ Сію, вію, засіваю —<br>
       миру, щастя і добра бажаю!<br><br>
@@ -790,6 +791,13 @@ if ("serviceWorker" in navigator) {
 
     <button class="settings-item" style="display: none;"><i class="material-symbols">candle</i>Спадкоємець акаунта</button>
     <button class="settings-item" id="blocked-button"><i class="material-symbols">block</i><p data-i18n="blocked-users">Заблоковані користувачі</p></button>
+    <div class="settings-item">
+  <span>
+    <i class="material-symbols">visibility_off</i>
+    Анонімний профіль
+  </span>
+  <input type="checkbox" id="anonymousProfile">
+</div>
   </div>
 
   <!-- VIDEO -->

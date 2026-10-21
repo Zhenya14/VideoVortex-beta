@@ -6243,7 +6243,7 @@ async function uploadPhoto() {
     const photoDescription = document.getElementById("photo-description")?.value || "";
     const photoTitle = document.getElementById("photo-title")?.value || "";
     const photoFiles = document.getElementById("photo-file")?.files;
-
+const privatePhoto = document.getElementById("private-photo-checkbox").checked;
     if (!photoTitle || !photoFiles || photoFiles.length === 0) {
         showNotificationModal();
         message.innerHTML = "Будь ласка, заповніть всі поля!";
@@ -6337,7 +6337,8 @@ async function uploadPhoto() {
             authorAvatar: authorAvatarUrl,
             email: user.email,
             authorUid: user.uid,
-            publishDate: currentDate
+            publishDate: currentDate,
+            private: privatePhoto
         });
 
         showPopup();
