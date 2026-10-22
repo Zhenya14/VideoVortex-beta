@@ -2604,11 +2604,25 @@ function createThumbnail(file) {
  });
 }
 anonymousProfile.addEventListener("change", async () => {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const isAnonymous = anonymousProfile.checked;
+
+    try {
+        await database.ref(`users/${user.uid}`).update({
+            anonymous: isAnonymous
+        });
     await Promise.all([
         updateVideosAuthor(),
         updatePhotosAuthor(),
         updateCommentsAuthor()
     ]);
+    
+    console.log("Анонімний режим:", isAnonymous);
+    } catch (err) {
+        console.error("Не вдалося оновити анонімний режим:", err);
+    }
 });
 const migrateUsersToPublicUsers =
     firebase.functions().httpsCallable(
