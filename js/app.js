@@ -1,6 +1,7 @@
   const messageNotification = document.getElementById("message-ai");
   const notificationAI = document.getElementById("notification-ai-modal");
-let currentEditKey = null;
+  const anonymousProfile = document.getElementById("anonymousProfile");
+  let currentEditKey = null;
 let maxTimeInMinutes = null;
 let timeLeftInSeconds = null;
 let sleepStart = null;
@@ -2602,6 +2603,13 @@ function createThumbnail(file) {
 
  });
 }
+anonymousProfile.addEventListener("change", async () => {
+    await Promise.all([
+        updateVideosAuthor(),
+        updatePhotosAuthor(),
+        updateCommentsAuthor()
+    ]);
+});
 const migrateUsersToPublicUsers =
     firebase.functions().httpsCallable(
         "migrateUsersToPublicUsers"
@@ -5679,7 +5687,7 @@ async function updateVideosAuthor() {
   if (!user) return;
 
   const uid = user.uid;
-
+const isAnonymous = anonymousProfile.checked;
   try {
     const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val() || {};
@@ -5705,16 +5713,27 @@ async function updateVideosAuthor() {
     videoSnap.forEach(child => {
       const video = child.val();
 
-      if (video.authorUid === user.uid) {
-        updates.push(
-          database.ref("videos/" + child.key).update({
-            author: fullName || "Анонім",
-            authorAvatar: authorAvatarUrl,
-            owner: userData.owner === true,
-          verifiedBadge: userData.verifiedBadge || null
-          })
-        );
-      }
+      const videoRef = database.ref("videos/" + child.key);
+if (isAnonymous) {
+                updates.push(
+                    videoRef.update({
+                        author: "Анонім",
+                        authorStatus: "hidden",
+                        authorAvatar: null
+                    })
+                );
+            } else {
+                const data = {
+                    author: fullName || "Анонім",
+                    authorStatus: null
+                };
+
+                if (authorAvatarUrl) {
+                    data.authorAvatar = authorAvatarUrl;
+                }
+
+                updates.push(videoRef.update(data));
+            }
     });
 
     await Promise.all(updates);
@@ -5730,7 +5749,7 @@ async function updatePhotosAuthor() {
   if (!user) return;
 
   const uid = user.uid;
-
+const isAnonymous = anonymousProfile.checked;
   try {
     const snapshot = await database.ref("users/" + uid).once("value");
     const userData = snapshot.val() || {};
@@ -5755,20 +5774,32 @@ async function updatePhotosAuthor() {
 
     photoSnap.forEach(child => {
       const photo = child.val();
+      const photoRef = database.ref("photos/" + child.key);
+if (isAnonymous) {
+                updates.push(
+                    photoRef.update({
+                        author: "Анонім",
+                        authorStatus: "hidden",
+                        authorAvatar: null
+                    })
+                );
+            } else {
+                const data = {
+                    author: fullName || "Анонім",
+                    authorStatus: null
+                };
 
-      if (photo.authorUid === user.uid) {
-        updates.push(
-          database.ref("photos/" + child.key).update({
-            author: fullName || "Анонім",
-            authorAvatar: authorAvatarUrl
-          })
-        );
-      }
+                if (authorAvatarUrl) {
+                    data.authorAvatar = authorAvatarUrl;
+                }
+
+                updates.push(photoRef.update(data));
+            }
     });
 
     await Promise.all(updates);
 
-    console.log("Відео оновлено");
+    console.log("Фото оновлено");
 
   } catch (err) {
     console.error("Помилка оновлення:", err);
@@ -5987,54 +6018,72 @@ async function updateColorsVideosAuthor(user) {
   }
 }
 async function updateCommentsAuthor() {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
+    const user = firebase.auth().currentUser;
+    if (!user) return;
 
-  const uid = user.uid;
+    const uid = user.uid;
+    const isAnonymous = anonymousProfile.checked;
 
-  try {
-    const snapshot = await database.ref("users/" + uid).once("value");
-    const userData = snapshot.val() || {};
+    try {
+        const snapshot = await database.ref(`users/${uid}`).once("value");
+        const userData = snapshot.val() || {};
 
-    const fullName = `${userData.name || ""} ${userData.supername || ""}`.trim();
+        const fullName =
+            `${userData.name || ""} ${userData.supername || ""}`.trim();
 
-    let authorAvatarUrl = null;
+        let authorAvatarUrl = null;
 
-    if (userData.avatarId) {
-      try {
-        authorAvatarUrl = await firebase
-          .storage()
-          .ref(`avatars/${userData.avatarId}.webp`)
-          .getDownloadURL();
-      } catch (e) {
-        console.warn("Аватар не знайдено");
-      }
-    }
+        if (userData.avatarId && !isAnonymous) {
+            try {
+                authorAvatarUrl = await firebase
+                    .storage()
+                    .ref(`avatars/${userData.avatarId}`)
+                    .getDownloadURL();
+            } catch (e) {
+                console.warn("Не вдалося отримати аватар:", e.code);
+            }
+        }
 
-    const commentSnap = await database.ref("comments").once("value");
+        const commentSnap = await database.ref("comments").once("value");
+        const updates = [];
 
-    const updates = [];
+        commentSnap.forEach(child => {
+            const comment = child.val();
 
-    commentSnap.forEach(child => {
-      const comment = child.val();
+            if (comment?.authorUid !== uid) return;
 
-      if (comment.authorUid === uid) {
-        updates.push(
-          database.ref("comments/" + child.key).update({
-            commentAuthor: fullName || "Анонім",
-            authorAvatar: authorAvatarUrl
-          })
+            const commentRef = database.ref(`comments/${child.key}`);
+
+            if (isAnonymous) {
+                updates.push(
+                    commentRef.update({
+                        commentAuthor: "Анонім",
+                        authorStatus: "hidden",
+                        authorAvatar: null
+                    })
+                );
+            } else {
+                const data = {
+                    commentAuthor: fullName || "Анонім",
+                    authorStatus: null
+                };
+
+                if (authorAvatarUrl) {
+                    data.authorAvatar = authorAvatarUrl;
+                }
+
+                updates.push(commentRef.update(data));
+            }
+        });
+
+        await Promise.all(updates);
+
+        console.log(
+            `Коментарі оновлено: ${updates.length}; анонімний режим: ${isAnonymous}`
         );
-      }
-    });
-
-    await Promise.all(updates);
-
-    console.log("Відео оновлено");
-
-  } catch (err) {
-    console.error("Помилка оновлення:", err);
-  }
+    } catch (err) {
+        console.error("Помилка оновлення коментарів:", err);
+    }
 }
 document.getElementById("logout-danger-link").onclick = function() {
             auth.signOut().then(() => {
