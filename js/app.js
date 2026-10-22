@@ -3372,7 +3372,7 @@ if (avatarId) {
   try {
     avatarUrl = await firebase
       .storage()
-      .ref(`avatars/${avatarId}`)
+      .ref(`avatars/${avatarId}.webp`)
       .getDownloadURL();
   } catch (e) {
     console.warn("Не вдалося отримати URL аватара:", e);
