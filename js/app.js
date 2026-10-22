@@ -2618,7 +2618,7 @@ anonymousProfile.addEventListener("change", async () => {
         updatePhotosAuthor(),
         updateCommentsAuthor()
     ]);
-    
+
     console.log("Анонімний режим:", isAnonymous);
     } catch (err) {
         console.error("Не вдалося оновити анонімний режим:", err);
@@ -5293,7 +5293,11 @@ auth.onAuthStateChanged(async (user) => {
 // =========================
 // 💙 SUPPORT REQUESTS
 // =========================
-
+if (userSnap.anonymous === true) {
+    anonymousProfile.checked = true;
+} else {
+    anonymousProfile.checked = false;
+}
 
         // ✔️ EMAIL VERIFY GATE
         if (!user.emailVerified) {
