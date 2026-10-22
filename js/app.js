@@ -3364,12 +3364,29 @@ async function unFreezeUser(uid) {
             .orderByChild("authorUid")
             .equalTo(uid)
             .once("value");
+let avatarUrl = null;
 
+const avatarId = userSnap.val()?.avatarId;
+
+if (avatarId) {
+  try {
+    avatarUrl = await firebase
+      .storage()
+      .ref(`avatars/${avatarId}`)
+      .getDownloadURL();
+  } catch (e) {
+    console.warn("Не вдалося отримати URL аватара:", e);
+  }
+}
         const promises = [];
 
         snap.forEach(child => {
             promises.push(
-                database.ref(`videos/${child.key}/authorStatus`).set(status)
+                database.ref(`videos/${child.key}`).update({ 
+                    authorStatus: null,
+                    author: `${userSnap.val()?.name} ${userSnap.val()?.supername || ""}`,
+                    authorAvatar: avatarUrl || null
+                })
             );
         });
 
@@ -3415,7 +3432,12 @@ async function freezeUser(uid, status = "frozen_soft") {
 
         snap.forEach(child => {
             promises.push(
-                database.ref(`videos/${child.key}/authorStatus`).set(status)
+                database.ref(`videos/${child.key}`).update({ 
+                    authorStatus: status,
+                    author: null,
+                    authorAvatar: null
+                })
+                
             );
         });
 
