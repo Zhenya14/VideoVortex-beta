@@ -2609,21 +2609,29 @@ anonymousProfile.addEventListener("change", async () => {
 
     const isAnonymous = anonymousProfile.checked;
 
+    anonymousProfile.disabled = true;
+
     try {
         await database.ref(`users/${user.uid}`).update({
             anonymous: isAnonymous
         });
-    await Promise.all([
-        updateVideosAuthor(),
-        updatePhotosAuthor(),
-        updateCommentsAuthor()
-    ]);
 
-    console.log("Анонімний режим:", isAnonymous);
+        await Promise.all([
+            updateVideosAuthor(),
+            updatePhotosAuthor(),
+            updateCommentsAuthor()
+        ]);
+
+        console.log("Анонімний режим:", isAnonymous);
     } catch (err) {
         console.error("Не вдалося оновити анонімний режим:", err);
+
+        // Повертаємо перемикач до збереженого стану
+        anonymousProfile.checked = !isAnonymous;
+    } finally {
+        anonymousProfile.disabled = false;
     }
-})
+});
 
 
 async function moderatorRestoreAllAuthorsOnce() {
