@@ -2685,7 +2685,7 @@ anonymousProfile.addEventListener("change", async () => {
 
             if (user.avatarId && !(user.avatarId in avatarCache)) {
                 avatarCache[user.avatarId] = storage
-                    .ref(`avatars/${user.avatarId}`)
+                    .ref(`avatars/${user.avatarId}.webp`)
                     .getDownloadURL()
                     .catch(() => null);
             }
