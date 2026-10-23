@@ -2623,8 +2623,7 @@ anonymousProfile.addEventListener("change", async () => {
     } catch (err) {
         console.error("Не вдалося оновити анонімний режим:", err);
     }
-});
-
+})
 
 
 async function moderatorRestoreAllAuthorsOnce() {
@@ -2632,11 +2631,13 @@ async function moderatorRestoreAllAuthorsOnce() {
     const storage = firebase.storage();
     const moderator = firebase.auth().currentUser;
 
+    // true = лише перевірка, без змін у базі
+    const DRY_RUN = true;
+
     if (!moderator) {
         throw new Error("Спочатку увійди в акаунт модератора.");
     }
 
-    // Перевірка ролі
     const roleSnap = await db
         .ref(`users/${moderator.uid}/role`)
         .once("value");
@@ -2645,115 +2646,109 @@ async function moderatorRestoreAllAuthorsOnce() {
         throw new Error("Недостатньо прав модератора.");
     }
 
-    // Завантажуємо профілі
-    const usersSnap = await db.ref("users").once("value");
-    const users = usersSnap.val() || {};
-
     const collections = [
         { path: "videos", nameField: "author" },
         { path: "photos", nameField: "author" },
         { path: "comments", nameField: "commentAuthor" }
     ];
 
+    const profileCache = new Map();
     const avatarCache = new Map();
     const updates = {};
     let restored = 0;
     let skipped = 0;
     let avatarMissing = 0;
 
-    async function getAvatarUrl(userData) {
-        if (!userData?.avatarId) return null;
+    async function getProfile(uid) {
+        if (!profileCache.has(uid)) {
+            profileCache.set(
+                uid,
+                db.ref(`users/${uid}`).once("value")
+                    .then(snap => snap.val())
+            );
+        }
+        return profileCache.get(uid);
+    }
 
-        const avatarId = userData.avatarId;
+    async function getAvatarUrl(avatarId) {
+        if (!avatarId) return null;
 
         if (!avatarCache.has(avatarId)) {
             avatarCache.set(
                 avatarId,
-                storage.ref(`avatars/${avatarId}.webp`)
+                storage.ref(`avatars/${avatarId}`)
                     .getDownloadURL()
-                    .catch(err => {
-                        console.warn(
-                            "Не вдалося отримати аватар:",
-                            avatarId,
-                            err.code
-                        );
-                        return null;
-                    })
+                    .catch(() => null)
             );
         }
-
         return avatarCache.get(avatarId);
     }
 
     for (const collection of collections) {
         const snap = await db.ref(collection.path).once("value");
 
-        for (const child of Object.values(snap.val() || {})) {
-            const record = child;
-            const uid = record?.authorUid;
-            const userData = uid ? users[uid] : null;
+        const jobs = [];
 
-            if (!userData || userData.anonymous === true) {
-                skipped++;
-                continue;
-            }
+        snap.forEach(child => {
+            jobs.push((async () => {
+                const record = child.val();
+                const uid = record?.authorUid;
 
-            const fullName =
-                `${userData.name || ""} ${userData.supername || ""}`.trim();
+                if (!uid) {
+                    skipped++;
+                    return;
+                }
 
-            if (!fullName) {
-                skipped++;
-                continue;
-            }
+                // Отримуємо профіль саме за UID цього запису
+                const userData = await getProfile(uid);
 
-            // Визначаємо ID запису через окремий прохід нижче
-        }
+                if (!userData || userData.anonymous === true) {
+                    skipped++;
+                    return;
+                }
 
-        snap.forEach(async child => {
-            const record = child.val();
-            const uid = record?.authorUid;
-            const userData = uid ? users[uid] : null;
+                const fullName =
+                    `${userData.name || ""} ${userData.supername || ""}`.trim();
 
-            if (!userData || userData.anonymous === true) return;
+                if (!fullName) {
+                    skipped++;
+                    return;
+                }
 
-            const fullName =
-                `${userData.name || ""} ${userData.supername || ""}`.trim();
+                const base = `${collection.path}/${child.key}`;
 
-            if (!fullName) return;
+                updates[`${base}/${collection.nameField}`] = fullName;
+                updates[`${base}/authorStatus`] = null;
 
-            const base = `${collection.path}/${child.key}`;
+                const avatarUrl = await getAvatarUrl(userData.avatarId);
 
-            updates[`${base}/${collection.nameField}`] = fullName;
-            updates[`${base}/authorStatus`] = null;
+                if (avatarUrl) {
+                    updates[`${base}/authorAvatar`] = avatarUrl;
+                } else {
+                    avatarMissing++;
+                }
 
-            const avatarUrl = await getAvatarUrl(userData);
-
-            if (avatarUrl) {
-                updates[`${base}/authorAvatar`] = avatarUrl;
-            } else {
-                avatarMissing++;
-            }
+                restored++;
+            })());
         });
+
+        await Promise.all(jobs);
     }
 
-    // Дочекаємося підготовки всіх аватарів та оновлень
-    await Promise.all(
-        [...avatarCache.values()]
-    );
+    console.log("Підготовлено:", {
+        restored,
+        skipped,
+        avatarMissing,
+        fields: Object.keys(updates).length,
+        preview: Object.entries(updates).slice(0, 20)
+    });
 
-    // ВАЖЛИВО: snap.forEach з async callback не очікується.
-    // Тому використовуй наведений нижче синхронний варіант замість цього
-    // блоку, якщо updates залишився порожнім або неповним.
-    if (Object.keys(updates).length === 0) {
-        console.warn("Немає підготовлених оновлень. Перевір authorUid і правила.");
+    if (DRY_RUN) {
+        console.warn("ТЕСТОВИЙ РЕЖИМ: база не змінювалася.");
         return;
     }
 
-    console.log("Підготовлено змін:", Object.keys(updates).length);
-    console.log("Пропущено записів:", skipped);
-    console.log("Аватарів не знайдено:", avatarMissing);
-
-    // Оновлюємо записи окремо, щоб визначити шляхи з помилками
+    // Записуємо окремо, щоб визначити заборонені правилами поля
     let saved = 0;
     let failed = 0;
 
@@ -2767,8 +2762,15 @@ async function moderatorRestoreAllAuthorsOnce() {
         }
     }
 
-    console.log("Завершено:", { saved, failed, skipped, avatarMissing });
+    console.log("Завершено:", {
+        restored,
+        saved,
+        failed,
+        skipped,
+        avatarMissing
+    });
 }
+
 
 const migrateUsersToPublicUsers =
     firebase.functions().httpsCallable(
