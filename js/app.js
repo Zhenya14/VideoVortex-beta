@@ -2624,6 +2624,106 @@ anonymousProfile.addEventListener("change", async () => {
         console.error("Не вдалося оновити анонімний режим:", err);
     }
 });
+
+async function moderatorRestoreAuthors(targetUid) {
+    const db = firebase.database();
+    const storage = firebase.storage();
+    const moderator = firebase.auth().currentUser;
+
+    if (!moderator || !targetUid) {
+        console.warn("Потрібен вхід і UID користувача.");
+        return false;
+    }
+
+    try {
+        // Перевіряємо роль модератора
+        const roleSnap = await db
+            .ref(`users/${moderator.uid}/role`)
+            .once("value");
+
+        if (roleSnap.val() !== "moderator") {
+            console.error("Недостатньо прав.");
+            return false;
+        }
+
+        // Дані користувача, якого потрібно відновити
+        const userSnap = await db.ref(`users/${targetUid}`).once("value");
+        const userData = userSnap.val();
+
+        if (!userData) {
+            console.error("Користувача не знайдено.");
+            return false;
+        }
+
+        // Не розкриваємо профіль, якщо анонімність досі увімкнена
+        if (userData.anonymous === true) {
+            console.warn("Спочатку потрібно вимкнути анонімний режим.");
+            return false;
+        }
+
+        const fullName =
+            `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+        if (!fullName) {
+            console.error("Ім'я користувача відсутнє.");
+            return false;
+        }
+
+        let avatarUrl = null;
+
+        if (userData.avatarId) {
+            try {
+                avatarUrl = await storage
+                    .ref(`avatars/${userData.avatarId}.webp`)
+                    .getDownloadURL();
+            } catch (e) {
+                console.warn("Не вдалося отримати аватар:", e.code);
+            }
+        }
+
+        const collections = [
+            { path: "videos", nameField: "author" },
+            { path: "photos", nameField: "author" },
+            { path: "comments", nameField: "commentAuthor" }
+        ];
+
+        let restored = 0;
+
+        for (const collection of collections) {
+            const snap = await db.ref(collection.path)
+                .orderByChild("authorUid")
+                .equalTo(targetUid)
+                .once("value");
+
+            const updates = {};
+
+            snap.forEach(child => {
+                const base = `${collection.path}/${child.key}`;
+
+                updates[`${base}/${collection.nameField}`] = fullName;
+                updates[`${base}/authorStatus`] = null;
+
+                if (avatarUrl) {
+                    updates[`${base}/authorAvatar`] = avatarUrl;
+                }
+
+                restored++;
+            });
+
+            if (Object.keys(updates).length) {
+                await db.ref().update(updates);
+            }
+        }
+
+        console.log(`Відновлено записів: ${restored}`);
+        return true;
+
+    } catch (err) {
+        console.error("Помилка відновлення:", err);
+        return false;
+    }
+}
+
 const migrateUsersToPublicUsers =
     firebase.functions().httpsCallable(
         "migrateUsersToPublicUsers"
