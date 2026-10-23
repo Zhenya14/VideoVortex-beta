@@ -2669,7 +2669,7 @@ async function moderatorRestoreAllAuthorsOnce() {
         if (!avatarCache.has(avatarId)) {
             avatarCache.set(
                 avatarId,
-                storage.ref(`avatars/${avatarId}`)
+                storage.ref(`avatars/${avatarId}.webp`)
                     .getDownloadURL()
                     .catch(err => {
                         console.warn(
