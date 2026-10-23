@@ -2603,35 +2603,8 @@ function createThumbnail(file) {
 
  });
 }
-anonymousProfile.addEventListener("change", async () => {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
 
-    const isAnonymous = anonymousProfile.checked;
 
-    anonymousProfile.disabled = true;
-
-    try {
-        await database.ref(`users/${user.uid}`).update({
-            anonymous: isAnonymous
-        });
-
-        await Promise.all([
-            updateVideosAuthor(),
-            updatePhotosAuthor(),
-            updateCommentsAuthor()
-        ]);
-
-        console.log("Анонімний режим:", isAnonymous);
-    } catch (err) {
-        console.error("Не вдалося оновити анонімний режим:", err);
-
-        // Повертаємо перемикач до збереженого стану
-        anonymousProfile.checked = !isAnonymous;
-    } finally {
-        anonymousProfile.disabled = false;
-    }
-});
 
 
 async function moderatorRestoreAllAuthorsOnce() {
@@ -2639,7 +2612,8 @@ async function moderatorRestoreAllAuthorsOnce() {
     const storage = firebase.storage();
     const moderator = firebase.auth().currentUser;
 
-    // true = лише перевірка, без змін у базі
+    // Спочатку перевірка без запису в базу.
+    // Після перевірки звіту зміни на false.
     const DRY_RUN = true;
 
     if (!moderator) {
@@ -2662,10 +2636,13 @@ async function moderatorRestoreAllAuthorsOnce() {
 
     const profileCache = new Map();
     const avatarCache = new Map();
-    const updates = {};
+
+    let scanned = 0;
     let restored = 0;
     let skipped = 0;
     let avatarMissing = 0;
+    let failed = 0;
+    let saved = 0;
 
     async function getProfile(uid) {
         if (!profileCache.has(uid)) {
@@ -2675,40 +2652,83 @@ async function moderatorRestoreAllAuthorsOnce() {
                     .then(snap => snap.val())
             );
         }
+
         return profileCache.get(uid);
     }
 
     async function getAvatarUrl(avatarId) {
         if (!avatarId) return null;
 
+        const id = String(avatarId);
+        const avatarPath = id.startsWith("avatars/")
+            ? id
+            : `avatars/${id.endsWith(".webp") ? id : `${id}.webp`}`;
+
         if (!avatarCache.has(avatarId)) {
             avatarCache.set(
                 avatarId,
-                storage.ref(`avatars/${avatarId}`)
+                storage.ref(avatarPath)
                     .getDownloadURL()
-                    .catch(() => null)
+                    .catch(err => {
+                        console.warn(
+                            "Аватар недоступний:",
+                            avatarPath,
+                            err.code || err.message
+                        );
+                        return null;
+                    })
             );
         }
+
         return avatarCache.get(avatarId);
     }
 
     for (const collection of collections) {
-        const snap = await db.ref(collection.path).once("value");
+        let snap;
+
+        try {
+            snap = await db.ref(collection.path).once("value");
+        } catch (err) {
+            console.error(
+                `Не вдалося прочитати ${collection.path}:`,
+                err.code || err.message
+            );
+            throw err;
+        }
 
         const jobs = [];
 
         snap.forEach(child => {
-            jobs.push((async () => {
+            jobs.push(async () => {
+                scanned++;
+
                 const record = child.val();
-                const uid = record?.authorUid;
+
+                // UID саме автора запису, не поточного модератора.
+                const uid = record?.authorUid || record?.targetUid;
 
                 if (!uid) {
                     skipped++;
+                    console.warn("Пропущено запис без UID:", {
+                        path: collection.path,
+                        id: child.key
+                    });
                     return;
                 }
 
-                // Отримуємо профіль саме за UID цього запису
-                const userData = await getProfile(uid);
+                let userData;
+
+                try {
+                    userData = await getProfile(uid);
+                } catch (err) {
+                    failed++;
+                    console.error("Помилка читання профілю:", {
+                        uid,
+                        code: err.code,
+                        message: err.message
+                    });
+                    return;
+                }
 
                 if (!userData || userData.anonymous === true) {
                     skipped++;
@@ -2720,64 +2740,79 @@ async function moderatorRestoreAllAuthorsOnce() {
 
                 if (!fullName) {
                     skipped++;
+                    console.warn("У профілі немає імені:", uid);
                     return;
                 }
 
                 const base = `${collection.path}/${child.key}`;
 
-                updates[`${base}/${collection.nameField}`] = fullName;
-                updates[`${base}/authorStatus`] = null;
+                const changes = {
+                    [collection.nameField]: fullName,
+                    authorStatus: null
+                };
 
                 const avatarUrl = await getAvatarUrl(userData.avatarId);
 
                 if (avatarUrl) {
-                    updates[`${base}/authorAvatar`] = avatarUrl;
+                    changes.authorAvatar = avatarUrl;
                 } else {
                     avatarMissing++;
                 }
 
+                console.log("Підготовлено:", {
+                    path: base,
+                    authorUid: uid,
+                    author: fullName,
+                    avatarFound: Boolean(avatarUrl)
+                });
+
                 restored++;
-            })());
+
+                if (DRY_RUN) return;
+
+                try {
+                    await db.ref(base).update(changes);
+                    saved++;
+                } catch (err) {
+                    failed++;
+                    console.error("Не вдалося оновити:", {
+                        path: base,
+                        code: err.code,
+                        message: err.message
+                    });
+                }
+            });
         });
 
-        await Promise.all(jobs);
-    }
+        // Обробляємо групами, щоб не запускати тисячі запитів одночасно.
+        const batchSize = 20;
 
-    console.log("Підготовлено:", {
-        restored,
-        skipped,
-        avatarMissing,
-        fields: Object.keys(updates).length,
-        preview: Object.entries(updates).slice(0, 20)
-    });
-
-    if (DRY_RUN) {
-        console.warn("ТЕСТОВИЙ РЕЖИМ: база не змінювалася.");
-        return;
-    }
-
-    // Записуємо окремо, щоб визначити заборонені правилами поля
-    let saved = 0;
-    let failed = 0;
-
-    for (const [path, value] of Object.entries(updates)) {
-        try {
-            await db.ref(path).set(value);
-            saved++;
-        } catch (err) {
-            failed++;
-            console.error("Не вдалося оновити:", path, err.code || err);
+        for (let i = 0; i < jobs.length; i += batchSize) {
+            await Promise.all(
+                jobs.slice(i, i + batchSize).map(job => job())
+            );
         }
     }
 
-    console.log("Завершено:", {
+    console.log("Підсумок:", {
+        dryRun: DRY_RUN,
+        scanned,
         restored,
         saved,
-        failed,
         skipped,
+        failed,
         avatarMissing
     });
+
+    if (DRY_RUN) {
+        console.warn(
+            "Тестовий режим: база не змінена. Перевір звіт перед записом."
+        );
+    }
 }
+
+moderatorRestoreAllAuthorsOnce().catch(console.error);
+
 
 
 const migrateUsersToPublicUsers =
