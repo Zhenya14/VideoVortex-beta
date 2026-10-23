@@ -2614,7 +2614,7 @@ async function moderatorRestoreAllAuthorsOnce() {
 
     // Спочатку перевірка без запису в базу.
     // Після перевірки звіту зміни на false.
-    const DRY_RUN = true;
+    const DRY_RUN = false;
 
     if (!moderator) {
         throw new Error("Спочатку увійди в акаунт модератора.");
@@ -5484,11 +5484,7 @@ auth.onAuthStateChanged(async (user) => {
 // =========================
 // 💙 SUPPORT REQUESTS
 // =========================
-if (userSnap.anonymous === true) {
-    anonymousProfile.checked = true;
-} else {
-    anonymousProfile.checked = false;
-}
+
 
         // ✔️ EMAIL VERIFY GATE
         if (!user.emailVerified) {
