@@ -2626,125 +2626,148 @@ anonymousProfile.addEventListener("change", async () => {
 });
 
 
-    async function moderatorRestoreAllAuthorsOnce() {
+
+async function moderatorRestoreAllAuthorsOnce() {
     const db = firebase.database();
     const storage = firebase.storage();
     const moderator = firebase.auth().currentUser;
 
     if (!moderator) {
-        console.error("Спочатку увійди в акаунт модератора.");
-        return;
+        throw new Error("Спочатку увійди в акаунт модератора.");
     }
 
+    // Перевірка ролі
     const roleSnap = await db
         .ref(`users/${moderator.uid}/role`)
         .once("value");
 
     if (roleSnap.val() !== "moderator") {
-        console.error("Недостатньо прав.");
-        return;
+        throw new Error("Недостатньо прав модератора.");
     }
 
+    // Завантажуємо профілі
     const usersSnap = await db.ref("users").once("value");
     const users = usersSnap.val() || {};
-    const avatarCache = {};
+
     const collections = [
         { path: "videos", nameField: "author" },
         { path: "photos", nameField: "author" },
         { path: "comments", nameField: "commentAuthor" }
     ];
 
+    const avatarCache = new Map();
     const updates = {};
     let restored = 0;
     let skipped = 0;
+    let avatarMissing = 0;
 
-    for (const { path, nameField } of collections) {
-        const snap = await db.ref(path).once("value");
+    async function getAvatarUrl(userData) {
+        if (!userData?.avatarId) return null;
 
-        snap.forEach(child => {
-            const record = child.val();
+        const avatarId = userData.avatarId;
+
+        if (!avatarCache.has(avatarId)) {
+            avatarCache.set(
+                avatarId,
+                storage.ref(`avatars/${avatarId}`)
+                    .getDownloadURL()
+                    .catch(err => {
+                        console.warn(
+                            "Не вдалося отримати аватар:",
+                            avatarId,
+                            err.code
+                        );
+                        return null;
+                    })
+            );
+        }
+
+        return avatarCache.get(avatarId);
+    }
+
+    for (const collection of collections) {
+        const snap = await db.ref(collection.path).once("value");
+
+        for (const child of Object.values(snap.val() || {})) {
+            const record = child;
             const uid = record?.authorUid;
-            const user = uid ? users[uid] : null;
+            const userData = uid ? users[uid] : null;
 
-            if (!user || user.anonymous === true) {
+            if (!userData || userData.anonymous === true) {
                 skipped++;
-                return;
+                continue;
             }
 
             const fullName =
-                `${user.name || ""} ${user.supername || ""}`.trim();
+                `${userData.name || ""} ${userData.supername || ""}`.trim();
 
             if (!fullName) {
                 skipped++;
-                return;
+                continue;
             }
 
-            const base = `${path}/${child.key}`;
-            updates[`${base}/${nameField}`] = fullName;
+            // Визначаємо ID запису через окремий прохід нижче
+        }
+
+        snap.forEach(async child => {
+            const record = child.val();
+            const uid = record?.authorUid;
+            const userData = uid ? users[uid] : null;
+
+            if (!userData || userData.anonymous === true) return;
+
+            const fullName =
+                `${userData.name || ""} ${userData.supername || ""}`.trim();
+
+            if (!fullName) return;
+
+            const base = `${collection.path}/${child.key}`;
+
+            updates[`${base}/${collection.nameField}`] = fullName;
             updates[`${base}/authorStatus`] = null;
 
-            if (user.avatarId && !(user.avatarId in avatarCache)) {
-                avatarCache[user.avatarId] = storage
-                    .ref(`avatars/${user.avatarId}.webp`)
-                    .getDownloadURL()
-                    .catch(() => null);
-            }
+            const avatarUrl = await getAvatarUrl(userData);
 
-            restored++;
+            if (avatarUrl) {
+                updates[`${base}/authorAvatar`] = avatarUrl;
+            } else {
+                avatarMissing++;
+            }
         });
     }
 
-    for (const { path } of collections) {
-        const snap = await db.ref(path).once("value");
+    // Дочекаємося підготовки всіх аватарів та оновлень
+    await Promise.all(
+        [...avatarCache.values()]
+    );
 
-        for (const child of Object.values(snap.val() || {})) {
-            const uid = child?.authorUid;
-            const user = uid ? users[uid] : null;
+    // ВАЖЛИВО: snap.forEach з async callback не очікується.
+    // Тому використовуй наведений нижче синхронний варіант замість цього
+    // блоку, якщо updates залишився порожнім або неповним.
+    if (Object.keys(updates).length === 0) {
+        console.warn("Немає підготовлених оновлень. Перевір authorUid і правила.");
+        return;
+    }
 
-            if (!user || user.anonymous === true || !user.avatarId) continue;
+    console.log("Підготовлено змін:", Object.keys(updates).length);
+    console.log("Пропущено записів:", skipped);
+    console.log("Аватарів не знайдено:", avatarMissing);
 
-            const url = await avatarCache[user.avatarId];
-            if (url) {
-                // Поле authorAvatar обновляется ниже по UID,
-                // чтобы не перепутать авторов разных записей.
-            }
+    // Оновлюємо записи окремо, щоб визначити шляхи з помилками
+    let saved = 0;
+    let failed = 0;
+
+    for (const [path, value] of Object.entries(updates)) {
+        try {
+            await db.ref(path).set(value);
+            saved++;
+        } catch (err) {
+            failed++;
+            console.error("Не вдалося оновити:", path, err.code || err);
         }
     }
 
-    // Добавляем аватары каждому соответствующему автору
-    for (const { path } of collections) {
-        const snap = await db.ref(path).once("value");
-
-        snap.forEach(child => {
-            const record = child.val();
-            const user = record?.authorUid
-                ? users[record.authorUid]
-                : null;
-
-            if (!user || user.anonymous === true || !user.avatarId) return;
-
-            const urlPromise = avatarCache[user.avatarId];
-            if (!urlPromise) return;
-
-            // URL уже кешований як Promise
-            urlPromise.then(url => {
-                if (url) {
-                    db.ref(`${path}/${child.key}/authorAvatar`).set(url)
-                        .catch(console.error);
-                }
-            });
-        });
-    }
-
-    for (const [path, value] of Object.entries(updates)) {
-    try {
-        await db.ref(path).set(value);
-    } catch (err) {
-        console.error("Не вдалося оновити:", path, value, err);
-    }
-}
-
-    console.log("Відновлення завершено:", { restored, skipped });
+    console.log("Завершено:", { saved, failed, skipped, avatarMissing });
 }
 
 const migrateUsersToPublicUsers =
