@@ -2736,9 +2736,13 @@ anonymousProfile.addEventListener("change", async () => {
         });
     }
 
-    if (Object.keys(updates).length) {
-        await db.ref().update(updates);
+    for (const [path, value] of Object.entries(updates)) {
+    try {
+        await db.ref(path).set(value);
+    } catch (err) {
+        console.error("Не вдалося оновити:", path, value, err);
     }
+}
 
     console.log("Відновлення завершено:", { restored, skipped });
 }
