@@ -68,7 +68,20 @@ if ("serviceWorker" in navigator) {
         />
     </filter>
 </svg>
-  
+  <svg aria-hidden="true" width="0" height="0"
+     style="position:absolute">
+  <filter id="vv-goo">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="3"
+                    result="blur"/>
+    <feColorMatrix in="blur" mode="matrix"
+      values="1 0 0 0 0
+              0 1 0 0 0
+              0 0 1 0 0
+              0 0 0 18 -7" result="goo"/>
+    <feComposite in="SourceGraphic" in2="goo"
+                  operator="atop"/>
+  </filter>
+</svg>
         <script defer>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -292,25 +305,37 @@ if ("serviceWorker" in navigator) {
   <option value="second">Другий канал</option>
 </select>
 <br>
-<span data-i18n ="disabled-comments-checkbox">Вимкнути коментарі</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="slider round"></span></label>        
+<span data-i18n ="disabled-comments-checkbox">Вимкнути коментарі</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="liquid-toggle" aria-hidden="true"> <span class="liquid-track"></span> <span class="liquid-fill"></span><span class="liquid-knob"></span><span class="liquid-fill"></span></label>        
      <br>
      <p style="text-align: center;" data-i18n="settings-privacy">Налаштування приватності:</p>
       <span data-i18n="auto-delete-24h">Видалити через 24 години</span> <sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup>
      <label class="switch" for="auto-delete-24h">
-  <input type="checkbox" id="auto-delete-24h"><span class="slider round"></span></label>
+  <input type="checkbox" id="auto-delete-24h"><span class="liquid-toggle" aria-hidden="true"><span class="liquid-track"></span><span class="liquid-fill"></span><span class="liquid-knob"></span></label>
   <br>
-   <span data-i18n="private-video-checkbox">Приватне відео</span><label class="switch" for="private-video-checkbox"><input type="checkbox" id="private-video-checkbox"><span class="slider round"></span></label>
+   <span data-i18n="private-video-checkbox">Приватне відео</span><label class="switch" for="private-video-checkbox"><input type="checkbox" id="private-video-checkbox"><span class="liquid-toggle" aria-hidden="true">
+     <span class="liquid-track"></span>
+    <span class="liquid-fill"></span>
+    <span class="liquid-knob"></span></label>
    <br>
-<span data-i18n="save-video-checkbox">Заборонити збереження відео</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="slider round"></span></label>
+<span data-i18n="save-video-checkbox">Заборонити збереження відео</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="liquid-toggle" aria-hidden="true">
+    <span class="liquid-track"></span>
+  <span class="liquid-fill"></span>
+    <span class="liquid-knob"></span></label>
 <div id="domain-restrict-container" style="margin-top: 10px;">
     <br>
         <span data-i18n="domain-restrict-checkbox">Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
-        <input type="checkbox" id="domain-restrict-checkbox"><span class="slider round"></span></label>
+        <input type="checkbox" id="domain-restrict-checkbox"><span class="liquid-toggle" aria-hidden="true">
+    <span class="liquid-track"></span>
+          <span class="liquid-fill"></span>
+    <span class="liquid-knob"></span></label>
 </div>
 <br>
 <div id="nsfw-container" style="margin-top: 10px;">
            <span>Позначити відео як NSFW</span><label class="switch">
-        <input type="checkbox" id="nsfw"><span class="slider round"></span></label>
+        <input type="checkbox" id="nsfw"><span class="liquid-toggle" aria-hidden="true">
+    <span class="liquid-track"></span>
+          <span class="liquid-fill"></span>
+    <span class="liquid-knob"></span></label>
            <br>
            </div>
     <div id="bandura-options" style="display:none; margin-top:10px;">
@@ -436,7 +461,9 @@ if ("serviceWorker" in navigator) {
   <option value="second" data-i18n="second-channel">Другий канал</option>
 </select>
 
-<span data-i18n="private-photo-checkbox">Приватне фото</span><label class="switch" for="private-photo-checkbox"><input type="checkbox" id="private-photo-checkbox"><span class="slider round"></span></label>
+<span data-i18n="private-photo-checkbox">Приватне фото</span><label class="switch" for="private-photo-checkbox"><input type="checkbox" id="private-photo-checkbox"><span class="liquid-toggle" aria-hidden="true">
+    <span class="liquid-track"></span>
+    <span class="liquid-knob"></span></label>
 <br>
             <div id="progress-photo-container" style="display: none; margin-top: 10px;">
                 <progress id="upload-photo-progress" value="0" max="100"></progress>
@@ -601,7 +628,9 @@ if ("serviceWorker" in navigator) {
     <input type="file" id="action-btn" accept="image/*">
 </div>
 
- <span>Приватне відео</span><label class="switch" for="edit-private-checkbox"><input type="checkbox" id="edit-private-checkbox"><span class="slider round"></span></label>
+ <span>Приватне відео</span><label class="switch" for="edit-private-checkbox"><input type="checkbox" id="edit-private-checkbox"><span class="liquid-toggle" aria-hidden="true">
+    <span class="liquid-track"></span>
+    <span class="liquid-knob"></span></label>
             <button id="edit-button" onclick="saveVideoChanges()" data-i18n="save">Зберегти</button>
         </div>
         </div>

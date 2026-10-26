@@ -101,6 +101,78 @@ async function registerPushToken(user) {
   }
 }
 
+document.querySelectorAll(".switch").forEach(sw => {
+  const input = sw.querySelector('input[type="checkbox"]');
+  const toggle = sw.querySelector(".liquid-toggle");
+  const knob = sw.querySelector(".liquid-knob");
+  const fill = sw.querySelector(".liquid-fill");
+
+  if (!input || !toggle || !knob || !fill ||
+      sw.dataset.liquidReady) return;
+
+  sw.dataset.liquidReady = "true";
+
+  const max = 22;
+  let startX = 0;
+  let startPos = 0;
+  let pos = input.checked ? max : 0;
+  let dragging = false;
+  let moved = false;
+
+  function render(value, stretch = 0) {
+    pos = Math.max(0, Math.min(max, value));
+    toggle.style.setProperty("--pos", `${pos}px`);
+    toggle.style.setProperty("--stretch", `${stretch}px`);
+  }
+
+  function sync() {
+    render(input.checked ? max : 0);
+  }
+
+  toggle.addEventListener("pointerdown", e => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    dragging = true;
+    moved = false;
+    startX = e.clientX;
+    startPos = input.checked ? max : 0;
+    toggle.classList.add("is-dragging");
+
+    try {
+      toggle.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  });
+
+  toggle.addEventListener("pointermove", e => {
+    if (!dragging) return;
+
+    const delta = e.clientX - startX;
+    if (Math.abs(delta) > 4) moved = true;
+    if (!moved) return;
+
+    render(startPos + delta, Math.min(8, Math.abs(delta) * .25));
+  });
+
+  function finish() {
+    if (!dragging) return;
+
+    dragging = false;
+    toggle.classList.remove("is-dragging");
+
+    if (moved) {
+      input.checked = pos >= max / 2;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    sync();
+  }
+
+  toggle.addEventListener("pointerup", finish);
+  toggle.addEventListener("pointercancel", finish);
+  input.addEventListener("change", sync);
+
+  sync();
+});
 
 function showNotificationAIModal() {
   notificationAI.style.display = "flex";

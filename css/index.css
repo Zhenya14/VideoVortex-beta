@@ -10,89 +10,138 @@ button *,
     -webkit-tap-highlight-color: transparent !important;
 }
 /* Стиль повзунка */
-.switch {
+
+/* VideoVortex — Liquid Glass Toggle */
+/* Контейнер перемикача */
+label.switch {
   position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  min-width: 52px;
+  max-width: 52px;
+  height: 30px;
+  min-height: 30px;
+  flex: 0 0 52px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  vertical-align: middle;
 }
 
-.switch input { 
+/* Справжній checkbox */
+label.switch > input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
   opacity: 0;
-  width: 0;
-  height: 0;
+  pointer-events: none;
 }
 
-.slider {
+/* Область перемикача */
+label.switch > .liquid-toggle {
+  --pos: 0px;
+  --stretch: 0px;
+
   position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 100px;
   cursor: pointer;
-  background-color: red;
-  border-radius: 34px;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  transition: 0.4s;
-}
-/* Базовий стиль для ВСІХ плашок NEW */
-.badge-new {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  background-color: #ee686f; /* Рожево-червоний колір Telegram */
-  color: #ffffff;
-  padding: 2px 5px;
-  border-radius: 6px;
-  line-height: 1;
-  text-transform: uppercase;
-  vertical-align: middle; /* Вирівнює по центру рядка */
+  filter: url("#vv-goo");
+  touch-action: pan-y;
+  isolation: isolate;
 }
 
-/* Специфічний стиль ТІЛЬКИ для бейджа всередині КНОПКИ (Архів) */
-.archive .badge-new, .your-profile .badge-new {
+/* Доріжка */
+label.switch > .liquid-toggle > .liquid-track {
   position: absolute;
-  top: 10px;
-  right: 14px;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: inherit;
+  background: rgba(140, 145, 160, .35);
+  pointer-events: none;
 }
 
-/* Специфічний стиль ТІЛЬКИ для бейджа всередині ТЕКСТУ (Історія) */
-.history-info .badge-new {
-  position: static;       /* Повертає в нормальний потік тексту */
-  display: inline-block;  /* Дозволяє правильно застосувати відступи */
-  margin-left: 6px;       /* Невеликий відступ від слова "Історія переглядів" */
-}
-.save-video-info .badge-new {
-  position: static;       /* Повертає в нормальний потік тексту */
-  display: inline-block;  /* Дозволяє правильно застосувати відступи */
-  margin-left: 6px;       /* Невеликий відступ від слова "Історія переглядів" */
-}
-.slider:before {
+/* Рідинний шар */
+label.switch > .liquid-toggle > .liquid-fill {
   position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
+  top: 4px;
+  left: 4px;
+  display: block;
+  width: calc(22px + var(--stretch));
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  border-radius: 100px;
+  background: #68bfff;
+  transform: translateX(var(--pos));
+  transition:
+    transform .35s cubic-bezier(.2, .8, .25, 1.3),
+    width .18s ease;
+  pointer-events: none;
+}
+
+/* Скляний кружечок */
+label.switch > .liquid-toggle > .liquid-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: block;
+  width: 22px;
+  min-width: 22px;
+  max-width: none;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, .8);
   border-radius: 50%;
-  transition: 0.4s;
+  background: rgba(255, 255, 255, .72);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, .9),
+    0 2px 5px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  transform: translateX(var(--pos));
+  transition:
+    transform .35s cubic-bezier(.2, .8, .25, 1.3),
+    background .25s ease;
+  pointer-events: none;
 }
 
-input:checked + .slider {
-  background-color: orange;
+/* Увімкнений стан */
+label.switch > input[type="checkbox"]:checked + .liquid-toggle {
+  --pos: 22px;
 }
 
-input:checked + .slider:before {
-  transform: translateX(24px);
+label.switch > input[type="checkbox"]:checked + .liquid-toggle > .liquid-knob {
+  background: rgba(220, 245, 255, .78);
 }
 
-/* Круглі краї */
-.slider.round {
-  border-radius: 34px;
+/* Перетягування */
+label.switch > .liquid-toggle.is-dragging > .liquid-fill,
+label.switch > .liquid-toggle.is-dragging > .liquid-knob {
+  transition: none;
 }
 
-.slider.round:before {
-  border-radius: 50%;
+/* Клавіатурний фокус */
+label.switch > input[type="checkbox"]:focus-visible + .liquid-toggle {
+  outline: 2px solid #8bdcff;
+  outline-offset: 3px;
 }
 .btn-container {
     display: flex;
@@ -2554,6 +2603,16 @@ padding: 2px 5px;
 border-radius: 6px;
 line-height: 1;
 text-transform: uppercase;
+}
+          .history-info .badge-new {
+  position: static;       /* Повертає в нормальний потік тексту */
+  display: inline-block;  /* Дозволяє правильно застосувати відступи */
+  margin-left: 6px;       /* Невеликий відступ від слова "Історія переглядів" */
+}
+.save-video-info .badge-new {
+  position: static;       /* Повертає в нормальний потік тексту */
+  display: inline-block;  /* Дозволяє правильно застосувати відступи */
+  margin-left: 6px;       /* Невеликий відступ від слова "Історія переглядів" */
 }
 /* Блок історії */
 .history-info, .save-video-info {
