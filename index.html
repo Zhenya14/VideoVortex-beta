@@ -109,7 +109,7 @@ if ("serviceWorker" in navigator) {
 </div>
     </div>
 <!-- CAMERA SCREEN -->
-<div id="story-camera" style="display:none; position:fixed; inset:0; background:black; z-index:999;">
+<div id="story-camera" style="display:none; position:fixed; inset:0; background:black; z-index: 100000;">
 
     <!-- Тут буде прев'ю фото або відео -->
     <div id="storyPreview"
@@ -609,9 +609,9 @@ if ("serviceWorker" in navigator) {
         </div>
 
   <div class="stories-bar" id="stories-bar">
-  <div class="story-item" id="story-item" onclick="openYourStories(currentUserUid)">
+  <div class="story-item" id="story-item">
     <div class="avatar-ring seen">
-      <div id="avatar-stories-you" class="avatar-stories"></div>
+      <div id="avatar-stories-you" onclick="openYourStories(currentUserUid)" class="avatar-stories"></div>
     </div>
               <a id="add-story" onclick="openGallery()"><i class="material-symbols">add</i></a>
     <div class="name" id="name" data-i18n="my-story">Моя історія</div>
