@@ -2258,6 +2258,7 @@ display: none;
 #smart-upload-link {
 display: none;
 }
+
 #smart-menu {
 position: fixed;
 left: 50%;
@@ -2748,7 +2749,7 @@ display: none;
         -webkit-backdrop-filter: blur(3px);
         @apply bg-muted/25;
     }
-    .search-box-liquid-glass {
+     .search-box-liquid-glass {
   position: fixed;
   top: 0;
   left: 50%;
@@ -2786,7 +2787,7 @@ isolation: isolate;
   transition: width 0.3s ease, opacity 0.3s ease;
 }
     
-    .tab-liquid-glass {
+     .tab-liquid-glass {
   position: fixed;
   display: flex;
   align-items: center;
@@ -2808,7 +2809,7 @@ background: linear-gradient(
         -webkit-backdrop-filter: blur(3px);
         @apply bg-muted/25;
     }
-    .tg-popup {
+     .tg-popup {
   position: fixed;
   inset: 0;
   display: inline;
@@ -3000,7 +3001,7 @@ border: none;
 outline: none;
 font-size: 18px;
 }
-        .nav a {
+         .nav a {
 height: 50px;
 align-items: center;
     justify-content: space-between;
@@ -3030,7 +3031,7 @@ display: flex;
     box-shadow: 0 0 0 rgb(59 130 246 / 0%);
         }
 
-.search {
+ .search {
 display: inline-block;
 padding: 12px 28px;
 margin: 0 10px;
@@ -3055,6 +3056,43 @@ border: 1px solid rgba(255,255,255,0.08);
 cursor: pointer;
 
 }
+
+/* Полегшений режим VideoVortex */
+.no-liquid-glass #smart-menu,
+.no-liquid-glass .nav a,
+.no-liquid-glass .tab-liquid-glass,
+.no-liquid-glass .tg-popup,
+.no-liquid-glass .open-liquid-glass-menu,
+.no-liquid-glass .search-box-liquid-glass,
+.no-liquid-glass .search {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 18%) !important;
+  background: rgba(35, 40, 52, 0.97) !important;
+}
+
+/* Зберігаємо плавність, але зменшуємо навантаження */
+.no-liquid-glass #smart-menu,
+.no-liquid-glass .nav a,
+.no-liquid-glass .tab-liquid-glass,
+.no-liquid-glass .tg-popup,
+.no-liquid-glass .open-liquid-glass-menu,
+.no-liquid-glass .search-box-liquid-glass,
+.no-liquid-glass .search {
+  transition: background-color 0.15s ease,
+              opacity 0.15s ease !important;
+}
+
+/* Прибираємо синє системне підсвічування на мобільних */
+#smart-menu a,
+#smart-menu button,
+.nav a,
+.search {
+  -webkit-tap-highlight-color: transparent;
+}
+
     @supports not (hanging-punctuation:first) {
         #plus-button, .comment-liquid-glass, .tg-popup-card, .search-box-liquid-glass,#search-input, .tab-liquid-glass, .open-liquid-glass-menu {
             backdrop-filter: url(#displacementFilter) blur(3px);

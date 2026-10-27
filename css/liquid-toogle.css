@@ -70,6 +70,7 @@
 
 /* 2. ЗОВНІШНІЙ СКЛЯНИЙ КОРПУС */
 
+
 .liquid-toggle .wrapper {
   position: absolute;
   z-index: 1;
@@ -95,6 +96,7 @@
     box-shadow .3s ease;
 }
 
+
 .liquid-toggle .wrapper::before {
   content: "";
   position: absolute;
@@ -115,6 +117,7 @@
 
   pointer-events: none;
 }
+
 
 .liquid-toggle .wrapper::after {
   content: "";
@@ -375,7 +378,9 @@
 }
 
 
+
 .liquid-toggle:active .indicator__liquid .cover,
+
 .liquid-toggle.is-moving .indicator__liquid .cover {
   display: block;
 
@@ -405,6 +410,7 @@
 }
 
 /* Плавне повернення до звичайного розміру */
+
 .liquid-toggle .indicator__liquid .cover {
   transition:
     transform .25s cubic-bezier(.22, 1, .36, 1),
@@ -413,7 +419,9 @@
 }
 
 
+
 .liquid-toggle:active .indicator__liquid .shadow,
+
 .liquid-toggle.is-moving .indicator__liquid .shadow {
   border-color: rgb(255 255 255 / 50%) !important;
 
@@ -423,12 +431,16 @@
 }
 
 /* Активний стан: приховуємо головку тільки ПІСЛЯ руху */
+
 .liquid-toggle[data-active="true"]:not(.is-moving):not(:active)
   .indicator__liquid,
+
 .liquid-toggle[data-active="true"]:not(.is-moving):not(:active)
   .indicator__liquid .cover,
+
 .liquid-toggle[data-active="true"]:not(.is-moving):not(:active)
   .indicator__liquid .shadow,
+
 .liquid-toggle[data-active="true"]:not(.is-moving):not(:active)
   .indicator--masked .mask {
 opacity: 1;
@@ -437,11 +449,13 @@ opacity: 1;
 
 /* Під час перемикання активного стану маска не повинна
    перекривати скляну головку */
+
 .liquid-toggle[data-active="true"].is-moving
   .indicator--masked .mask {
   opacity: 0 !important;
   visibility: hidden !important;
 }
+
 .liquid-toggle[data-active="false"].is-moving
   .indicator--masked .mask {
   opacity: 0 !important;
@@ -449,9 +463,13 @@ opacity: 1;
   }
 
 /* У вимкненому стані повертаємо білу головку */
+
 .liquid-toggle[data-active="false"] .indicator__liquid,
+
 .liquid-toggle[data-active="false"] .indicator__liquid .cover,
+
 .liquid-toggle[data-active="false"] .indicator__liquid .shadow,
+
 .liquid-toggle[data-active="false"] .indicator--masked .mask {
   opacity: 1;
   visibility: visible;
@@ -650,6 +668,43 @@ html[data-vortex-theme="dark"] {
     height: 40px;
   }
 }
+
+/* Полегшений Liquid Toggle для слабких або непідтримуваних пристроїв */
+.no-liquid-glass .liquid-toggle .wrapper {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  background: #252b36 !important;
+}
+
+.no-liquid-glass .liquid-toggle .liquids,
+.no-liquid-glass .liquid-toggle .liquid__shadow,
+.no-liquid-glass .liquid-toggle .indicator__liquid .shadow {
+  display: none !important;
+}
+
+.no-liquid-glass .liquid-toggle .indicator__liquid,
+.no-liquid-glass .liquid-toggle .indicator--masked .mask {
+  filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.no-liquid-glass .liquid-toggle {
+  animation: none !important;
+}
+
+.no-liquid-glass .liquid-toggle *,
+.no-liquid-glass .liquid-toggle *::before,
+.no-liquid-glass .liquid-toggle *::after {
+  animation: none !important;
+  transition-duration: 0.15s !important;
+}
+/* Повний Liquid Glass для підтримуваних пристроїв */
+
+/* Рідинні елементи */
 
 /* 14. ЗМЕНШЕННЯ АНІМАЦІЙ */
 
