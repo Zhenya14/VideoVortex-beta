@@ -374,7 +374,7 @@
   visibility: visible !important;
 }
 
-.
+
 .liquid-toggle:active .indicator__liquid .cover,
 .liquid-toggle.is-moving .indicator__liquid .cover {
   display: block;
@@ -509,7 +509,7 @@ opacity: 1;
 
 /* 10. ІНШІ КНОПКИ */
 
-button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile) {
+button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):not(.delete-history-views) {
   display: inline-block;
 
   padding: 12px 28px;
@@ -531,17 +531,17 @@ button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profi
     background .25s ease;
 }
 
-button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):hover {
+button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):not(.delete-history-views):hover {
   border-color: #f472b6;
   box-shadow: 0 0 18px rgb(244 114 182 / 45%);
   transform: translateY(-2px);
 }
 
-button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):active {
+button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):not(.delete-history-views):active {
   transform: scale(.97);
 }
 
-button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):disabled {
+button:not(.liquid-toggle):not(.search):not(.edit):not(.archive):not(.your-profile):not(.delete-history-views):disabled {
   opacity: .45;
   cursor: not-allowed;
   box-shadow: none;

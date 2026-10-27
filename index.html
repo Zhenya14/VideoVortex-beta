@@ -750,9 +750,34 @@ if ("serviceWorker" in navigator) {
             <p id="user-info"></p>
 <p id="view">Дата народження: Завантаження...</p>
         <div id="requests-container"></div>
-        <label>
-       <span>Показувати відео позначенні як NSFW <sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></span><label class="switch">
-          <input type="checkbox" id="show-nsfw-videos"><span id="slidernsfw" class="slider round"></span></label>
+        <div class="setting-row">
+       <span>Показувати відео позначенні як NSFW <sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup></span>
+          <input type="checkbox" id="show-nsfw-videos" class="setting-checkbox">
+          <button type="button" class="liquid-toggle"
+    data-checkbox="show-nsfw-videos"
+    role="switch" aria-checked="false"
+    aria-label="Показувати відео позначенні як NSFW"
+    data-complete="0" data-active="false"
+    data-mapped="false" data-bounce="true">
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
+</div>
         <p id="information-nsfw">Вам повинно бути щонайменше 18 років, щоб переглядати NSFW відео.</p>
         
 <h1>Налаштування обмеження екранного часу</h1>
