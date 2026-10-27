@@ -101,78 +101,68 @@ async function registerPushToken(user) {
   }
 }
 
-document.querySelectorAll(".switch").forEach(sw => {
-  const input = sw.querySelector('input[type="checkbox"]');
-  const toggle = sw.querySelector(".liquid-toggle");
-  const knob = sw.querySelector(".liquid-knob");
-  const fill = sw.querySelector(".liquid-fill");
 
-  if (!input || !toggle || !knob || !fill ||
-      sw.dataset.liquidReady) return;
 
-  sw.dataset.liquidReady = "true";
 
-  const max = 22;
-  let startX = 0;
-  let startPos = 0;
-  let pos = input.checked ? max : 0;
-  let dragging = false;
-  let moved = false;
+document.querySelectorAll('.liquid-toggle[data-checkbox]').forEach(toggle => {
+  const checkbox = document.getElementById(toggle.dataset.checkbox);
 
-  function render(value, stretch = 0) {
-    pos = Math.max(0, Math.min(max, value));
-    toggle.style.setProperty("--pos", `${pos}px`);
-    toggle.style.setProperty("--stretch", `${stretch}px`);
+  if (!checkbox || toggle.dataset.initialized === 'true') return;
+
+  toggle.dataset.initialized = 'true';
+
+  let movementTimer;
+
+  function syncToggle() {
+    const active = checkbox.checked;
+
+    toggle.setAttribute('aria-checked', String(active));
+    toggle.dataset.active = String(active);
+    toggle.dataset.complete = active ? '100' : '0';
+
+    toggle.style.setProperty('--complete', active ? '100' : '0');
+    toggle.style.setProperty(
+      '--indicator-color',
+      active ? '#22c55e' : ''
+    );
+
+    // Синхронізуємо стан з checkbox,
+    // але не змінюємо розмір головки.
   }
 
-  function sync() {
-    render(input.checked ? max : 0);
+  function startMovement() {
+    toggle.classList.add('is-moving');
+
+    clearTimeout(movementTimer);
+
+    movementTimer = setTimeout(() => {
+      toggle.classList.remove('is-moving');
+    }, 650);
   }
 
-  toggle.addEventListener("pointerdown", e => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
+  toggle.addEventListener('click', event => {
+    // Не допускаємо повторного перемикання
+    // через стандартний click-обробник checkbox.
+    event.preventDefault();
 
-    dragging = true;
-    moved = false;
-    startX = e.clientX;
-    startPos = input.checked ? max : 0;
-    toggle.classList.add("is-dragging");
+    checkbox.checked = !checkbox.checked;
 
-    try {
-      toggle.setPointerCapture(e.pointerId);
-    } catch (_) {}
+    syncToggle();
+    startMovement();
+
+    checkbox.dispatchEvent(
+      new Event('change', { bubbles: true })
+    );
   });
 
-  toggle.addEventListener("pointermove", e => {
-    if (!dragging) return;
+  checkbox.addEventListener('change', syncToggle);
 
-    const delta = e.clientX - startX;
-    if (Math.abs(delta) > 4) moved = true;
-    if (!moved) return;
-
-    render(startPos + delta, Math.min(8, Math.abs(delta) * .25));
-  });
-
-  function finish() {
-    if (!dragging) return;
-
-    dragging = false;
-    toggle.classList.remove("is-dragging");
-
-    if (moved) {
-      input.checked = pos >= max / 2;
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    sync();
-  }
-
-  toggle.addEventListener("pointerup", finish);
-  toggle.addEventListener("pointercancel", finish);
-  input.addEventListener("change", sync);
-
-  sync();
+  // Початковий стан
+  syncToggle();
 });
+
+
+
 
 function showNotificationAIModal() {
   notificationAI.style.display = "flex";

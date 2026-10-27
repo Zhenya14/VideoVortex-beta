@@ -17,6 +17,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Symbols">
     <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/liquid-toogle.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   
     <script src="https://apis.google.com/js/api.js"></script>
@@ -68,7 +69,8 @@ if ("serviceWorker" in navigator) {
         />
     </filter>
 </svg>
-  <svg aria-hidden="true" width="0" height="0"
+  
+<svg aria-hidden="true" width="0" height="0"
      style="position:absolute">
   <filter id="vv-goo">
     <feGaussianBlur in="SourceGraphic" stdDeviation="3"
@@ -81,7 +83,22 @@ if ("serviceWorker" in navigator) {
     <feComposite in="SourceGraphic" in2="goo"
                   operator="atop"/>
   </filter>
+
+  <filter id="vv-liquid-glass"
+          x="-30%" y="-30%" width="160%" height="160%">
+    <feTurbulence type="fractalNoise"
+                  baseFrequency="0.015 0.025"
+                  numOctaves="2"
+                  seed="8"
+                  result="noise"/>
+    <feDisplacementMap in="SourceGraphic"
+                       in2="noise"
+                       scale="5"
+                       xChannelSelector="R"
+                       yChannelSelector="G"/>
+  </filter>
 </svg>
+
         <script defer>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -305,40 +322,223 @@ if ("serviceWorker" in navigator) {
   <option value="second">Другий канал</option>
 </select>
 <br>
-<span data-i18n ="disabled-comments-checkbox">Вимкнути коментарі</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="disabled-comments-checkbox"><input type="checkbox" id="disabled-comments-checkbox"><span class="liquid-toggle" aria-hidden="true"> <span class="liquid-track"></span> <span class="liquid-fill"></span><span class="liquid-knob"></span><span class="liquid-fill"></span></label>        
-     <br>
-     <p style="text-align: center;" data-i18n="settings-privacy">Налаштування приватності:</p>
-      <span data-i18n="auto-delete-24h">Видалити через 24 години</span> <sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup>
-     <label class="switch" for="auto-delete-24h">
-  <input type="checkbox" id="auto-delete-24h"><span class="liquid-toggle" aria-hidden="true"><span class="liquid-track"></span><span class="liquid-fill"></span><span class="liquid-knob"></span></label>
-  <br>
-   <span data-i18n="private-video-checkbox">Приватне відео</span><label class="switch" for="private-video-checkbox"><input type="checkbox" id="private-video-checkbox"><span class="liquid-toggle" aria-hidden="true">
-     <span class="liquid-track"></span>
-    <span class="liquid-fill"></span>
-    <span class="liquid-knob"></span></label>
-   <br>
-<span data-i18n="save-video-checkbox">Заборонити збереження відео</span><sup style="background-color: blue; color: white; border-radius: 8px;" data-i18n="new">NEW</sup><label class="switch" for="save-video-checkbox"><input type="checkbox" id="save-video-checkbox"><span class="liquid-toggle" aria-hidden="true">
-    <span class="liquid-track"></span>
-  <span class="liquid-fill"></span>
-    <span class="liquid-knob"></span></label>
-<div id="domain-restrict-container" style="margin-top: 10px;">
-    <br>
-        <span data-i18n="domain-restrict-checkbox">Тільки для користувачів з доменом kfccte-nau.ukr.education</span><label class="switch">
-        <input type="checkbox" id="domain-restrict-checkbox"><span class="liquid-toggle" aria-hidden="true">
-    <span class="liquid-track"></span>
-          <span class="liquid-fill"></span>
-    <span class="liquid-knob"></span></label>
+<!-- Вимкнути коментарі -->
+
+<!-- Вимкнути коментарі -->
+
+<div class="setting-row">
+  <span data-i18n="disabled-comments-checkbox">
+    Вимкнути коментарі
+  </span>
+
+  <sup class="new-badge" data-i18n="new">NEW</sup>
+
+  <input
+    type="checkbox"
+    id="disabled-comments-checkbox"
+    class="setting-checkbox"
+  >
+
+  <button
+    type="button"
+    class="liquid-toggle"
+    data-checkbox="disabled-comments-checkbox"
+    role="switch"
+    aria-checked="false"
+    aria-label="Вимкнути коментарі"
+    data-complete="0"
+    data-active="false"
+    data-mapped="false"
+    data-bounce="true"
+  >
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
 </div>
-<br>
-<div id="nsfw-container" style="margin-top: 10px;">
-           <span>Позначити відео як NSFW</span><label class="switch">
-        <input type="checkbox" id="nsfw"><span class="liquid-toggle" aria-hidden="true">
-    <span class="liquid-track"></span>
-          <span class="liquid-fill"></span>
-    <span class="liquid-knob"></span></label>
-           <br>
-           </div>
-    <div id="bandura-options" style="display:none; margin-top:10px;">
+
+
+<p style="text-align:center" data-i18n="settings-privacy">
+  Налаштування приватності:
+</p>
+
+<!-- Видалити через 24 години -->
+
+<!-- Видалити через 24 години -->
+<div class="setting-row">
+  <span data-i18n="auto-delete-24h">Видалити через 24 години</span>
+  <sup class="new-badge" data-i18n="new">NEW</sup>
+  <input type="checkbox" id="auto-delete-24h" class="setting-checkbox">
+
+  <button type="button" class="liquid-toggle"
+    data-checkbox="auto-delete-24h"
+    role="switch" aria-checked="false"
+    aria-label="Видалити через 24 години"
+    data-complete="0" data-active="false"
+    data-mapped="false" data-bounce="true">
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
+</div>
+
+<!-- Приватне відео -->
+<div class="setting-row">
+  <span data-i18n="private-video-checkbox">Приватне відео</span>
+  <input type="checkbox" id="private-video-checkbox" class="setting-checkbox">
+
+  <button type="button" class="liquid-toggle"
+    data-checkbox="private-video-checkbox"
+    role="switch" aria-checked="false"
+    aria-label="Приватне відео"
+    data-complete="0" data-active="false"
+    data-mapped="false" data-bounce="true">
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
+</div>
+
+<!-- Заборонити збереження відео -->
+<div class="setting-row">
+  <span data-i18n="save-video-checkbox">Заборонити збереження відео</span>
+  <sup class="new-badge" data-i18n="new">NEW</sup>
+  <input type="checkbox" id="save-video-checkbox" class="setting-checkbox">
+
+  <button type="button" class="liquid-toggle"
+    data-checkbox="save-video-checkbox"
+    role="switch" aria-checked="false"
+    aria-label="Заборонити збереження відео"
+    data-complete="0" data-active="false"
+    data-mapped="false" data-bounce="true">
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
+</div>
+
+<!-- Обмеження за доменом -->
+<div id="domain-restrict-container" class="setting-row">
+  <span data-i18n="domain-restrict-checkbox">
+    Тільки для користувачів з доменом kfccte-nau.ukr.education
+  </span>
+  <input type="checkbox" id="domain-restrict-checkbox" class="setting-checkbox">
+
+  <button type="button" class="liquid-toggle"
+    data-checkbox="domain-restrict-checkbox"
+    role="switch" aria-checked="false"
+    aria-label="Обмежити доступ за доменом"
+    data-complete="0" data-active="false"
+    data-mapped="false" data-bounce="true">
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
+</div>
+
+<!-- NSFW -->
+<div id="nsfw-container" class="setting-row">
+  <span>Позначити відео як NSFW</span>
+  <input type="checkbox" id="nsfw" class="setting-checkbox">
+
+  <button type="button" class="liquid-toggle"
+    data-checkbox="nsfw"
+    role="switch" aria-checked="false"
+    aria-label="Позначити відео як NSFW"
+    data-complete="0" data-active="false"
+    data-mapped="false" data-bounce="true">
+    <span class="wrapper">
+      <span class="indicator">
+        <span class="knockout">
+          <span class="liquids">
+            <span class="liquid__shadow"></span>
+            <span class="liquid__track"></span>
+          </span>
+        </span>
+      </span>
+    </span>
+    <span class="indicator--masked">
+      <span class="mask"></span>
+    </span>
+    <span class="indicator__liquid">
+      <span class="shadow"></span>
+      <span class="cover"></span>
+    </span>
+  </button>
+</div>
+
       
       <h3>🎵 Налаштування бандури</h3>
 
