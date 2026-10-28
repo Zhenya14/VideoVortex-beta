@@ -571,47 +571,9 @@ opacity: 1;
   transform: none;
 }
 
-/* 11. ПЕРЕМИКАЧ ТЕМИ */
 
-#vortex-theme-control {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
 
-  width: 100%;
-  min-width: 0;
-
-  color: inherit;
-}
-
-#vortex-theme-control .vortex-theme-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-#vortex-theme-control .vortex-theme-copy strong {
-  font-size: 15px;
-}
-
-#vortex-theme-control .vortex-theme-copy small {
-  font-size: 12px;
-  opacity: .7;
-}
-
-#vortex-theme-control .liquid-toggle {
-  flex: 0 0 140px;
-
-  width: 140px;
-  min-width: 140px;
-  max-width: 140px;
-  height: 60px;
-
-  margin-left: auto;
-}
-
-/* 12. СВІТЛА ТЕМА */
+/* 11. СВІТЛА ТЕМА */
 
 html[data-vortex-theme="light"] body {
   background: #f2f4f8 !important;
@@ -650,24 +612,39 @@ html[data-vortex-theme="dark"] {
   color-scheme: dark;
 }
 
-/* 13. МОБІЛЬНІ ПРИСТРОЇ */
+/* 12. МОБІЛЬНІ ПРИСТРОЇ */
 
+
+/* Компактні перемикачі VideoVortex */
+.liquid-toggle,
+#vortex-theme-control .liquid-toggle {
+  --border: 3px;
+  --width: 90;
+  --height: 40;
+
+  flex: 0 0 90px;
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
+  height: 40px;
+}
+
+/* Ще менші на телефонах */
 @media (max-width: 480px) {
-  .setting-row > button.liquid-toggle,
-  #nsfw-container > button.liquid-toggle,
+  .liquid-toggle,
   #vortex-theme-control .liquid-toggle {
-    --border: 3px;
-    --width: 90;
-    --height: 40;
+    --border: 2px;
+    --width: 70;
+    --height: 32;
 
-    flex: 0 0 90px;
-
-    width: 90px;
-    min-width: 90px;
-    max-width: 90px;
-    height: 40px;
+    flex: 0 0 70px;
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    height: 32px;
   }
 }
+
 
 /* Полегшений Liquid Toggle для слабких або непідтримуваних пристроїв */
 .no-liquid-glass .liquid-toggle .wrapper {
