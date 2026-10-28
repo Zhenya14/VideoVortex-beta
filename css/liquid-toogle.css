@@ -82,8 +82,8 @@
 
   background: #f8fafc;
 
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: url(#vv-liquid-glass) blur(1px) saturate(190%);
+  backdrop-filter: url(#vv-liquid-glass) blur(1px) saturate(190%);
 
   box-shadow:
     inset 0 1px 2px rgb(255 255 255 / 80%),
@@ -393,8 +393,8 @@
 
   border-color: rgb(255 255 255 / 48%) !important;
 
-  -webkit-backdrop-filter: url(#vv-goo) blur(8px) saturate(190%);
-  backdrop-filter: url(#vv-goo) blur(8px) saturate(190%);
+  -webkit-backdrop-filter: url(#vv-liquid-glass) blur(1px) saturate(190%);
+  backdrop-filter: url(#vv-liquid-glass) blur(1px) saturate(190%);
 
   box-shadow:
     inset 0 1px 3px rgb(255 255 255 / 45%),
