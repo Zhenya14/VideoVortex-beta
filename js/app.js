@@ -586,6 +586,7 @@ async function publishStory() {
   const user = firebase.auth().currentUser;
   if (!user || !selectedStoryFile) return;
 const uid = user.uid;
+  const storiesDescription = document.getElementById("stories-description");
   const storyId = Date.now().toString();
   try {
 
@@ -620,6 +621,7 @@ const uid = user.uid;
     url: url,
     name: authorName,
     authorColor: userData.color,
+    description: storiesDescription,
     avatar: authorAvatarUrl,
     type: selectedStoryFile.type.startsWith("video") ? "video" : "image",
     createdAt: Date.now(),
