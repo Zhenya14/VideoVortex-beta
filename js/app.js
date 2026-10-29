@@ -102,7 +102,19 @@ async function registerPushToken(user) {
 }
 
 
+const storiesDescription =
+    document.getElementById("stories-description");
 
+if (storiesDescription) {
+    function resizeStoriesDescription() {
+        storiesDescription.style.height = "40px";
+
+        storiesDescription.style.height =
+            Math.min(storiesDescription.scrollHeight, 200) + "px";
+    }
+
+    storiesDescription.addEventListener("input", resizeStoriesDescription);
+}
 
 document.querySelectorAll('.liquid-toggle[data-checkbox]').forEach(toggle => {
   const checkbox = document.getElementById(toggle.dataset.checkbox);
@@ -2210,9 +2222,7 @@ const storiesView =
 if (!storiesView) return;
 
 storiesView.innerHTML = "";
-storiesView.style.display = "block";
-document.getElementById("smart-menu").style.display = "none";
-  document.getElementById("plus-button").style.display = "none";
+
 database.ref("stories")
     .once("value")
     .then(snapshot => {
@@ -2233,7 +2243,13 @@ database.ref("stories")
             const storyData =
                 storySnapshot.val();
 
-            if (!storyData) return;
+            if (!storyData) {
+              return;
+            } else {
+              storiesView.style.display = "block";
+document.getElementById("smart-menu").style.display = "none";
+  document.getElementById("plus-button").style.display = "none";
+            }
 
             // Тільки Stories поточного користувача
             if (

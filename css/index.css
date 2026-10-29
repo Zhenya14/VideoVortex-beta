@@ -561,30 +561,37 @@ h2 {
             font-size: 1em;
         }
         #stories-description {
-          width: 100%;
-position: absolute;
-display: flex;
-align-items: center;
-justify-content: center;
-bottom: 5px;
-    padding: 14px;
+    position: absolute;
+    bottom: 14px;
+    left: 35%;
+    transform: translateX(-50%);
+
+    width: 65%;
+    height: 40px;
+    min-height: 40px;
+    max-height: 200px;
+
+    box-sizing: border-box;
+    padding: 10px 14px;
+    margin: 0;
+
+    resize: none;
+    overflow-y: auto;
+    scrollbar-width: none;
 
     color: white;
-
     background: rgba(255,255,255,0.055);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 24px;
 
-    border: 1px solid rgba(255, 255, 255, 0.09);
-padding: 10px 0; 
-            margin: 10px 0; 
-    border-radius: 13px;
-font-size: 1em;
+    font-size: 1em;
     outline: none;
         }
 #video-description, #photo-description, #video-title, #photo-title, #stories-title, #video-comment, #photo-comment { 
   width: 100%;
 
     padding: 14px;
-
+resize: none;
     color: white;
 
     background: rgba(255,255,255,0.055);
