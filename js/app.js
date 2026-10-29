@@ -489,9 +489,7 @@ document.getElementById("galleryInput").addEventListener("change", (e) => {
 
 let currentStoryFile = null;
 let storyPreviewURL = null;
-function openGallery() {
-    document.getElementById("galleryInput").click();
-}
+
 
 function previewStory(file) {
 
@@ -2286,7 +2284,7 @@ document.getElementById("smart-menu").style.display = "none";
         if (
             stories.length === 0
         ) {
-
+openGallery();
             console.log(
                 "Власні Stories не знайдені"
             );
@@ -2295,6 +2293,7 @@ document.getElementById("smart-menu").style.display = "none";
                 "none";
 
             return;
+              
 
         }
 
@@ -2563,6 +2562,9 @@ applyTranslations();
         }
     );
 
+}
+function openGallery() {
+    document.getElementById("galleryInput").click();
 }
 function openStories(uid, startStoryId) {
 
