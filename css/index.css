@@ -560,7 +560,27 @@ h2 {
             outline: none;
             font-size: 1em;
         }
-#video-description, #photo-description, #video-ttle, #photo-title { 
+        #stories-description {
+          width: 100%;
+position: absolute;
+display: flex;
+align-items: center;
+justify-content: center;
+bottom: 5px;
+    padding: 14px;
+
+    color: white;
+
+    background: rgba(255,255,255,0.055);
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+padding: 10px 0; 
+            margin: 10px 0; 
+    border-radius: 13px;
+font-size: 1em;
+    outline: none;
+        }
+#video-description, #photo-description, #video-title, #photo-title, #stories-title, #video-comment, #photo-comment { 
   width: 100%;
 
     padding: 14px;
