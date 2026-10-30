@@ -11,6 +11,44 @@ button *,
 }
 /* Стиль повзунка */
 
+
+
+.expandable-container {
+    width: 100%;
+    min-width: 0;
+}
+
+.text-content {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.text-content.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+}
+
+.text-toggle {
+    padding: 0;
+    margin-top: 5px;
+
+    border: none;
+    background: transparent;
+
+    color: #68bfff;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+
 /* Базовий стиль для ВСІХ плашок NEW */
 .badge-new {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -2705,7 +2743,29 @@ border-radius: 20px;
 background: #07f;
 color: white;
 }
+.storiesDescription {
+    position: absolute;
+    bottom: 12px;
+    padding: 5px 2px;
+    border-radius: 20px;
+    color: white;
+    z-index: 1;
+    isolation: isolate;
+}
 
+.storiesDescription::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.10),
+        rgba(0, 0, 0, 0.45)
+    );
+    z-index: -1;
+    pointer-events: none;
+}
 .settings-item, .settings-toggle {
 display: flex;
 justify-content: space-between;

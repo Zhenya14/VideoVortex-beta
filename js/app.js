@@ -586,7 +586,7 @@ async function publishStory() {
   const user = firebase.auth().currentUser;
   if (!user || !selectedStoryFile) return;
 const uid = user.uid;
-  const storiesDescription = document.getElementById("stories-description");
+  const storiesDescription = document.getElementById("stories-description").value;
   const storyId = Date.now().toString();
   try {
 
@@ -2214,6 +2214,47 @@ storyAvatarRing.classList.add("avatar-ring");
     );
 });
 }
+
+function createExpandableText(text) {
+    const container = document.createElement("div");
+    container.classList.add("expandable-container");
+
+    const content = document.createElement("div");
+    content.classList.add("text-content");
+    content.textContent = text;
+
+    const toggle = document.createElement("button");
+    toggle.classList.add("text-toggle");
+    toggle.type = "button";
+    toggle.textContent = "Показати більше";
+    toggle.style.display = "none";
+
+    container.appendChild(content);
+    container.appendChild(toggle);
+
+    requestAnimationFrame(() => {
+        const lineHeight = parseFloat(
+            getComputedStyle(content).lineHeight
+        );
+
+        const maxHeight = lineHeight * 3;
+
+        if (content.scrollHeight > maxHeight + 2) {
+            toggle.style.display = "inline-block";
+        }
+    });
+
+    toggle.addEventListener("click", () => {
+        const expanded = content.classList.toggle("expanded");
+
+        toggle.textContent = expanded
+            ? "Згорнути"
+            : "Показати більше";
+    });
+
+    return container;
+}
+
 function openYourStories(currentUserUid) {
 
 const storiesView =
@@ -2421,7 +2462,11 @@ openGallery();
             // =========================
             // ФОТО
             // =========================
-
+if (storyData.description) {
+  const description = createExpandableText(storyData.description);
+  description.classList.add("storiesDescription");
+  storiesView.appendChild(description);
+}
             if (
                 storyData.type ===
                 "image"
@@ -2734,7 +2779,11 @@ function openStories(uid, startStoryId) {
 
                 storiesView.appendChild(storiesAuthor);
                 storiesView.appendChild(storiesAvatar);
-
+if (storyData.description) {
+  const description = createExpandableText(storyData.description);
+  description.classList.add("storiesDescription");
+  storiesView.appendChild(description);
+}
                 // ФОТО
                 if (storyData.type === "image") {
                     const img = document.createElement("img");
