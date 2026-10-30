@@ -342,18 +342,22 @@ async function loadProfile() {
     }
 
     const isFrozen = dataModeration.status === "frozen_soft";
-
+    const isAnonymous = data.anonymous === true;
     // ======================
     // NAME
     // ======================
     const name = `${data.name || "Користувач"} ${data.supername || ""}`.trim();
 const verifiedBadge = `${data.owner === true && data.verifiedBadge ? `<img class='adaptive-stroke' src='${data.verifiedBadge}'>`
         : ""}`;
-    userName.innerHTML = isFrozen ? "❄️ Видалений акаунт" : sanitizeHTML(name) + verifiedBadge;
+    userName.innerHTML = isFrozen ? "❄️ Видалений акаунт" : isAnonymous ? "Прихований користувач" : sanitizeHTML(name) + verifiedBadge;
     nameAccount = name;
 
     if (isFrozen) {
       userName.setAttribute("data-i18n", "account-frozen");
+      applyTranslations();
+    }
+if (isAnonymous) {
+      userName.setAttribute("data-i18n", "account-hidden");
       applyTranslations();
     }
 
@@ -364,6 +368,12 @@ const verifiedBadge = `${data.owner === true && data.verifiedBadge ? `<img class
       avatar.style.backgroundImage = "";
       avatar.style.background = data.color || "#ccc";
       avatar.textContent = "👻";
+    } else if (isAnonymous) {
+      avatar.style.backgroundImage = "";
+      avatar.style.background = data.color || "#ccc";
+      avatar.innerHTML = `<span class="material-symbols">
+domino_mask
+</span>`;
     } else if (data.avatarId) {
       try {
         const url = await firebase

@@ -2568,328 +2568,252 @@ applyTranslations();
 function openGallery() {
     document.getElementById("galleryInput").click();
 }
+
+const storyMediaCache = new Map();
+
+function preloadStoryMedia(story) {
+    if (!story || !story.url) {
+        return Promise.resolve();
+    }
+
+    if (storyMediaCache.has(story.url)) {
+        return storyMediaCache.get(story.url);
+    }
+
+    const promise = new Promise(resolve => {
+        if (story.type === "image") {
+            const img = new Image();
+
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+
+            img.src = story.url;
+
+        } else if (story.type === "video") {
+            const video = document.createElement("video");
+
+            video.preload = "auto";
+            video.muted = true;
+            video.playsInline = true;
+
+            video.onloadeddata = () => resolve(video);
+            video.onerror = () => resolve(null);
+
+            video.src = story.url;
+            video.load();
+
+        } else {
+            resolve(null);
+        }
+    });
+
+    storyMediaCache.set(story.url, promise);
+
+    return promise;
+}
+
+
 function openStories(uid, startStoryId) {
+    const storiesView = document.getElementById("storyView");
 
-const storiesView =
-    document.getElementById("storyView");
+    if (!storiesView) return;
 
-if (!storiesView) return;
+    // Скасовуємо попередню автоматичну зміну сторіс
+    if (window.storyTimer) {
+        clearTimeout(window.storyTimer);
+        window.storyTimer = null;
+    }
 
-storiesView.innerHTML = "";
-storiesView.style.display = "block";
-document.getElementById("smart-menu").style.display = "none";
-  document.getElementById("plus-button").style.display = "none";
-database.ref("stories")
-    .once("value")
-    .then(snapshot => {
+    storiesView.innerHTML = "";
+    storiesView.style.display = "block";
 
-        const stories = [];
+    const smartMenu = document.getElementById("smart-menu");
+    const plusButton = document.getElementById("plus-button");
 
-        // =========================
-        // ЗБИРАЄМО STORIES КОРИСТУВАЧА
-        // =========================
+    if (smartMenu) smartMenu.style.display = "none";
+    if (plusButton) plusButton.style.display = "none";
 
-        snapshot.forEach(storySnapshot => {
+    database.ref("stories")
+        .once("value")
+        .then(snapshot => {
+            const stories = [];
 
-            // ID конкретної Story
-            const storyId =
-                storySnapshot.key;
+            snapshot.forEach(storySnapshot => {
+                const storyData = storySnapshot.val();
 
-            // Дані конкретної Story
-            const storyData =
-                storySnapshot.val();
+                if (!storyData) return;
 
-            if (!storyData) return;
+                // Перевірка терміну дії
+                if (
+                    storyData.expiresAt &&
+                    Date.now() > storyData.expiresAt
+                ) {
+                    return;
+                }
 
-            // Перевіряємо термін дії
-            if (
-                storyData.expiresAt &&
-                Date.now() >
-                storyData.expiresAt
-            ) {
-                return;
-            }
+                // Якщо передано uid, показуємо сторіс цього користувача
+                if (uid && storyData.uid !== uid &&
+                    storyData.authorUid !== uid) {
+                    return;
+                }
 
-            // Додаємо Story
-            stories.push({
-
-                storyId:
-                    storyId,
-
-                ...storyData
-
+                stories.push({
+                    storyId: storySnapshot.key,
+                    ...storyData
+                });
             });
 
-        });
-
-        // =========================
-        // ЯКЩО STORIES НЕМАЄ
-        // =========================
-
-        if (
-            stories.length === 0
-        ) {
-
-            console.log(
-                "Stories користувача не знайдені"
-            );
-
-            storiesView.style.display =
-                "none";
-
-            return;
-        }
-
-        // =========================
-        // СОРТУВАННЯ
-        // =========================
-
-        stories.sort(
-            (a, b) =>
-                (a.createdAt || 0) -
-                (b.createdAt || 0)
-        );
-
-        // =========================
-        // ЗНАХОДИМО ПОЧАТКОВУ STORY
-        // =========================
-
-        let startIndex =
-            stories.findIndex(
-                story =>
-                    story.storyId ===
-                    startStoryId
-            );
-
-        if (
-            startIndex === -1
-        ) {
-            startIndex = 0;
-        }
-
-        console.log(
-            "Stories користувача:",
-            stories
-        );
-
-        console.log(
-            "Початкова Story:",
-            stories[startIndex]
-        );
-
-        // =========================
-        // ПОКАЗ STORY
-        // =========================
-
-        function showStory(index) {
-
-            // Якщо Stories закінчилися
-            if (
-                index >=
-                stories.length
-            ) {
-
-                storiesView.innerHTML =
-                    "";
-
-                storiesView.style.display =
-                    "none";
-
+            if (stories.length === 0) {
+                console.log("Stories користувача не знайдені");
+                storiesView.innerHTML = "";
+                storiesView.style.display = "none";
                 return;
             }
 
-            const storyData =
-                stories[index];
-
-            storiesView.innerHTML =
-                "";
-
-            // =========================
-            // АВАТАР КОРИСТУВАЧА
-            // =========================
-
-            const storiesAvatar =
-                document.createElement(
-                    "div"
-                );
-
-            storiesAvatar.classList.add(
-                "stories-avatar"
-            );
-           storiesAvatar.style.borderRadius = "64px";
-            if (
-                storyData.avatar
-            ) {
-
-                const avatarImg =
-                    document.createElement(
-                        "img"
-                    );
-
-                avatarImg.src =
-                    storyData.avatar;
-
-                avatarImg.classList.add(
-                    "avatar-stories-view"
-                );
-
-                storiesAvatar.appendChild(
-                    avatarImg
-                );
-
-            }
-            const storiesAuthor = document.createElement("span");
-             storiesAuthor.classList.add("stories-author");
-
-              storiesAuthor.innerHTML = sanitizeHTML(storyData.name);
-            storiesView.appendChild(
-                storiesAuthor
-            );
-            storiesView.appendChild(
-                storiesAvatar
+            // Сортуємо від найстарішої до найновішої
+            stories.sort(
+                (a, b) => (a.createdAt || 0) - (b.createdAt || 0)
             );
 
-            // =========================
-            // ФОТО
-            // =========================
+            // Знаходимо початкову сторіс
+            let startIndex = stories.findIndex(
+                story => story.storyId === startStoryId
+            );
 
-            if (
-                storyData.type ===
-                "image"
-            ) {
-
-                const img =
-                    document.createElement(
-                        "img"
-                    );
-                img.classList.add("story-img");
-                img.src =
-                    storyData.url;
-
-                img.style.width =
-                    "100%";
-
-                img.style.height =
-                    "100%";
-
-                img.style.objectFit =
-                    "cover";
-
-                storiesView.appendChild(
-                    img
-                );
-
-                // Через 5 секунд
-                // наступна Story
-                setTimeout(
-                    () => {
-
-                        showStory(
-                            index + 1
-                        );
-
-                    },
-                    5000
-                );
-
+            if (startIndex === -1) {
+                startIndex = 0;
             }
 
-            // =========================
-            // ВІДЕО
-            // =========================
+            // Завантажуємо першу сторіс і наступну заздалегідь
+            preloadStoryMedia(stories[startIndex]);
 
-            else if (
-                storyData.type ===
-                "video"
-            ) {
+            if (stories[startIndex + 1]) {
+                preloadStoryMedia(stories[startIndex + 1]);
+            }
 
-                const video =
-                    document.createElement(
-                        "video"
-                    );
-                video.classList.add("story-video");
-                video.src =
-                    storyData.url;
+            let currentIndex = startIndex;
 
-                video.autoplay =
-                    true;
+            function showStory(index) {
+                if (window.storyTimer) {
+                    clearTimeout(window.storyTimer);
+                    window.storyTimer = null;
+                }
 
-                video.loop =
-                    false;
+                if (index >= stories.length || index < 0) {
+                    storiesView.innerHTML = "";
+                    storiesView.style.display = "none";
+                    return;
+                }
 
-                video.muted =
-                    false;
+                currentIndex = index;
 
-                video.playsInline =
-                    true;
+                const storyData = stories[index];
 
-                video.controls =
-                    false;
+                // Завантажуємо наступну сторіс у фоні
+                if (stories[index + 1]) {
+                    preloadStoryMedia(stories[index + 1]);
+                }
 
-                video.style.width =
-                    "100%";
+                storiesView.innerHTML = "";
 
-                video.style.height =
-                    "100%";
+                // Аватар і ім'я автора
+                const storiesAvatar = document.createElement("div");
+                storiesAvatar.classList.add("stories-avatar");
+                storiesAvatar.style.borderRadius = "64px";
 
-                video.style.objectFit =
-                    "cover";
+                if (storyData.avatar) {
+                    const avatarImg = document.createElement("img");
+                    avatarImg.src = storyData.avatar;
+                    avatarImg.classList.add("avatar-stories-view");
+                    storiesAvatar.appendChild(avatarImg);
+                }
 
-                storiesView.appendChild(
-                    video
-                );
+                const storiesAuthor = document.createElement("span");
+                storiesAuthor.classList.add("stories-author");
+                storiesAuthor.textContent = storyData.name || "";
 
-                video.play()
-                    .catch(
-                        error => {
+                storiesView.appendChild(storiesAuthor);
+                storiesView.appendChild(storiesAvatar);
 
+                // ФОТО
+                if (storyData.type === "image") {
+                    const img = document.createElement("img");
+
+                    img.classList.add("story-img");
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+
+                    storiesView.appendChild(img);
+
+                    preloadStoryMedia(storyData).then(loadedImage => {
+                        if (!img.isConnected) return;
+
+                        img.src = loadedImage
+                            ? loadedImage.src
+                            : storyData.url;
+                    });
+
+                    // Через 5 секунд наступна сторіс
+                    window.storyTimer = setTimeout(() => {
+                        showStory(index + 1);
+                    }, 5000);
+                }
+
+                // ВІДЕО
+                else if (storyData.type === "video") {
+                    const video = document.createElement("video");
+
+                    video.classList.add("story-video");
+                    video.autoplay = true;
+                    video.loop = false;
+                    video.muted = false;
+                    video.playsInline = true;
+                    video.controls = false;
+                    video.preload = "auto";
+
+                    video.style.width = "100%";
+                    video.style.height = "100%";
+                    video.style.objectFit = "cover";
+
+                    storiesView.appendChild(video);
+
+                    // Спочатку використовуємо попередньо завантажений ресурс
+                    preloadStoryMedia(storyData).then(loadedVideo => {
+                        if (!video.isConnected) return;
+
+                        // Призначаємо URL оригіналу.
+                        // Браузер використовує власний HTTP-кеш, якщо доступний.
+                        video.src = loadedVideo
+                            ? (loadedVideo.currentSrc || loadedVideo.src)
+                            : storyData.url;
+
+                        video.play().catch(error => {
                             console.error(
                                 "Не вдалося відтворити відео:",
                                 error
                             );
+                        });
+                    });
 
-                        }
-                    );
-
-                // Після завершення
-                // наступна Story
-                video.onended =
-                    () => {
-
-                        showStory(
-                            index + 1
-                        );
-
+                    // Після завершення відео відкриваємо наступну сторіс
+                    video.onended = () => {
+                        showStory(index + 1);
                     };
-
+                }
             }
 
-        }
-
-        // =========================
-        // ПОКАЗУЄМО ПОЧАТКОВУ STORY
-        // =========================
-
-        showStory(
-            startIndex
-        );
-
-    })
-    .catch(
-        error => {
-
-            console.error(
-                "Помилка завантаження Stories:",
-                error
-            );
-
-            storiesView.style.display =
-                "none";
-
-        }
-    );
-
+            showStory(startIndex);
+        })
+        .catch(error => {
+            console.error("Помилка завантаження Stories:", error);
+            storiesView.style.display = "none";
+        });
 }
+
+
+
+
 function getSafeBanduraHTML(banduraExtra) {
     if (!banduraExtra) return "";
     const s = str => str ? sanitizeHTML(str) : "";
@@ -4336,6 +4260,10 @@ authorEl.textContent = videoDataRaw?.author || "Анонім";
         if (videoDataRaw.authorStatus == "frozen_soft") {
           avatar.innerText = "👻";
           avatar.style.background = `${videoDataRaw.authorColor}`;
+        } else if (videoDataRaw.authorStatus == "hidden") {
+                   avatar.innerHTML = `<span class="material-symbols">domino_mask
+</span>`;
+          avatar.style.background = `${videoDataRaw.authorColor}`;
           } else if (videoDataRaw.authorAvatar) {
             avatar.style.backgroundImage = `url(${videoDataRaw.authorAvatar})`;
             avatar.style.backgroundSize = "cover";
@@ -4371,7 +4299,8 @@ detailsElement.innerHTML = `
 
     Автор: ${
         isFrozen
-            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
+            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>" : videoDataRaw.authorStatus === "hidden"
+            ? `<span data-i18n="account-hiden">Прихований користувач</span>`
             : sanitizeHTML(videoDataRaw.author || "Анонім")
     }
 
@@ -4627,7 +4556,10 @@ async function migrateUsersToSearch() {
             updates[`userSearch/${uid}`] = {
                 name: user.name || "",
                 supername: user.supername || "",
-                username: user.username || "",
+                color: user.color,
+                avatarId: user.avatarId,
+              wallpaperId: user.wallpaperId,
+              verifiedBadge: user.verifiedBadge,
                 privateProfile: user.privateProfile === true
             };
 
@@ -6340,7 +6272,7 @@ async function updateVideosAuthor() {
             if (isAnonymous) {
                 updates.push(
                     videoRef.update({
-                        author: "Анонім",
+                        author: null,
                         authorStatus: "hidden",
                         authorAvatar: null
                     })
@@ -6413,7 +6345,7 @@ async function updatePhotosAuthor() {
 
             if (isAnonymous) {
                 updates.push(photoRef.update({
-                    author: "Анонім",
+                    author: null,
                     authorStatus: "hidden",
                     authorAvatar: null
                 }));
@@ -6692,7 +6624,7 @@ async function updateCommentsAuthor() {
 
             if (isAnonymous) {
                 updates.push(commentRef.update({
-                    commentAuthor: "Анонім",
+                    commentAuthor: null,
                     authorStatus: "hidden",
                     authorAvatar: null
                 }));
@@ -6774,7 +6706,11 @@ authorEl.textContent = photoData?.author || "Анонім";
         if (photoData.authorStatus == "frozen_soft") {
           avatar.innerText = "👻";
           avatar.style.background = `${photoData.authorColor}`;
-          } else if (photoData.authorAvatar) {
+          } else if (photoData.authorStatus == "hidden") {
+                   avatar.innerHTML = `<span class="material-symbols">domino_mask
+</span>`;
+          avatar.style.background = `${photoData.authorColor}`;
+        } else if (photoData.authorAvatar) {
                    avatar.style.backgroundImage = `url(${photoData.authorAvatar})`;
                     avatar.style.backgroundSize = "cover";
 avatar.style.backgroundPosition = "center";
@@ -6799,14 +6735,9 @@ avatar.onclick = () => {
             <strong>${safephotoTitle}</strong><br>
             Автор: ${
         isFrozen
-            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>"
+            ? "❄️ <span data-i18n='account-deleted'>Видалений акаунт</span>" :  photoData.authorStatus === "hidden"
+            ? `<span data-i18n="account-hiden">Прихований користувач</span>`
             : sanitizeHTML(photoData.author || "Анонім")
-    }
-
-    ${
-        isFrozen
-            ? " <span style='color:#4aa3ff;' data-i18n='account-deleted'></span>"
-            : ""
     }
 
     ${photoData.owner === true && photoData.verifiedBadge
