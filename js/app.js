@@ -6219,7 +6219,7 @@ async function updateNameBlockedUsers() {
     const uid = user.uid;
 
     try {
-        // Отримуємо список користувачів, яких заблокував поточний користувач
+        // Отримуємо список заблокованих користувачів
         const blockedSnapshot = await database
             .ref(`users/${uid}/blockedUsers`)
             .once("value");
@@ -6229,44 +6229,56 @@ async function updateNameBlockedUsers() {
             return;
         }
 
-        const updates = {};
+        const blockedUsers = [];
 
         blockedSnapshot.forEach((childSnapshot) => {
-            const blockedUid = childSnapshot.key;
-
-            // Отримуємо актуальне ім'я з users/{blockedUid}
-            const userData = childSnapshot.val() || {};
-
-            // Тут тільки створюємо список UID
-            updates[blockedUid] = userData;
+            blockedUsers.push(childSnapshot.key);
         });
 
-        // Для кожного заблокованого отримуємо актуальні дані
-        for (const blockedUid of Object.keys(updates)) {
+        // Оновлюємо дані кожного заблокованого користувача
+        for (const blockedUid of blockedUsers) {
+            try {
+                const userSnapshot = await database
+                    .ref(`users/${blockedUid}`)
+                    .once("value");
 
-            const userSnapshot = await database
-                .ref(`users/${blockedUid}`)
-                .once("value");
+                if (!userSnapshot.exists()) continue;
 
-            if (!userSnapshot.exists()) continue;
+                const userData = userSnapshot.val() || {};
 
-            const userData = userSnapshot.val() || {};
+                // Перевіряємо анонімність
+                const anonymous = userData.anonymous === true;
 
-            const fullName =
-                `${userData.name || ""} ${userData.supername || ""}`.trim() ||
-                "Анонім";
+                let fullName = null;
 
-            // Оновлюємо userName у твоєму blockedUsers
-            await database
-                .ref(`users/${uid}/blockedUsers/${blockedUid}`)
-                .update({
-                    userName: fullName
-                });
+                if (!anonymous) {
+                    fullName =
+                        `${userData.name || ""} ${userData.supername || ""}`.trim() ||
+                        "Анонім";
+                }
 
-            console.log(
-                `Ім'я ${blockedUid} оновлено:`,
-                fullName
-            );
+                // Оновлюємо інформацію у списку заблокованих
+                await database
+                    .ref(`users/${uid}/blockedUsers/${blockedUid}`)
+                    .update({
+                        userName: fullName,
+                        anonymous: anonymous
+                    });
+
+                console.log(
+                    `Дані ${blockedUid} оновлено:`,
+                    {
+                        userName: fullName,
+                        anonymous: anonymous
+                    }
+                );
+
+            } catch (error) {
+                console.error(
+                    `Помилка оновлення користувача ${blockedUid}:`,
+                    error
+                );
+            }
         }
 
     } catch (error) {
@@ -6367,7 +6379,9 @@ async function updatePublicUsers() {
             supername: isAnonymous ? null : (userData.supername || null),
             username: userData.username || "",
             avatarId: isAnonymous ? null : (userData.avatarId || null),
-            authorStatus: isAnonymous ? "hidden" : null,
+            wallpaperId: userData.wallpaperId || null,
+            color: userData.color || null,
+            status: isAnonymous ? "hidden" : null,
             privateProfile: userData.privateProfile ?? false
         };
 
