@@ -708,6 +708,53 @@ document.querySelector(".stories-bar").style.display = "flex";
     searchInput.value = "";
     searchAll();
 });
+async function isUserBlockedByMe(targetUid) {
+
+  const me = firebase.auth().currentUser;
+
+  if (!me) return false;
+  if (!targetUid) return false;
+
+  try {
+
+    const snap = await database
+      .ref(`users/${me.uid}/blockedUsers/${targetUid}`)
+      .once("value");
+
+    return snap.exists();
+
+  } catch {
+
+    return false;
+
+  }
+
+}
+
+
+
+async function didUserBlockMe(targetUid) {
+
+  const me = firebase.auth().currentUser;
+
+  if (!me) return false;
+  if (!targetUid) return false;
+
+  try {
+
+    const snap = await database
+      .ref(`users/${targetUid}/blockedUsers/${me.uid}`)
+      .once("value");
+
+    return snap.exists();
+
+  } catch {
+
+    return false;
+
+  }
+
+}
 async function searchAll() {
     const input = document.getElementById("search-input");
     if (!input) return;
@@ -750,10 +797,28 @@ async function searchAll() {
     if (!query) return;
 
     try {
-        const snapshot = await database.ref("publicUsers").once("value");
+        const currentUser = firebase.auth().currentUser;
+
+        const snapshot = await database
+            .ref("publicUsers")
+            .once("value");
+
         const users = snapshot.val() || {};
 
-        Object.entries(users).forEach(([uid, user]) => {
+        for (const [uid, user] of Object.entries(users)) {
+
+            if (!user) continue;
+
+            // Не показуємо власний профіль
+            if (currentUser && uid === currentUser.uid) continue;
+
+            // Перевіряємо блокування в обидва боки
+            if (currentUser) {
+                const blockedYou = await isUserBlockedByMe(uid);
+                const blockedMe = await isUserBlockedByThem(uid);
+
+                if (blockedYou || blockedMe) continue;
+            }
 
             const name = (user.name || "").toLowerCase();
             const supername = (user.supername || "").toLowerCase();
@@ -764,7 +829,7 @@ async function searchAll() {
                 supername.includes(query) ||
                 username.includes(query);
 
-            if (!matches) return;
+            if (!matches) continue;
 
             const userElement = document.createElement("div");
             userElement.className = "search-user";
@@ -796,7 +861,7 @@ async function searchAll() {
             };
 
             usersContainer.appendChild(userElement);
-        });
+        }
 
     } catch (error) {
         console.error("Помилка пошуку користувачів:", error);
@@ -1997,53 +2062,7 @@ if (auth.currentUser) {
 message.innerHTML = "Сталася помилка при увімкненні функції показувати відео позначення як NSFW.";
 }
     });
-async function isUserBlockedByMe(targetUid) {
 
-  const me = firebase.auth().currentUser;
-
-  if (!me) return false;
-  if (!targetUid) return false;
-
-  try {
-
-    const snap = await database
-      .ref(`users/${me.uid}/blockedUsers/${targetUid}`)
-      .once("value");
-
-    return snap.exists();
-
-  } catch {
-
-    return false;
-
-  }
-
-}
-
-
-
-async function didUserBlockMe(targetUid) {
-
-  const me = firebase.auth().currentUser;
-
-  if (!me) return false;
-  if (!targetUid) return false;
-
-  try {
-
-    const snap = await database
-      .ref(`users/${targetUid}/blockedUsers/${me.uid}`)
-      .once("value");
-
-    return snap.exists();
-
-  } catch {
-
-    return false;
-
-  }
-
-}
     function enableBanduraUI(role) {
     const banduraBlock = document.getElementById("bandura-options");
     if (!banduraBlock) return;
