@@ -5906,6 +5906,7 @@ if (user && Notification.permission === "granted") {
         cleanupExpiredStories();
         updateVideosAuthor();
         updatePhotosAuthor();
+        updatePublicUsers();
       loadNotifications();
         await updateNameBlockedUsers();
         updateCommentsAuthor();
@@ -6350,7 +6351,50 @@ async function updateVideosAuthor() {
     }
 }
 
+async function updatePublicUsers() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
 
+    const uid = user.uid;
+    const isAnonymous = anonymousProfile.checked;
+
+    try {
+        const snapshot = await database.ref(`users/${uid}`).once("value");
+        const userData = snapshot.val() || {};
+
+        const updates = {
+            name: isAnonymous ? null : (userData.name || null),
+            supername: isAnonymous ? null : (userData.supername || null),
+            username: userData.username || "",
+            avatarId: isAnonymous ? null : (userData.avatarId || null),
+            authorStatus: isAnonymous ? "hidden" : null,
+            privateProfile: userData.privateProfile ?? false
+        };
+
+        // Завантажуємо аватар лише якщо анонімність вимкнена
+        if (!isAnonymous && userData.avatarId) {
+            try {
+                const avatarPath = userData.avatarId.startsWith("avatars/")
+                    ? userData.avatarId
+                    : `avatars/${userData.avatarId}.webp`;
+
+                updates.avatar = await storage
+                    .ref(avatarPath)
+                    .getDownloadURL();
+
+            } catch (error) {
+                console.warn("Аватар не знайдено:", error.code);
+            }
+        }
+
+        await database.ref(`publicUsers/${uid}`).update(updates);
+
+        console.log("publicUsers успішно оновлено");
+
+    } catch (error) {
+        console.error("Помилка оновлення publicUsers:", error);
+    }
+}
 async function updatePhotosAuthor() {
     const user = firebase.auth().currentUser;
     if (!user) return;
