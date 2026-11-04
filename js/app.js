@@ -4936,58 +4936,7 @@ function getActiveChannelData() {
         avatar: option.dataset.avatar || ""
     };
 }
-async function convertToMp4(file, onStatus) {
-  if (!window.ffmpeg.loaded) {
-    onStatus?.("Завантаження відео-движка…");
-    await window.ffmpeg.load(); // БЕЗ coreURL тут
-  }
 
-  onStatus?.("Підготовка файлу…");
-  const data = await window.fetchFile(file);
-  window.ffmpeg.FS("writeFile", "input.mp4", data);
-
-  onStatus?.("Конвертація у MP4 (H.264)…");
-  await window.ffmpeg.run(
-    "-i", "input.mp4",
-    "-c:v", "libx264",
-    "-preset", "veryfast",
-    "-pix_fmt", "yuv420p",
-    "-movflags", "faststart",
-    "-c:a", "aac",
-    "-b:a", "128k",
-    "output.mp4"
-  );
-
-  const out = window.ffmpeg.FS("readFile", "output.mp4");
-  return new File([out.buffer], "converted.mp4", { type: "video/mp4" });
-}
-document.getElementById("video-file").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  // якщо вже mp4 — нічого не робимо
-  if (file.type === "video/mp4") return;
-
-  const statusEl = document.getElementById("progress-text");
-  document.getElementById("progress-container").style.display = "block";
-
-  try {
-    const converted = await convertToMp4(file, (status) => {
-      statusEl.innerText = status;
-    });
-
-    // 🔁 ПІДМІНА ФАЙЛУ В INPUT
-    const dt = new DataTransfer();
-    dt.items.add(converted);
-    e.target.files = dt.files;
-
-    statusEl.innerText = "Готово до  ✔";
-  } catch (err) {
-    console.error("❌ Конвертація не вдалася:", err);
-   showNotificationModal();
-    message.innerHTML = "Помилка конвертації відео";
-  }
-});
 function updateUploadUI(id, progress, timeLeftSec) {
   const el = document.getElementById(id);
   if (!el) return;
