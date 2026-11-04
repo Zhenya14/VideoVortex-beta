@@ -1648,7 +1648,6 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
     alert('Ваш браузер не підтримує цю функцію');
   }
 });
-const video = document.getElementById('video-player');
 const canvas = document.getElementById('video-canvas');
 const container = document.getElementById('player-container');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -1697,55 +1696,159 @@ function updateAmbientBackground() {
     animationFrameId = requestAnimationFrame(updateAmbientBackground);
 }
 
-// Запускаємо аналіз, коли відео починає грати
-video.addEventListener('play', () => {
-    updateAmbientBackground();
+
+const controls = document.getElementById("vv-controls");
+const playPause = document.getElementById("playPause");
+const centerPlay = document.getElementById("vv-center-play");
+const seekBar = document.getElementById("seekBar");
+const currentTime = document.getElementById("currentTime");
+const duration = document.getElementById("duration");
+const mute = document.getElementById("mute");
+const volume = document.getElementById("volume");
+const fullscreen = document.getElementById("fullscreen");
+const loading = document.getElementById("vv-loading");
+
+function formatTime(seconds) {
+    if (!Number.isFinite(seconds)) return "0:00";
+
+    const min = Math.floor(seconds / 60);
+    const sec = Math.floor(seconds % 60);
+
+    return `${min}:${String(sec).padStart(2, "0")}`;
+}
+
+function togglePlay() {
+    if (videoPlayer.paused) {
+        videoPlayer.play().catch(console.error);
+    } else {
+        videoPlayer.pause();
+    }
+}
+
+playPause.addEventListener("click", togglePlay);
+centerPlay.addEventListener("click", togglePlay);
+
+videoPlayer.addEventListener("click", togglePlay);
+
+videoPlayer.addEventListener("play", () => {
+    playPause.innerHTML =
+        '<i class="material-symbols">pause</i>';
+
+    centerPlay.style.display = "none";
 });
 
-// Зупиняємо аналіз, коли відео на паузі, щоб не витрачати ресурси
-video.addEventListener('pause', () => {
-    cancelAnimationFrame(animationFrameId);
+videoPlayer.addEventListener("pause", () => {
+    playPause.innerHTML =
+        '<i class="material-symbols">play_arrow</i>';
+
+    centerPlay.style.display = "block";
 });
 
-video.addEventListener('ended', () => {
-    cancelAnimationFrame(animationFrameId);
+videoPlayer.addEventListener("loadedmetadata", () => {
+    duration.textContent = formatTime(videoPlayer.duration);
 });
-document.addEventListener("DOMContentLoaded", () => {
-  const video = document.getElementById("video-player");
-  const playPause = document.getElementById("playPause");
-  const seek = document.getElementById("seek");
-  const time = document.getElementById("time");
-  const fullscreen = document.getElementById("fullscreen");
 
-  // Відео з Firebase
-  const videoKey = new URLSearchParams(window.location.search).get("key");
-  firebase.database().ref("videos/" + videoKey).once("value")
-    .then(snapshot => {
-      const data = snapshot.val();
-      if (data && data.url) {
-        video.src = data.url;  // підставляємо реальний URL з Firebase
-      }
-    });
+videoPlayer.addEventListener("timeupdate", () => {
+    currentTime.textContent = formatTime(videoPlayer.currentTime);
 
-  // Кнопки
-  playPause.onclick = () => video.paused ? video.play() : video.pause();
-  video.onplay = () => playPause.textContent = "❚❚";
-  video.onpause = () => playPause.textContent = "►";
+    if (Number.isFinite(videoPlayer.duration) && videoPlayer.duration > 0) {
+        seekBar.value = videoPlayer.currentTime / videoPlayer.duration * 100;
+    }
+});
 
-  video.ontimeupdate = () => {
-    const progress = (video.currentTime / video.duration) * 100;
-    seek.value = progress;
-    time.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
-  };
-  seek.oninput = () => video.currentTime = (seek.value/100) * video.duration;
+seekBar.addEventListener("input", () => {
+    if (Number.isFinite(videoPlayer.duration)) {
+        videoPlayer.currentTime = videoPlayer.duration * seekBar.value / 100;
+    }
+});
 
-  fullscreen.onclick = () => {
-    if(!document.fullscreenElement) video.parentElement.requestFullscreen();
-    else document.exitFullscreen();
-  };
+mute.addEventListener("click", () => {
+    videoPlayer.muted = !videoPlayer.muted;
 
-  function formatTime(s) {
-    const m = Math.floor(s/60), sec = Math.floor(s%60);
-    return `${m}:${sec.toString().padStart(2,"0")}`;
-  }
+    mute.innerHTML = videoPlayer.muted
+        ? '<i class="material-symbols">volume_off</i>'
+        : '<i class="material-symbols">volume_up</i>';
+});
+
+volume.addEventListener("input", () => {
+    videoPlayer.volume = Number(volume.value);
+    videoPlayer.muted = videoPlayer.volume === 0;
+});
+
+videoPlayer.addEventListener("volumechange", () => {
+    mute.innerHTML = videoPlayer.muted || videoPlayer.volume === 0
+        ? '<i class="material-symbols">volume_off</i>'
+        : '<i class="material-symbols">volume_up</i>';
+});
+
+fullscreen.addEventListener("click", async () => {
+    try {
+        if (!document.fullscreenElement) {
+            await document.getElementById("video-container")
+                .requestFullscreen();
+
+            const isVertical =
+                video.videoHeight > video.videoWidth;
+
+            if (screen.orientation?.lock) {
+                try {
+                    await screen.orientation.lock(
+                        isVertical ? "portrait" : "landscape"
+                    );
+                } catch (error) {
+                    console.warn("Orientation lock:", error);
+                }
+            }
+        } else {
+            await document.exitFullscreen();
+        }
+    } catch (error) {
+        console.error("Fullscreen error:", error);
+    }
+});
+
+document.addEventListener("fullscreenchange", () => {
+    fullscreen.innerHTML = document.fullscreenElement
+        ? '<i class="material-symbols">fullscreen_exit</i>'
+        : '<i class="material-symbols">fullscreen</i>';
+
+    if (!document.fullscreenElement) {
+        screen.orientation?.unlock?.();
+    }
+});
+
+document.addEventListener("fullscreenchange", () => {
+    fullscreen.innerHTML = document.fullscreenElement
+        ? '<i class="material-symbols">fullscreen_exit</i>'
+        : '<i class="material-symbols">fullscreen</i>';
+
+    if (!document.fullscreenElement) {
+        screen.orientation?.unlock?.();
+    }
+});
+document.addEventListener("fullscreenchange", () => {
+    fullscreen.innerHTML = document.fullscreenElement
+        ? '<i class="material-symbols">fullscreen_exit</i>'
+        : '<i class="material-symbols">fullscreen</i>';
+});
+
+videoPlayer.addEventListener("waiting", () => {
+    loading.style.display = "flex";
+});
+
+videoPlayer.addEventListener("playing", () => {
+    loading.style.display = "none";
+});
+
+videoPlayer.addEventListener("canplay", () => {
+    loading.style.display = "none";
+});
+
+videoPlayer.addEventListener("error", () => {
+    loading.style.display = "none";
+    console.error("Video playback error:", videoPlayer.error);
+});
+
+videoPlayer.addEventListener("ended", () => {
+    centerPlay.style.display = "block";
 });

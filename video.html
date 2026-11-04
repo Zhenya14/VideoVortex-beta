@@ -37,7 +37,7 @@
         <i class="material-symbols">arrow_back_ios_new</i>
     </a>
             <a href="index.html"><img id="logo" src="VideoVortex_logo.ico" style="height: 50px; width: 50px; border-radius: 50%;">
-            <h1 style="padding-left: 5px;" id="logo-text">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup></a>
+            <h1 style="padding-left: 5px;" id="logo-text">VideoVortex</h1></a>
 
     </nav>
     <div id="confetti-container"></div>
@@ -102,55 +102,116 @@
     <button id="agree-btn" onclick="closeNotificationAIModal()">ОК</button>
   </div>
   </div>
+
 <div id="player-container" class="player-container">
     <div id="video-container">
+
         <canvas id="video-canvas" style="display: none;"></canvas>
-        <video id="video-player" controls playsinline autoplay preload="auto"></video>
-        <div class="controls" style="display: none;">
-    <button id="playPause"><i class="material-symbols">play_arrow</i></button>
-    <input type="range" id="seekBar" value="0" min="0" step="1">
-    <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
-    <button id="mute"><i class="material-symbols">volume_up</i></button>
-    <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
-    <button id="fullscreen"><i class="material-symbols">fullscreen</i></button>
-  </div>
-</div>
 
-        <div class="video-info" id="video-info">
-<div class="details" id="details"></div>
-<hr>
-<div class="reactions" id="reactions">
-<a class="like" id="like">
-  <i class="material-symbols">thumb_up</i>
-  <p id="likeCount" style="padding: 5px 0px;">0</p>
-</a>
+        <video
+            id="video-player"
+            playsinline
+            preload="metadata">
+        </video>
 
-<a class="dislike" id="dislike">
-  <i class="material-symbols">thumb_down</i>
-  <p id="dislikeCount" style="padding: 5px 0px;">0</p>
-</a>
-<a class="popularBtn" id="popularBtn">
-  <i class="material-symbols">star</i><p class="icon-text" data-i18n="popularBtn" style="padding: 5px 0px;">Просунути відео</p> 
-    </a>
-<a class="shareBtn" id="shareBtn">
-  <i class="material-symbols">share</i><p class="icon-text" data-i18n="shareBtn" style="padding: 5px 0px;">Поділитися</p>  
-    </a>
-<a class="repostBtn" id="repostBtn">
-  <i class="material-symbols">repeat</i><p class="icon-text" data-i18n="repostBtn" style="padding: 5px 0px;">Зробити репост</p>  
-    </a>
-  <a class="saveVideoBtn" id="saveVideoBtn">
-  <i id="material-icon" class="material-symbols">bookmark</i><p class="icon-text" data-i18n="save" style="padding: 5px 0px;">Зберегти</p>  
-  </a>
-  <a class="sendSupportBtn" id="sendSupportBtn">
-  <i class="material-symbols">favorite</i><p data-i18n="supportBtn" style="padding: 5px 0px;">Підтримати автора</p> 
-  </a>
-</div>
+        <div class="vv-loading" id="vv-loading" style="display:none;">
+            <span class="vv-spinner"></span>
+        </div>
 
-<hr>
-            <button id="delete-button" style="display: none; background-color: red; color: white;">Видалити</button>
+        <button id="vv-center-play" class="vv-center-play">
+            <i class="material-symbols">play_arrow</i>
+        </button>
+
+        <div class="controls" id="vv-controls">
+
+            <button id="playPause">
+                <i class="material-symbols">play_arrow</i>
+            </button>
+
+            <span id="currentTime">0:00</span>
+
+            <input
+                type="range"
+                id="seekBar"
+                value="0"
+                min="0"
+                max="100"
+                step="0.1">
+
+            <span id="duration">0:00</span>
+
+            <button id="mute">
+                <i class="material-symbols">volume_up</i>
+            </button>
+
+            <input
+                type="range"
+                id="volume"
+                min="0"
+                max="1"
+                step="0.01"
+                value="1">
+
+            <button id="fullscreen">
+                <i class="material-symbols">fullscreen</i>
+            </button>
 
         </div>
     </div>
+
+    <div class="video-info" id="video-info">
+        <div class="details" id="details"></div>
+
+        <hr>
+
+        <div class="reactions" id="reactions">
+
+            <a class="like" id="like">
+                <i class="material-symbols">thumb_up</i>
+                <p id="likeCount" style="padding: 5px 0px;">0</p>
+            </a>
+
+            <a class="dislike" id="dislike">
+                <i class="material-symbols">thumb_down</i>
+                <p id="dislikeCount" style="padding: 5px 0px;">0</p>
+            </a>
+
+            <a class="popularBtn" id="popularBtn">
+                <i class="material-symbols">star</i>
+                <p class="icon-text" data-i18n="popularBtn" style="padding: 5px 0px;">Просунути відео</p>
+            </a>
+
+            <a class="shareBtn" id="shareBtn">
+                <i class="material-symbols">share</i>
+                <p class="icon-text" data-i18n="shareBtn" style="padding: 5px 0px;">Поділитися</p>
+            </a>
+
+            <a class="repostBtn" id="repostBtn">
+                <i class="material-symbols">repeat</i>
+                <p class="icon-text" data-i18n="repostBtn" style="padding: 5px 0px;">Зробити репост</p>
+            </a>
+
+            <a class="saveVideoBtn" id="saveVideoBtn">
+                <i id="material-icon" class="material-symbols">bookmark</i>
+                <p class="icon-text" data-i18n="save" style="padding: 5px 0px;">Зберегти</p>
+            </a>
+
+            <a class="sendSupportBtn" id="sendSupportBtn">
+                <i class="material-symbols">favorite</i>
+                <p data-i18n="supportBtn" style="padding: 5px 0px;">Підтримати автора</p>
+            </a>
+
+        </div>
+
+        <hr>
+
+        <button id="delete-button"
+            style="display:none;background-color:red;color:white;">
+            Видалити
+        </button>
+    </div>
+</div>
+
                 <div id="comments-root"></div>
 <h3 data-i18n="similar-title">Схожі відео:</h3>
 <div id="target-videos">
@@ -220,4 +281,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 </body>
-    </html>
+</html>
