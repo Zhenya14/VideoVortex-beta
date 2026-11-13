@@ -3097,12 +3097,14 @@ display: flex;
 }
 
 
-#nav-actions {
-    transition: opacity .3s ease;
-}
 
-.nav-a.search-active, #nav-actions {
-    opacity: 0;
+.nav a {
+  display: flex; 
+  gap: 15px; 
+  margin-left: auto;
+}
+.nav-a.search-active, .nav-logo.search-active {
+    display: none;
     visibility: hidden;
     pointer-events: none;
 }
@@ -3150,10 +3152,15 @@ display: flex;
 }
 
 .search.open {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    width: calc(100% - 20px);
+    position: relative;
+    top: auto;
+    left: 0;
+    right: auto;
+    margin-left: 15px;
+    margin-right: 10px;
+    width: 100%;
+    min-width: 220px;
+    transform: none;
 }
 
 .nav > div:first-child {

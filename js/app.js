@@ -623,6 +623,7 @@ function openSearch() {
     search.classList.add("open");
 
     document.querySelector(".nav-a").classList.add("search-active");
+     document.querySelector(".nav-logo").classList.add("search-active");
 
     setTimeout(() => searchInput.focus(), 300);
 }
@@ -632,7 +633,8 @@ closeSearch.addEventListener("click", (e) => {
 
     search.classList.remove("open");
 
-    document.querySelector(".nav").classList.remove("search-active");
+    document.querySelector(".nav-a").classList.remove("search-active");
+    document.querySelector(".nav-logo").classList.remove("search-active");
 
     searchInput.value = "";
     searchInput.blur();
@@ -713,7 +715,7 @@ async function searchAll() {
         const container = video.closest(".video-container");
 
         if (container) {
-            container.style.display = matches ? "flex" : "none";
+            container.style.display = matches ? "grid" : "none";
         }
     });
 
@@ -1628,7 +1630,7 @@ addButton.onclick = function() {
             document.getElementById("video").onclick = function() {
                          document.querySelector(".tab").style.display = 'flex';
                          document.querySelector(".stories-bar").style.display = 'flex';
-           document.getElementById("video-container").style.display = 'flex';
+           document.getElementById("video-container").style.display = 'grid';
         document.getElementById("photo-container").style.display = 'none';
         document.getElementById("author-info").style.display = 'none';
         }
@@ -1665,7 +1667,7 @@ document.getElementById("smart-settings").onclick = function() {
         document.querySelector(".settings-page").style.display = 'block';
         }
         document.getElementById("popular").addEventListener("click", function() {
-  document.getElementById("video-container").style.display = 'flex';
+  document.getElementById("video-container").style.display = 'grid';
   document.getElementById("photo-container").style.display = 'none';
   document.querySelector(".settings-page").style.display = 'none';
   document.getElementById("popular").classList.add("tab-button-liquid-glass");
@@ -1673,7 +1675,7 @@ document.getElementById("smart-settings").onclick = function() {
 });
 document.getElementById("popular").addEventListener("click", loadPopularVideos);
 document.getElementById("all").addEventListener("click", function() {
-  document.getElementById("video-container").style.display = 'flex';
+  document.getElementById("video-container").style.display = 'grid';
   document.getElementById("photo-container").style.display = 'none';
   document.querySelector(".settings-page").style.display = 'none';
   document.getElementById("popular").classList.remove("tab-button-liquid-glass");
@@ -1706,7 +1708,7 @@ document.getElementById("all").addEventListener("click", loadVideos);
               document.getElementById("smart-video").classList.add("button-liquid-glass");
               document.getElementById("smart-post").classList.remove("button-liquid-glass");
               document.getElementById("account-link").classList.remove("button-liquid-glass");
-           document.getElementById("video-container").style.display = 'flex';
+           document.getElementById("video-container").style.display = 'grid';
            document.getElementById("smart-settings").classList.remove("button-liquid-glass");
         document.querySelector(".settings-page").style.display = 'none';
         document.getElementById("photo-container").style.display = 'none';
