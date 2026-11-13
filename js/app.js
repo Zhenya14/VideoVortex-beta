@@ -618,12 +618,23 @@ function removeVideo(i) {
 const search = document.getElementById("search");
 const searchInput = document.getElementById("search-input");
 const closeSearch = document.getElementById("close-search");
+let navHideTimer;
 
 function openSearch() {
     search.classList.add("open");
 
-    document.querySelector(".nav-a").classList.add("search-active");
-     document.querySelector(".nav-logo").classList.add("search-active");
+    const navLinks = document.querySelector(".nav-a");
+    const navLogo = document.querySelector(".nav-logo");
+    navLinks.style.display = "";
+    navLogo.style.display = "";
+    navLinks.style.visibility = "hidden";
+    navLogo.style.visibility = "hidden";
+
+    clearTimeout(navHideTimer);
+    navHideTimer = setTimeout(() => {
+        navLinks.style.display = "none";
+        navLogo.style.display = "none";
+    }, 2000);
 
     setTimeout(() => searchInput.focus(), 300);
 }
@@ -633,8 +644,13 @@ closeSearch.addEventListener("click", (e) => {
 
     search.classList.remove("open");
 
-    document.querySelector(".nav-a").classList.remove("search-active");
-    document.querySelector(".nav-logo").classList.remove("search-active");
+    clearTimeout(navHideTimer);
+    const navLinks = document.querySelector(".nav-a");
+    const navLogo = document.querySelector(".nav-logo");
+    navLinks.style.display = "";
+    navLogo.style.display = "";
+    navLinks.style.visibility = "visible";
+    navLogo.style.visibility = "visible";
 
     searchInput.value = "";
     searchInput.blur();
