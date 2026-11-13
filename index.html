@@ -119,20 +119,25 @@ if ("serviceWorker" in navigator) {
             <a href="#" id="open-menu" onclick="toggleSidebar()">
     <i class="material-symbols">menu</i>
 </a>
-<img src="VideoVortex_logo.ico" id="logo" style="height: 50px; width: 50px; border-radius: 50%;">
-            <a href="index.html">
+<img  src="VideoVortex_logo.ico" id="logo" style="height: 50px; width: 50px; border-radius: 50%;">
+            <a  href="index.html">
             <h1 style="padding-left: 5px;" id="logo-text">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup><sup><div id="timer"></div></sup></a>
-<a class="search" onclick="openSearch()">
-  <i class="material-symbols">search</i>
-          
-          <div id="search-box" class="search-box-liquid-glass">
-  <input type="text" id="search-input" placeholder="Пошук..." oninput="searchAll()">
 
-  <button id="close-search" class="search-close">
-    <i class="material-symbols">close</i>
-  </button>
-          </div>
-</a>
+<div class="search" id="search" onclick="openSearch()">
+    <i id="search-button" class="material-symbols">search</i>
+
+    <input
+        type="text"
+        id="search-input"
+        placeholder="Пошук..."
+        oninput="searchAll()"
+    >
+
+    <button id="close-search" type="button">
+        <i class="material-symbols">close</i>
+    </button>
+</div>
+
         
 </div>
     </div>
@@ -177,16 +182,16 @@ if ("serviceWorker" in navigator) {
         <div style="display: flex; gap: 15px; margin-left: auto;">
                 <a href="#" class="notification" id="notification" onclick="showAccountNotificationsModal() "><i class="material-symbols">notifications</i></a>
            <a href="#" id="plus-desktop-button"><i class="material-symbols">add</i></a>
-            <a href="auth.html" id="auth-link">
+            <a  href="auth.html" id="auth-link">
                 <i class="material-symbols">account_circle</i><span data-i18n="signIn">Увійти</span>
             </a>
-            <a href="#" id="logout-link" style="display: none;">
+            <a  href="#" id="logout-link" style="display: none;">
                 <i class="material-symbols">logout</i><span class="icon-text">Вийти</span>
                 </a>
-            <a href="#" id="account-desktop-link" onclick="openAccountModal()" style="display: none;">
+            <a  href="#" id="account-desktop-link" onclick="openAccountModal()" style="display: none;">
                 <i class="material-symbols">person</i><span class="icon-text" id="email">Завантаження...</span>
             </a>
-                    <button data-i18n="installBtn" id="installBtn" style="display:none; width: 128px; right: 152px; position: fixed; top: 82px;">Встановити додаток</button>
+                    <button  data-i18n="installBtn" id="installBtn" style="display:none; width: 128px; right: 152px; position: fixed; top: 82px;">Встановити додаток</button>
         </div>
     </nav>
 

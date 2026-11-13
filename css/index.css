@@ -2044,26 +2044,6 @@ display: none;
   display: none;
 }
 /* Коли відкритий */
-.search-box-liquid-glass.open {
-  width: 100%; 
-  opacity: 1;
-}
-
-/* Поле вводу */
-
-
-/* Кнопка закриття */
-.search-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-}
-
-.search-close i {
-  font-size: 28px;
-  color: white;
-}
 
 /* Кнопка пошуку у navbar (опціонально) */
 
@@ -2322,6 +2302,7 @@ display: flex;
 .nav {
     display: flex;
     justify-content: center;
+  align-items: center;
     padding: 0px 20px;
 
     border-radius: 16px;
@@ -2329,7 +2310,10 @@ display: flex;
     z-index: 100;
     width: 97%;
         }
-
+.nav > div:first-child {
+    display: flex;
+    align-items: center;
+}
         
         .icon-text {
             margin-left: 5px;
@@ -2857,43 +2841,7 @@ display: none;
         -webkit-backdrop-filter: blur(3px);
         @apply bg-muted/25;
     }
-     .search-box-liquid-glass {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-
-  width: 0; /* приховано */
-  height: 60px;
-  max-width: 600px;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 10px;
-  overflow: hidden;
-
-  background: linear-gradient(
-    135deg,
-    rgba(90, 90, 100, 0.62),
-    rgba(45, 45, 52, 0.76)
-  );
-  backdrop-filter: blur(3px) saturate(140%);
-  -webkit-backdrop-filter: blur(3px);
-isolation: isolate;
-        backdrop-filter: blur(3px) saturate(140%);
-        -webkit-backdrop-filter: blur(3px);
-        @apply bg-muted/25;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-
-  opacity: 0;
-  z-index: 9999;
-
-  transition: width 0.3s ease, opacity 0.3s ease;
-}
+     
     
      .tab-liquid-glass {
   position: fixed;
@@ -3139,31 +3087,118 @@ display: flex;
     box-shadow: 0 0 0 rgb(59 130 246 / 0%);
         }
 
- .search {
-display: inline-block;
-padding: 12px 28px;
-margin: 0 10px;
-border-radius: 999px;
-text-align: center;
-text-decoration: none;
-color: white;
-  background: linear-gradient(
+ 
+
+/* Приховування елементів навігації */
+.nav > div:first-child,
+.nav > div:last-child {
+    transition: opacity 0.3s ease, transform 0.3s ease,
+                visibility 0.3s ease;
+}
+
+
+#nav-actions {
+    transition: opacity .3s ease;
+}
+
+.nav.search-active #nav-actions {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+/* SEARCH */
+
+.search {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+
+    margin-left: 15px;
+
+    width: 45px;
+    height: 45px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 0 11px;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    border-radius: 999px;
+    color: white;
+    cursor: pointer;
+    z-index: 10000;
+
+    background: linear-gradient(
     145deg,
     rgba(75, 75, 85, 0.38),
     rgba(45, 45, 55, 0.48),
     rgba(25, 25, 32, 0.55)
   );
-backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
--webkit-backdrop-filter: blur(3px);
-filter: url(#glass-distortion);
--webkit-filter: url(#glass-distortion);
 
-/* Тінь і обведення для глибини */
-box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-border: 1px solid rgba(255,255,255,0.08);
-cursor: pointer;
+    backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
+    -webkit-backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
 
+    border: 1px solid rgba(255,255,255,0.08);
+
+    transition: width 0.45s cubic-bezier(.22,1,.36,1);
 }
+
+.search.open {
+    width: 100%;
+}
+
+.nav > div:first-child {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+/* Іконка */
+#search-button {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+/* Поле введення */
+#search-input {
+    width: 0;
+    min-width: 0;
+    flex: 1;
+    opacity: 0;
+
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 15px;
+}
+
+.search.open #search-input {
+    opacity: 1;
+}
+
+/* Закриття */
+#close-search {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.search.open #close-search {
+    display: flex;
+}
+
 
 /* Полегшений режим VideoVortex */
 .no-liquid-glass #smart-menu,
@@ -3171,7 +3206,6 @@ cursor: pointer;
 .no-liquid-glass .tab-liquid-glass,
 .no-liquid-glass .tg-popup,
 .no-liquid-glass .open-liquid-glass-menu,
-.no-liquid-glass .search-box-liquid-glass,
 .no-liquid-glass .search {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -3187,9 +3221,9 @@ cursor: pointer;
 .no-liquid-glass .tab-liquid-glass,
 .no-liquid-glass .tg-popup,
 .no-liquid-glass .open-liquid-glass-menu,
-.no-liquid-glass .search-box-liquid-glass,
 .no-liquid-glass .search {
   transition: background-color 0.15s ease,
+              width 0.15s ease,
               opacity 0.15s ease !important;
 }
 

@@ -614,26 +614,32 @@ function removeVideo(i) {
   selectedVideos.splice(i, 1);
   renderVideoPreviews();
 }
-          const searchBox = document.getElementById("search-box");
-const closeSearch = document.getElementById("close-search");
+
+const search = document.getElementById("search");
 const searchInput = document.getElementById("search-input");
+const closeSearch = document.getElementById("close-search");
 
 function openSearch() {
-    searchBox.classList.add("open");
-document.querySelector("nav").style.display = "none";
-document.querySelector(".tab").style.display = "none";
-document.querySelector(".stories-bar").style.display = "none";
-    setTimeout(() => searchInput.focus(), 150);
+    search.classList.add("open");
+
+    document.querySelector(".nav").classList.add("search-active");
+
+    setTimeout(() => searchInput.focus(), 300);
 }
 
-closeSearch.addEventListener("click", () => {
-    searchBox.classList.remove("open");
-    document.querySelector("nav").style.display = "flex";
-    document.querySelector(".tab").style.display = "flex";
-document.querySelector(".stories-bar").style.display = "flex";
+closeSearch.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    search.classList.remove("open");
+
+    document.querySelector(".nav").classList.remove("search-active");
+
     searchInput.value = "";
+    searchInput.blur();
+
     searchAll();
 });
+
 async function isUserBlockedByMe(targetUid) {
 
   const me = firebase.auth().currentUser;
