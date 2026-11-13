@@ -3101,7 +3101,7 @@ display: flex;
     transition: opacity .3s ease;
 }
 
-.nav.search-active #nav-actions {
+.nav-a.search-active, #nav-actions {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -3112,6 +3112,7 @@ display: flex;
     position: relative;
     top: auto;
     right: auto;
+    left: 0;
     transform: none;
 
     margin-left: 15px;
@@ -3134,22 +3135,25 @@ display: flex;
     z-index: 10000;
 
     background: linear-gradient(
-    145deg,
-    rgba(75, 75, 85, 0.38),
-    rgba(45, 45, 55, 0.48),
-    rgba(25, 25, 32, 0.55)
-  );
+        145deg,
+        rgba(75, 75, 85, 0.38),
+        rgba(45, 45, 55, 0.48),
+        rgba(25, 25, 32, 0.55)
+    );
 
     backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
     -webkit-backdrop-filter: url(#displacementFilter) blur(3px) saturate(140%);
 
     border: 1px solid rgba(255,255,255,0.08);
 
-    transition: width 0.45s cubic-bezier(.22,1,.36,1);
+    transition: width 0.3s ease, left 0.3s ease;
 }
 
 .search.open {
-    width: 100%;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
 }
 
 .nav > div:first-child {

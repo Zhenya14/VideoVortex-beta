@@ -622,7 +622,7 @@ const closeSearch = document.getElementById("close-search");
 function openSearch() {
     search.classList.add("open");
 
-    document.querySelector(".nav").classList.add("search-active");
+    document.querySelector(".nav-a").classList.add("search-active");
 
     setTimeout(() => searchInput.focus(), 300);
 }

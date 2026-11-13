@@ -115,14 +115,14 @@ if ("serviceWorker" in navigator) {
 
  <nav class="nav">
  
-        <div style="display: flex; align-items: center;">
+        <div class="nav-a">
             <a href="#" id="open-menu" onclick="toggleSidebar()">
     <i class="material-symbols">menu</i>
 </a>
 <img  src="VideoVortex_logo.ico" id="logo" style="height: 50px; width: 50px; border-radius: 50%;">
             <a  href="index.html">
             <h1 style="padding-left: 5px;" id="logo-text">VideoVortex</h1><sup style="margin-left: 3px; font-size: 0.6em;">beta</sup><sup><div id="timer"></div></sup></a>
-
+        </div>
 <div class="search" id="search" onclick="openSearch()">
     <i id="search-button" class="material-symbols">search</i>
 
@@ -179,7 +179,7 @@ if ("serviceWorker" in navigator) {
          style="position: fixed; inset: 0; display: none; width: 100%; height: 100%; z-index: 999;">
     </div>
 <input id="galleryInput" type="file" accept="image/*,video/*" hidden>
-        <div style="display: flex; gap: 15px; margin-left: auto;">
+        <div class="nav-a" style="display: flex; gap: 15px; margin-left: auto;">
                 <a href="#" class="notification" id="notification" onclick="showAccountNotificationsModal() "><i class="material-symbols">notifications</i></a>
            <a href="#" id="plus-desktop-button"><i class="material-symbols">add</i></a>
             <a  href="auth.html" id="auth-link">
