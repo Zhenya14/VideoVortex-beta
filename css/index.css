@@ -3150,6 +3150,11 @@ display: flex;
     width: 100%;
     min-width: 220px;
 }
+
+.search.open {
+    width: 95%;
+    min-width: 220px;
+}
 .nav > div:first-child {
     position: relative;
     display: flex;
