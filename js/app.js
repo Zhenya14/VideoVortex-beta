@@ -639,11 +639,14 @@ closeSearch.addEventListener("click", (e) => {
     const navLinks = document.querySelector(".nav-a");
     const navLogo = document.querySelector(".nav-logo");
 
-    navLinks.style.display = "flex";
-    navLogo.style.display = "";
-
     searchInput.value = "";
     searchInput.blur();
+
+setTimeout(() => {
+        navLinks.style.display = "flex";
+        navLogo.style.display = "";
+    }, 300);
+
 
     searchAll();
 });
