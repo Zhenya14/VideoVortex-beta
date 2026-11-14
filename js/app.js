@@ -625,12 +625,12 @@ function openSearch() {
 
     const navLinks = document.querySelector(".nav-a");
     const navLogo = document.querySelector(".nav-logo");
-    navLinks.style.display = "";
-    navLogo.style.display = "";
+
     navLinks.style.visibility = "hidden";
     navLogo.style.visibility = "hidden";
 
     clearTimeout(navHideTimer);
+
     navHideTimer = setTimeout(() => {
         navLinks.style.display = "none";
         navLogo.style.display = "none";
