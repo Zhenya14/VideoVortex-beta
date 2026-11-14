@@ -618,7 +618,6 @@ function removeVideo(i) {
 const search = document.getElementById("search");
 const searchInput = document.getElementById("search-input");
 const closeSearch = document.getElementById("close-search");
-let navHideTimer;
 
 function openSearch() {
     search.classList.add("open");
@@ -626,15 +625,8 @@ function openSearch() {
     const navLinks = document.querySelector(".nav-a");
     const navLogo = document.querySelector(".nav-logo");
 
-    navLinks.style.visibility = "hidden";
-    navLogo.style.visibility = "hidden";
-
-    clearTimeout(navHideTimer);
-
-    navHideTimer = setTimeout(() => {
-        navLinks.style.display = "none";
-        navLogo.style.display = "none";
-    }, 2000);
+    navLinks.style.display = "none";
+    navLogo.style.display = "none";
 
     setTimeout(() => searchInput.focus(), 300);
 }
@@ -645,12 +637,12 @@ closeSearch.addEventListener("click", (e) => {
     search.classList.remove("open");
 
     clearTimeout(navHideTimer);
+
     const navLinks = document.querySelector(".nav-a");
     const navLogo = document.querySelector(".nav-logo");
-    navLinks.style.display = " flex";
+
+    navLinks.style.display = "flex";
     navLogo.style.display = "";
-    navLinks.style.visibility = "visible";
-    navLogo.style.visibility = "visible";
 
     searchInput.value = "";
     searchInput.blur();
