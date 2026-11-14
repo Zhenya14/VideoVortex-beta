@@ -3128,7 +3128,6 @@ display: flex;
 
 .search.open {
     position: relative;
-top: 100%;
 margin: 0;
 width: 90%;
 overflow: hidden;
