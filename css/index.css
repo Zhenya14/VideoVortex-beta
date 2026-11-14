@@ -1,4 +1,4 @@
-#photo-file, #video-file, #action-btn, #set-wallpaper-profile {
+.#photo-file, #video-file, #action-btn, #set-wallpaper-profile {
   display: none;
 }
 a,
@@ -3105,13 +3105,12 @@ display: flex;
     pointer-events: none;
 }
 /* SEARCH */
-
 .search {
-    position: relative;
-    top: auto;
-    right: auto;
+    position: absolute;
+    top: 50%;
     left: 0;
-    transform: none;
+    right: auto;
+    transform: translateY(-50%);
 
     margin-left: 15px;
 
@@ -3144,22 +3143,15 @@ display: flex;
 
     border: 1px solid rgba(255,255,255,0.08);
 
-    transition: width 0.3s ease, left 0.3s ease;
+    transition: width 0.3s ease;
 }
 
 .search.open {
-    position: relative;
-    top: auto;
-    left: 0;
-    right: auto;
-    margin-left: 15px;
-    margin-right: 10px;
     width: 100%;
     min-width: 220px;
-    transform: none;
 }
-
 .nav > div:first-child {
+    position: relative;
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
