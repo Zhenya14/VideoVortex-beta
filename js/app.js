@@ -636,8 +636,6 @@ closeSearch.addEventListener("click", (e) => {
 
     search.classList.remove("open");
 
-    clearTimeout(navHideTimer);
-
     const navLinks = document.querySelector(".nav-a");
     const navLogo = document.querySelector(".nav-logo");
 
