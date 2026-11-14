@@ -3143,17 +3143,13 @@ display: flex;
 }
 
 .search.open {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-
-    margin: 0;
-    width: min(500px, calc(100vw - 40px));
-    min-width: 220px;
-
-    overflow: hidden;
-    z-index: 10000;
+    position: relative;
+top: 100%;
+margin: 0;
+width: 90%;
+min-width: 220px;
+overflow: hidden;
+z-index: 10000;
 }
 
 
@@ -3185,8 +3181,6 @@ display: flex;
 }
 
 .search.open #search-input {
-    width: 100%;
-    min-width: 0;
     opacity: 1;
 }
 
