@@ -647,7 +647,7 @@ closeSearch.addEventListener("click", (e) => {
     clearTimeout(navHideTimer);
     const navLinks = document.querySelector(".nav-a");
     const navLogo = document.querySelector(".nav-logo");
-    navLinks.style.display = "";
+    navLinks.style.display = " flex";
     navLogo.style.display = "";
     navLinks.style.visibility = "visible";
     navLogo.style.visibility = "visible";
