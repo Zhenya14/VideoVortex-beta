@@ -641,10 +641,9 @@ closeSearch.addEventListener("click", (e) => {
 
     searchInput.value = "";
     searchInput.blur();
-
+navLogo.style.display = "";
 setTimeout(() => {
         navLinks.style.display = "flex";
-        navLogo.style.display = "";
     }, 300);
 
 
