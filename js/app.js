@@ -642,9 +642,6 @@ closeSearch.addEventListener("click", (e) => {
     navLinks.style.display = "flex";
     navLogo.style.display = "";
 
-    navLinks.style.visibility = "visible";
-    navLogo.style.visibility = "visible";
-
     searchInput.value = "";
     searchInput.blur();
 
