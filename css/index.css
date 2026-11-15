@@ -650,7 +650,65 @@ position: absolute;
     width: 10px;
     height: 10px;
 }
+/* Кнопки moreMenu */
+.more-menu-btn {
+    width: auto;
+    height: 44px;
+    min-height: 0;
+    padding: 5px 12px;
+    margin: 5px 0;
 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    box-sizing: border-box;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.08);
+
+    background: linear-gradient(
+        145deg,
+        rgba(42,56,75,0.92),
+        rgba(29,41,58,0.95)
+    );
+
+    color: white;
+    cursor: pointer;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    transition: 0.2s ease;
+}
+
+.more-menu-btn a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 !important;
+    text-decoration: none;
+}
+
+.more-menu-btn i {
+    font-size: 20px;
+}
+
+.more-menu-btn span {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.more-menu-btn sup {
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 10px;
+}
+
+.more-menu-btn:active {
+    transform: scale(0.97);
+}
 .more-profile {
     position: absolute;
     top: max(16px, env(safe-area-inset-top, 0px));
@@ -771,7 +829,7 @@ border: 2px solid #333333;
             outline: none;
             font-size: 1em;
 }
-        button { 
+        button:not(.more-menu-btn) { 
   display: inline-block;
   padding: 12px 28px;
   border-radius: 999px;
@@ -794,14 +852,14 @@ background-color: #24303f; /* Глибокий сіро-синій колір к
 }
 
 /* 🔮 підсвічування при наведенні */
-button:hover { 
+button:not(.more-menu-btn):hover { 
   border-color: #f472b6;
   box-shadow: 0 0 18px rgba(244, 114, 182, .65);
   transform: translateY(-2px);
 }
 
 /* ❇️ при кліку */
-button:active {
+button:not(.more-menu-btn):active {
   border-color: #06b6d4;
   box-shadow: 0 0 12px rgba(6, 182, 212, .75);
   transform: scale(0.96);

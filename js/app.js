@@ -3007,7 +3007,7 @@ function loadLibrary(user) {
 
             const editWallpaperProfile = document.createElement("button");
             editWallpaperProfile.type = "button";
-            editWallpaperProfile.classList.add("edit-wallpaper-profile");
+            editWallpaperProfile.classList.add("more-menu-btn");
 
             editWallpaperProfile.innerHTML = `
                 <a style="padding:3px 0px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
@@ -3031,7 +3031,7 @@ function loadLibrary(user) {
 
             const copyLinkProfile = document.createElement("button");
             copyLinkProfile.type = "button";
-            copyLinkProfile.classList.add("copy-link-profile");
+            copyLinkProfile.classList.add("more-menu-btn");
 
             copyLinkProfile.innerHTML = `
                 <a style="padding:3px 8px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
