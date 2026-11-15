@@ -2940,31 +2940,61 @@ authorInfo.appendChild(avatarLibraryEl);
 const fullNameLibrary = document.createElement("p");
 fullNameLibrary.textContent = `${userData.name || ""} ${userData.supername || ""}`;
 authorInfo.appendChild(fullNameLibrary);
-const more = document.createElement("button");
-more.classList.add("more-profile");
-more.innerHTML = `<i class="material-symbols">more_vert</i>`;
-authorInfo.appendChild(more);
+const moreProfile = document.createElement("button");
+moreProfile.classList.add("more-profile");
+
+moreProfile.innerHTML = `
+    <i id="more"class="material-symbols more-icon">more_vert</i>
+`;
+
 const moreMenu = document.createElement("div");
-        moreMenu.classList.add("more-menu");
-        moreMenu.style.display = "none";
-more.onclick = e => {
-    e.stopPropagation();
+moreMenu.classList.add("more-menu");
 
-    document.querySelectorAll(".more-menu").forEach(m => {
-        if (m !== moreMenu) m.style.display = "none";
-    });
+moreProfile.appendChild(moreMenu);
+authorInfo.appendChild(moreProfile);
 
-    moreMenu.style.display =
-        moreMenu.style.display === "block" ? "none" : "block";
-};
+ moreProfile.addEventListener("click", e => {
+                e.stopPropagation();
 
-authorInfo.addEventListener("click", e => {
-    if (!e.target.closest(".more-menu") && !e.target.closest(".more-profile")) {
-        document.querySelectorAll(".more-menu").forEach(m => {
-            m.style.display = "none";
-        });
-    }
-});
+                // Закриваємо інші відкриті меню
+                document.querySelectorAll(".more-profile.open").forEach(m => {
+                    if (m !== moreProfile) {
+                        m.classList.remove("open");
+                    }
+                });
+
+                // Перемикаємо поточне меню
+                moreProfile.classList.toggle("open");
+            });
+
+
+            // ▸ Клік усередині меню не повинен закривати його
+
+            moreMenu.addEventListener("click", e => {
+                e.stopPropagation();
+            });
+
+
+            // ▸ Закриття меню при кліку поза ним
+            // Видаляємо попередній обробник, щоб він не накопичувався
+
+            if (authorInfo._moreMenuOutsideHandler) {
+                document.removeEventListener(
+                    "click",
+                    authorInfo._moreMenuOutsideHandler
+                );
+            }
+
+            authorInfo._moreMenuOutsideHandler = () => {
+                moreProfile.classList.remove("open");
+            };
+
+            document.addEventListener(
+                "click",
+                authorInfo._moreMenuOutsideHandler
+            );
+
+
 const editWallpaperProfile = document.createElement("button");
 editWallpaperProfile.classList.add("edit-wallpaper-profile");
 editWallpaperProfile.innerHTML = `<a style="padding:3px 0px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">palette</i><span data-i18n="edit-wallpaper-profile">Редагувати шпалери профілю</span><sup class="badge-new-edit-wallpaper-profile" data-i18n="new">NEW</sup></a>`;
