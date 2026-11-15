@@ -650,6 +650,7 @@ position: absolute;
     width: 10px;
     height: 10px;
 }
+
 .more-profile {
     position: absolute;
     top: max(16px, env(safe-area-inset-top, 0px));
@@ -668,6 +669,7 @@ position: absolute;
 
     color: white;
     z-index: 10000;
+    cursor: pointer;
 
     background: linear-gradient(
         145deg,
@@ -706,6 +708,21 @@ position: absolute;
     justify-content: center;
 
     z-index: 2;
+    cursor: pointer;
+
+    opacity: 1;
+    visibility: visible;
+
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
+}
+
+/* При відкритті меню ховаємо три крапки */
+.more-profile.open .more-icon {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .more-menu {
@@ -735,6 +752,14 @@ position: absolute;
     pointer-events: auto;
     transform: translateY(0);
 }
+
+/* Курсор для пунктів меню */
+.more-menu button,
+.edit-wallpaper-profile,
+.copy-link-profile {
+    cursor: pointer;
+}
+
 .random-comments, #button-name, #button-supername, #save-name, #save-supername, .save {
 width: 100%; 
             background-color: black;

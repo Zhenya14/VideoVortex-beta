@@ -2918,42 +2918,53 @@ async function loadYouStories(user) {
   }
 }
 const avatarLibraryEl = document.createElement("div");
+
 function loadLibrary(user) {
     const authorInfo = document.getElementById("author-info");
     authorInfo.innerHTML = "";
 
     const uid = firebase.auth().currentUser.uid;
+
     const userRef = database.ref("users/" + uid);
     const historyRef = database.ref("users/" + uid + "/history");
-const saveVideosRef = database.ref("saveVideos/" + uid);
+    const saveVideosRef = database.ref("saveVideos/" + uid);
+
     userRef.once("value")
         .then(snapshot => {
             const userData = snapshot.val() || {};
 
             // ▸ Основна панель автора
 
+            avatarLibraryEl.id = "avatar-library";
+            avatarLibraryEl.classList.add("avatar");
+            authorInfo.appendChild(avatarLibraryEl);
 
-avatarLibraryEl.id = "avatar-library";
-avatarLibraryEl.classList.add("avatar");
-authorInfo.appendChild(avatarLibraryEl);
+            const fullNameLibrary = document.createElement("p");
+            fullNameLibrary.textContent =
+                `${userData.name || ""} ${userData.supername || ""}`.trim();
 
-const fullNameLibrary = document.createElement("p");
-fullNameLibrary.textContent = `${userData.name || ""} ${userData.supername || ""}`;
-authorInfo.appendChild(fullNameLibrary);
-const moreProfile = document.createElement("button");
-moreProfile.classList.add("more-profile");
+            authorInfo.appendChild(fullNameLibrary);
 
-moreProfile.innerHTML = `
-    <i id="more"class="material-symbols more-icon">more_vert</i>
-`;
+            // ▸ Меню додаткових налаштувань профілю
 
-const moreMenu = document.createElement("div");
-moreMenu.classList.add("more-menu");
+            const moreProfile = document.createElement("div");
+            moreProfile.classList.add("more-profile");
 
-moreProfile.appendChild(moreMenu);
-authorInfo.appendChild(moreProfile);
+            const moreIcon = document.createElement("i");
+            moreIcon.classList.add("material-symbols", "more-icon");
+            moreIcon.textContent = "more_vert";
 
- moreProfile.addEventListener("click", e => {
+            moreProfile.appendChild(moreIcon);
+
+            const moreMenu = document.createElement("div");
+            moreMenu.classList.add("more-menu");
+
+            moreProfile.appendChild(moreMenu);
+            authorInfo.appendChild(moreProfile);
+
+            // ▸ Відкриття та закриття меню
+
+            moreProfile.addEventListener("click", e => {
                 e.stopPropagation();
 
                 // Закриваємо інші відкриті меню
@@ -2967,13 +2978,11 @@ authorInfo.appendChild(moreProfile);
                 moreProfile.classList.toggle("open");
             });
 
-
             // ▸ Клік усередині меню не повинен закривати його
 
             moreMenu.addEventListener("click", e => {
                 e.stopPropagation();
             });
-
 
             // ▸ Закриття меню при кліку поза ним
             // Видаляємо попередній обробник, щоб він не накопичувався
@@ -2994,193 +3003,274 @@ authorInfo.appendChild(moreProfile);
                 authorInfo._moreMenuOutsideHandler
             );
 
+            // ▸ Кнопка редагування шпалер профілю
 
-const editWallpaperProfile = document.createElement("button");
-editWallpaperProfile.classList.add("edit-wallpaper-profile");
-editWallpaperProfile.innerHTML = `<a style="padding:3px 0px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">palette</i><span data-i18n="edit-wallpaper-profile">Редагувати шпалери профілю</span><sup class="badge-new-edit-wallpaper-profile" data-i18n="new">NEW</sup></a>`;
-editWallpaperProfile.onclick = () => {
-        showEditWallpaperProfileModal();
+            const editWallpaperProfile = document.createElement("button");
+            editWallpaperProfile.type = "button";
+            editWallpaperProfile.classList.add("edit-wallpaper-profile");
 
-        }
-moreMenu.appendChild(editWallpaperProfile);
-        const copyLinkProfile = document.createElement("button");
-        copyLinkProfile.classList.add("copy-link-profile");
-        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">link_2</i><span data-i18n="copy-link-profile">Копіювати посилання</span><sup class="badge-new-copy-link-profile" data-i18n="new">NEW</sup></a>`;
-        copyLinkProfile.onclick = async () => {
-        const profileUrl = `https://zhenya14.github.io/VideoVortex/profile.html?uid=${uid}`;
+            editWallpaperProfile.innerHTML = `
+                <a style="padding:3px 0px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
+                    <i class="material-symbols">palette</i>
+                    <span data-i18n="edit-wallpaper-profile">
+                        Редагувати шпалери профілю
+                    </span>
+                    <sup class="badge-new-edit-wallpaper-profile" data-i18n="new">
+                        NEW
+                    </sup>
+                </a>
+            `;
 
-    try {
-        // Копіюємо посилання у буфер обміну
-        await navigator.clipboard.writeText(profileUrl);
+            editWallpaperProfile.onclick = () => {
+                showEditWallpaperProfileModal();
+            };
 
-        // Візуальний відгук на кнопці (збереження старої іконки та зміна тексту)
-        const originalContent = copyLinkProfile.innerHTML;
-        copyLinkProfile.innerHTML = `<a style="padding:3px 8px; display:flex; border-radius: 50%; align-items:center; justify-content:center;"><i class="material-symbols">check</i><p data-i18n="copied">Скопійовано</p></a>`; // якщо використовуєте material-icons, замініть на <i class="material-icons">check</i>
-        copyLinkProfile.classList.add('copied-success'); // додаємо клас для зміни стилю (наприклад, зелений фон)
+            moreMenu.appendChild(editWallpaperProfile);
 
-        // Повертаємо кнопку до початкового стану через 2 секунди
-        setTimeout(() => {
-            copyLinkProfile.innerHTML = originalContent;
-            copyLinkProfile.classList.remove('copied-success');
-        }, 2000);
+            // ▸ Кнопка копіювання посилання на профіль
 
-    } catch (err) {
-        console.error('Помилка копіювання посилання:', err);
-        alert('Не вдалося скопіювати посилання автоматично.');
-    }
+            const copyLinkProfile = document.createElement("button");
+            copyLinkProfile.type = "button";
+            copyLinkProfile.classList.add("copy-link-profile");
 
-        };
-        moreMenu.appendChild(copyLinkProfile);
-// Контейнер для кнопок управления профилем
-const buttons = document.createElement("div");
-buttons.classList.add("buttons-library");
+            copyLinkProfile.innerHTML = `
+                <a style="padding:3px 8px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
+                    <i class="material-symbols">link_2</i>
+                    <span data-i18n="copy-link-profile">
+                        Копіювати посилання
+                    </span>
+                    <sup class="badge-new-copy-link-profile" data-i18n="new">
+                        NEW
+                    </sup>
+                </a>
+            `;
 
-// Кнопка "Изменить"
-const editProfile = document.createElement("button");
-editProfile.classList.add("edit");
-// Заменили <p> на <span>, чтобы убрать дефолтные отступы абзаца
-editProfile.innerHTML = `<i class="material-symbols">edit</i><span data-i18n="edit-profile">Змінити</span>`;
-editProfile.onclick = showAccountModal;
-buttons.appendChild(editProfile);
+            copyLinkProfile.onclick = async () => {
+                const profileUrl =
+                    `https://zhenya14.github.io/VideoVortex/profile.html?uid=${uid}`;
 
-// Кнопка "Архив" (стиль Telegram)
-const archive = document.createElement("button");
-archive.classList.add("archive");
-// Заменили <p> на <span> для идеального центрирования
-archive.innerHTML = `
-  <i class="material-symbols">archive</i>
-  <span data-i18n="archive">Архів</span>
-  <sup class="badge-new" data-i18n="new">NEW</sup>
-`;
-archive.onclick = () => {
-  showArchiveModal();
-};
-buttons.appendChild(archive);
-const yourProfile = document.createElement("button");
-yourProfile.classList.add("your-profile");
-// Заменили <p> на <span> для идеального центрирования
-yourProfile.innerHTML = `
-  <i class="material-symbols">account_circle</i>
-  <span data-i18n="my-profile">Мій профіль</span>
-  <sup class="badge-new" data-i18n="new">NEW</sup>
-`;
-yourProfile.onclick = () => {
-  window.location.href = `profile.html?uid=${uid}`
-}
-buttons.appendChild(yourProfile);
-authorInfo.appendChild(buttons);
-          const saveVideoInfo = document.createElement("div");
-saveVideoInfo.classList.add("save-video-info");
+                try {
+                    await navigator.clipboard.writeText(profileUrl);
 
-const saveVideoTitle = document.createElement("p");
-saveVideoTitle.innerHTML = `<span data-i18n="save-video">Збереженні відео</span><sup class="badge-new" data-i18n="new">NEW</sup>:`;
+                    const originalContent = copyLinkProfile.innerHTML;
 
-saveVideoInfo.appendChild(saveVideoTitle);
+                    copyLinkProfile.innerHTML = `
+                        <a style="padding:3px 8px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
+                            <i class="material-symbols">check</i>
+                            <p data-i18n="copied">Скопійовано</p>
+                        </a>
+                    `;
 
-// Добавляем все в главный контейнер библиотеки
+                    copyLinkProfile.classList.add("copied-success");
 
-            // ▸ Завантаження історії
-            saveVideosRef.once("value")
-          .then(snapshot => {
-    const saveVideoData = snapshot.val() || {};
+                    setTimeout(() => {
+                        copyLinkProfile.innerHTML = originalContent;
+                        copyLinkProfile.classList.remove("copied-success");
+                        applyTranslations();
+                    }, 2000);
 
-    if (Object.keys(saveVideoData).length === 0) {
-        const emptyMsg = document.createElement("p");
-        emptyMsg.textContent = "Немає збережених відео";
-        saveVideoInfo.appendChild(emptyMsg);
-        return;
-    }
-
-    Object.keys(saveVideoData).forEach(videoKey => {
-
-        const video = saveVideoData[videoKey];
-
-        // Контейнер одного збереженого відео
-        const saveVideoContainer = document.createElement("div");
-
-        saveVideoContainer.classList.add("save-video-item");
-
-        saveVideoContainer.style.display = "flex";
-        saveVideoContainer.style.alignItems = "center";
-        saveVideoContainer.style.marginBottom = "8px";
-        saveVideoContainer.style.cursor = "pointer";
-
-        // Прев'ю
-        const thumbnail = document.createElement("img");
-
-        thumbnail.src = video.thumbnail || "default.jpg";
-        thumbnail.alt = video.title || "Відео";
-
-        thumbnail.style.width = "80px";
-        thumbnail.style.height = "45px";
-        thumbnail.style.objectFit = "cover";
-        thumbnail.style.borderRadius = "6px";
-        thumbnail.style.marginRight = "10px";
-
-        saveVideoContainer.appendChild(thumbnail);
-
-        // Текстова інформація
-        const info = document.createElement("div");
-
-        info.innerHTML = `
-            <p style="margin:0;font-weight:bold;">
-                ${video.title || "Без назви"}
-            </p>
-
-            <p style="margin:0;font-size:0.9em;color:#ccc;">
-                Автор: ${video.author || "Невідомий"}
-            </p>
-
-            <p style="margin:0;font-size:0.8em;color:#999;">
-                Останній перегляд:
-                ${video.lastPlayed
-                    ? new Date(video.lastPlayed).toLocaleString()
-                    : "Невідомо"
+                } catch (err) {
+                    console.error("Помилка копіювання посилання:", err);
+                    alert("Не вдалося скопіювати посилання автоматично.");
                 }
-            </p>
-        `;
+            };
 
-        saveVideoContainer.appendChild(info);
+            moreMenu.appendChild(copyLinkProfile);
 
-        // Клік на відео
-        saveVideoContainer.onclick = () => {
-            window.location.href = `video.html?key=${video.videoKey}`;
-        };
+            // ▸ Контейнер кнопок керування профілем
 
-        // Додаємо в список
-        saveVideoInfo.appendChild(saveVideoContainer);
-    });
-})
-            applyTranslations();
-// Контейнер для истории
-const historyInfo = document.createElement("div");
-historyInfo.classList.add("history-info");
+            const buttons = document.createElement("div");
+            buttons.classList.add("buttons-library");
 
-const historyTitle = document.createElement("p");
-historyTitle.innerHTML = `<span data-i18n="history">Історія переглядів</span><sup class="badge-new" data-i18n="new">NEW</sup>:`;
+            // Кнопка «Змінити»
 
-const deleteHistoryViews = document.createElement("button");
-deleteHistoryViews.classList.add("delete-history-views");
-deleteHistoryViews.innerHTML = `<i class="material-symbols">delete</i><span data-i18n="delete-history-views">Очистити історію переглядів</span>`;
-deleteHistoryViews.onclick = () => {
-  deleteAllViewsHistory();
-};
+            const editProfile = document.createElement("button");
+            editProfile.classList.add("edit");
 
-historyInfo.appendChild(historyTitle);
-historyInfo.appendChild(deleteHistoryViews);
-authorInfo.appendChild(saveVideoInfo);
-authorInfo.appendChild(historyInfo);
-authorInfo.appendChild(moreMenu);
+            editProfile.innerHTML = `
+                <i class="material-symbols">edit</i>
+                <span data-i18n="edit-profile">Змінити</span>
+            `;
 
-// Добавляем все в главный контейнер библиотеки
+            editProfile.onclick = showAccountModal;
+            buttons.appendChild(editProfile);
 
-            // ▸ Завантаження історії
+            // Кнопка «Архів»
+
+            const archive = document.createElement("button");
+            archive.classList.add("archive");
+
+            archive.innerHTML = `
+                <i class="material-symbols">archive</i>
+                <span data-i18n="archive">Архів</span>
+                <sup class="badge-new" data-i18n="new">NEW</sup>
+            `;
+
+            archive.onclick = () => {
+                showArchiveModal();
+            };
+
+            buttons.appendChild(archive);
+
+            // Кнопка «Мій профіль»
+
+            const yourProfile = document.createElement("button");
+            yourProfile.classList.add("your-profile");
+
+            yourProfile.innerHTML = `
+                <i class="material-symbols">account_circle</i>
+                <span data-i18n="my-profile">Мій профіль</span>
+                <sup class="badge-new" data-i18n="new">NEW</sup>
+            `;
+
+            yourProfile.onclick = () => {
+                window.location.href = `profile.html?uid=${uid}`;
+            };
+
+            buttons.appendChild(yourProfile);
+
+            authorInfo.appendChild(buttons);
+
+            // ▸ Контейнер збережених відео
+
+            const saveVideoInfo = document.createElement("div");
+            saveVideoInfo.classList.add("save-video-info");
+
+            const saveVideoTitle = document.createElement("p");
+
+            saveVideoTitle.innerHTML = `
+                <span data-i18n="save-video">Збереженні відео</span>
+                <sup class="badge-new" data-i18n="new">NEW</sup>:
+            `;
+
+            saveVideoInfo.appendChild(saveVideoTitle);
+
+            // ▸ Завантаження збережених відео
+
+            saveVideosRef.once("value")
+                .then(snapshot => {
+                    const saveVideoData = snapshot.val() || {};
+
+                    if (Object.keys(saveVideoData).length === 0) {
+                        const emptyMsg = document.createElement("p");
+                        emptyMsg.textContent = "Немає збережених відео";
+
+                        saveVideoInfo.appendChild(emptyMsg);
+                        return;
+                    }
+
+                    Object.keys(saveVideoData).forEach(videoKey => {
+                        const video = saveVideoData[videoKey];
+
+                        // Контейнер відео
+
+                        const saveVideoContainer = document.createElement("div");
+                        saveVideoContainer.classList.add("save-video-item");
+
+                        saveVideoContainer.style.display = "flex";
+                        saveVideoContainer.style.alignItems = "center";
+                        saveVideoContainer.style.marginBottom = "8px";
+                        saveVideoContainer.style.cursor = "pointer";
+
+                        // Прев'ю
+
+                        const thumbnail = document.createElement("img");
+
+                        thumbnail.src = video.thumbnail || "default.jpg";
+                        thumbnail.alt = video.title || "Відео";
+
+                        thumbnail.style.width = "80px";
+                        thumbnail.style.height = "45px";
+                        thumbnail.style.objectFit = "cover";
+                        thumbnail.style.borderRadius = "6px";
+                        thumbnail.style.marginRight = "10px";
+
+                        saveVideoContainer.appendChild(thumbnail);
+
+                        // Текстова інформація
+
+                        const info = document.createElement("div");
+
+                        info.innerHTML = `
+                            <p style="margin:0;font-weight:bold;">
+                                ${video.title || "Без назви"}
+                            </p>
+
+                            <p style="margin:0;font-size:0.9em;color:#ccc;">
+                                Автор: ${video.author || "Невідомий"}
+                            </p>
+
+                            <p style="margin:0;font-size:0.8em;color:#999;">
+                                Останній перегляд:
+                                ${video.lastPlayed
+                                    ? new Date(video.lastPlayed).toLocaleString()
+                                    : "Невідомо"
+                                }
+                            </p>
+                        `;
+
+                        saveVideoContainer.appendChild(info);
+
+                        // Перехід до відео
+
+                        saveVideoContainer.onclick = () => {
+                            window.location.href =
+                                `video.html?key=${video.videoKey}`;
+                        };
+
+                        saveVideoInfo.appendChild(saveVideoContainer);
+                    });
+                })
+                .catch(err => {
+                    console.error("Помилка завантаження збережених відео:", err);
+                });
+
+            // ▸ Контейнер історії переглядів
+
+            const historyInfo = document.createElement("div");
+            historyInfo.classList.add("history-info");
+
+            const historyTitle = document.createElement("p");
+
+            historyTitle.innerHTML = `
+                <span data-i18n="history">Історія переглядів</span>
+                <sup class="badge-new" data-i18n="new">NEW</sup>:
+            `;
+
+            // Кнопка очищення історії
+
+            const deleteHistoryViews = document.createElement("button");
+            deleteHistoryViews.classList.add("delete-history-views");
+
+            deleteHistoryViews.innerHTML = `
+                <i class="material-symbols">delete</i>
+                <span data-i18n="delete-history-views">
+                    Очистити історію переглядів
+                </span>
+            `;
+
+            deleteHistoryViews.onclick = () => {
+                deleteAllViewsHistory();
+            };
+
+            historyInfo.appendChild(historyTitle);
+            historyInfo.appendChild(deleteHistoryViews);
+
+            // Додаємо контейнери до бібліотеки
+
+            authorInfo.appendChild(saveVideoInfo);
+            authorInfo.appendChild(historyInfo);
+
+            // ▸ Завантаження історії переглядів
+
             historyRef.once("value")
                 .then(snapshot => {
                     const historyData = snapshot.val() || {};
+
                     if (Object.keys(historyData).length === 0) {
                         const emptyMsg = document.createElement("p");
                         emptyMsg.textContent = "Історія переглядів порожня";
+
                         historyInfo.appendChild(emptyMsg);
                         return;
                     }
@@ -3188,47 +3278,77 @@ authorInfo.appendChild(moreMenu);
                     Object.keys(historyData).forEach(videoKey => {
                         const video = historyData[videoKey];
 
-                        // ▸ Контейнер одного відео в історії
+                        // Контейнер одного відео
+
                         const videoContainer = document.createElement("div");
                         videoContainer.classList.add("history-item");
+
                         videoContainer.style.display = "flex";
                         videoContainer.style.alignItems = "center";
                         videoContainer.style.marginBottom = "8px";
                         videoContainer.style.cursor = "pointer";
 
-                        // ▸ Прев’ю
+                        // Прев'ю
+
                         const thumbnail = document.createElement("img");
+
                         thumbnail.src = video.thumbnail || "default.jpg";
-                        thumbnail.alt = video.title;
+                        thumbnail.alt = video.title || "Відео";
+
                         thumbnail.style.width = "80px";
                         thumbnail.style.height = "45px";
                         thumbnail.style.objectFit = "cover";
                         thumbnail.style.borderRadius = "6px";
                         thumbnail.style.marginRight = "10px";
+
                         videoContainer.appendChild(thumbnail);
 
-                        // ▸ Текстова інформація
+                        // Текстова інформація
+
                         const info = document.createElement("div");
+
                         info.innerHTML = `
-                            <p style="margin:0;font-weight:bold;">${video.title}</p>
-                            <p style="margin:0;font-size:0.9em;color:#ccc;">Автор: ${video.author}</p>
-                            <p style="margin:0;font-size:0.8em;color:#999;">Останній перегляд: ${new Date(video.lastPlayed).toLocaleString()}</p>
+                            <p style="margin:0;font-weight:bold;">
+                                ${video.title || "Без назви"}
+                            </p>
+
+                            <p style="margin:0;font-size:0.9em;color:#ccc;">
+                                Автор: ${video.author || "Невідомий"}
+                            </p>
+
+                            <p style="margin:0;font-size:0.8em;color:#999;">
+                                Останній перегляд:
+                                ${video.lastPlayed
+                                    ? new Date(video.lastPlayed).toLocaleString()
+                                    : "Невідомо"
+                                }
+                            </p>
                         `;
+
                         videoContainer.appendChild(info);
 
-                        // ▸ Клік на відео
+                        // Перехід до відео
+
                         videoContainer.onclick = () => {
-                            window.location.href = `video.html?key=${videoKey}`;
+                            window.location.href =
+                                `video.html?key=${videoKey}`;
                         };
 
                         historyInfo.appendChild(videoContainer);
                     });
                 })
-                .catch(err => console.error("Помилка завантаження історії:", err));
+                .catch(err => {
+                    console.error("Помилка завантаження історії:", err);
+                });
+
+            // ▸ Застосування перекладів
 
             applyTranslations();
+
         })
-        .catch(err => console.error("Помилка завантаження даних користувача:", err));
+        .catch(err => {
+            console.error("Помилка завантаження даних користувача:", err);
+        });
 }
 const edit = document.getElementById("edit-profile");
 edit.onclick = showAccountModal;
