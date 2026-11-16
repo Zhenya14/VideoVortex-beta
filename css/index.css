@@ -738,8 +738,8 @@ body::after {
     z-index: 9998;
 
     transition:
-        opacity 0.3s ease,
-        visibility 0.3s ease;
+        opacity 0.05s ease,
+        visibility 0.05s ease;
 }
 
 body:has(.more-profile.open)::after {
