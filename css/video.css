@@ -1445,7 +1445,20 @@ position: fixed;
         .icon-text {
             margin-left: 5px;
         }
-
+.no-liquid-glass .nav-blur {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+.no-liquid-glass nav a {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 18%) !important;
+  background: rgba(35, 40, 52, 0.97) !important;
+}
         @media (max-width: 600px) {
             .icon-text {
                 display: none;

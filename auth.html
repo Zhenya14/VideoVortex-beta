@@ -23,6 +23,14 @@ html, body{
   height: 8px;
   background-color: transparent;
 }
+    .no-liquid-glass nav  {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 18%) !important;
+  background: rgba(35, 40, 52, 0.97) !important;
+    }
 .auth-input {
             width: 100%;
             height: 54px;
@@ -624,5 +632,6 @@ await database.ref(`userSearch/${user.uid}`).set({
 
 });
 </script>
+  <script src="js/support-liquid-glass.js"></script>
 </body>
 </html>

@@ -3380,6 +3380,7 @@ z-index: 10000;
 .no-liquid-glass .more-profile,
 .no-liquid-glass .tab-liquid-glass,
 .no-liquid-glass .tg-popup,
+.no-liguid-glass #plus-button,
 .no-liquid-glass .open-liquid-glass-menu,
 .no-liquid-glass .search {
   -webkit-backdrop-filter: none !important;
@@ -3395,6 +3396,7 @@ z-index: 10000;
 .no-liquid-glass .nav a,
 .no-liquid-glass .tab-liquid-glass,
 .no-liquid-glass .tg-popup,
+.no-liguid-glass #plus-button,
 .no-liquid-glass .open-liquid-glass-menu,
 .no-liquid-glass .search {
   transition: background-color 0.15s ease,
