@@ -1,4 +1,4 @@
-#photo-file, #video-file, #action-btn, #set-wallpaper-profile {
+55#photo-file, #video-file, #action-btn, #set-wallpaper-profile {
   display: none;
 }
 a,
@@ -684,9 +684,9 @@ position: absolute;
     border: 1px solid rgba(255,255,255,0.08);
 
     transition:
-        width 0.1s ease,
-        height 0.1s ease,
-        border-radius 0.1s ease;
+        width 0.2s ease,
+        height 0.2s ease,
+        border-radius 0.2s ease;
 }
 
 .more-profile.open {
@@ -738,8 +738,8 @@ body::after {
     z-index: 9998;
 
     transition:
-        opacity 0.1s ease,
-        visibility 0.1s ease;
+        opacity 0.2s ease,
+        visibility 0.2s ease;
 }
 
 body:has(.more-profile.open)::after {
