@@ -684,9 +684,9 @@ position: absolute;
     border: 1px solid rgba(255,255,255,0.08);
 
     transition:
-        width 0.2s ease,
-        height 0.2s ease,
-        border-radius 0.2s ease;
+        width 0.05s ease,
+        height 0.05s ease,
+        border-radius 0.05s ease;
 }
 
 .more-profile.open {
@@ -714,8 +714,8 @@ position: absolute;
     visibility: visible;
 
     transition:
-        opacity 0.2s ease,
-        visibility 0.2s ease;
+        opacity 0.05s ease,
+        visibility 0.05s ease;
 }
 
 /* При відкритті меню ховаємо три крапки */
@@ -738,8 +738,8 @@ body::after {
     z-index: 9998;
 
     transition:
-        opacity 0.2s ease,
-        visibility 0.2s ease;
+        opacity 0.05s ease,
+        visibility 0.05s ease;
 }
 
 body:has(.more-profile.open)::after {
@@ -763,9 +763,9 @@ body:has(.more-profile.open)::after {
     transform: translateY(-8px);
 
     transition:
-        opacity 0.2s ease,
-        transform 0.2s ease,
-        visibility 0.2s ease;
+        opacity 0.1s ease,
+        transform 0.1s ease,
+        visibility 0.1s ease;
 }
 
 /* Показуємо кнопки */
