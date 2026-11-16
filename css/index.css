@@ -763,9 +763,9 @@ body:has(.more-profile.open)::after {
     transform: translateY(-8px);
 
     transition:
-        opacity 0.25s ease,
-        transform 0.3s ease,
-        visibility 0.3s ease;
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
 }
 
 /* Показуємо кнопки */
