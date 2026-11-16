@@ -684,9 +684,9 @@ position: absolute;
     border: 1px solid rgba(255,255,255,0.08);
 
     transition:
-        width 0.3s ease,
-        height 0.3s ease,
-        border-radius 0.3s ease;
+        width 0.05s ease,
+        height 0.05s ease,
+        border-radius 0.05s ease;
 }
 
 .more-profile.open {
