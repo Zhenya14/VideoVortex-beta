@@ -7,6 +7,7 @@ button,
 button *,
 [role="button"],
 [role="button"] * {
+  cursor: pointer;
     -webkit-tap-highlight-color: transparent !important;
 }
 /* Стиль повзунка */
@@ -666,7 +667,6 @@ position: absolute;
 
     overflow: hidden;
     border-radius: 50px;
-
     color: white;
     z-index: 10000;
     cursor: pointer;
@@ -690,8 +690,8 @@ position: absolute;
 }
 
 .more-profile.open {
-    width: 250px;
-    height: 220px;
+    width: var(--menu-width, 250px);
+    height: var(--menu-height, 220px);
     border-radius: 22px;
 }
 
@@ -724,15 +724,37 @@ position: absolute;
     visibility: hidden;
     pointer-events: none;
 }
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
 
+    background: rgba(0, 0, 0, 0.08);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    z-index: 9998;
+
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+body:has(.more-profile.open)::after {
+    opacity: 1;
+    visibility: visible;
+}
 .more-menu {
-    position: absolute;
-    top: 55px;
-    left: 10px;
-    right: 10px;
+    position: relative;
 
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
+
+    width: 100%;
+    box-sizing: border-box;
 
     opacity: 0;
     visibility: hidden;
@@ -746,20 +768,111 @@ position: absolute;
         visibility 0.3s ease;
 }
 
+/* Показуємо кнопки */
 .more-profile.open .more-menu {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+
     transform: translateY(0);
 }
 
-/* Курсор для пунктів меню */
-.more-menu button,
-.edit-wallpaper-profile,
-.copy-link-profile {
-    cursor: pointer;
+/* Кнопки всередині меню */
+.more-menu > button {
+    width: 100%;
+    min-width: 0;
+
+    box-sizing: border-box;
 }
 
+
+/* Редагування шпалер профілю */
+.edit-wallpaper-profile,
+.copy-link-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    width: auto;
+    min-height: 42px;
+    padding: 7px 12px;
+    margin: 5px 0;
+
+    box-sizing: border-box;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.08);
+
+    background: linear-gradient(
+        145deg,
+        rgba(75,75,85,0.38),
+        rgba(45,45,55,0.48),
+        rgba(25,25,32,0.55)
+    );
+
+    color: white;
+    cursor: pointer;
+
+    backdrop-filter: blur(3px) saturate(140%);
+    -webkit-backdrop-filter: blur(3px) saturate(140%);
+
+    transition: 0.25s ease;
+}
+
+/* Внутрішній контейнер */
+.edit-wallpaper-profile a,
+.copy-link-profile a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 0 !important;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Іконки */
+.edit-wallpaper-profile i,
+.copy-link-profile i {
+    font-size: 13px;
+}
+
+/* Текст */
+.edit-wallpaper-profile span,
+.copy-link-profile span {
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* NEW */
+.badge-new-edit-wallpaper-profile,
+.badge-new-copy-link-profile {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    background: #1689ed;
+    color: white;
+}
+
+/* Наведення */
+.edit-wallpaper-profile:hover,
+.copy-link-profile:hover {
+    background: rgba(65,85,110,0.65);
+    border-color: rgba(120,185,255,0.3);
+}
+
+/* Натискання */
+.edit-wallpaper-profile:active,
+.copy-link-profile:active {
+    transform: scale(0.97);
+}
+
+/* Успішне копіювання */
+.copy-link-profile.copied-success {
+    border-color: rgba(60,200,120,0.5);
+    background: rgba(35,130,75,0.3);
+}
 .random-comments, #button-name, #button-supername, #save-name, #save-supername, .save {
 width: 100%; 
             background-color: black;
@@ -3264,6 +3377,7 @@ z-index: 10000;
 /* Полегшений режим VideoVortex */
 .no-liquid-glass #smart-menu,
 .no-liquid-glass .nav a,
+.no-liquid-glass .more-profile,
 .no-liquid-glass .tab-liquid-glass,
 .no-liquid-glass .tg-popup,
 .no-liquid-glass .open-liquid-glass-menu,

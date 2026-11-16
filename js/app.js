@@ -2947,7 +2947,7 @@ function loadLibrary(user) {
 
             // ▸ Меню додаткових налаштувань профілю
 
-            const moreProfile = document.createElement("div");
+            const moreProfile = document.createElement("a");
             moreProfile.classList.add("more-profile");
 
             const moreIcon = document.createElement("i");
@@ -3007,7 +3007,7 @@ function loadLibrary(user) {
 
             const editWallpaperProfile = document.createElement("button");
             editWallpaperProfile.type = "button";
-            editWallpaperProfile.classList.add("more-menu-btn");
+            editWallpaperProfile.classList.add("edit-wallpaper-profile");
 
             editWallpaperProfile.innerHTML = `
                 <a style="padding:3px 0px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
@@ -3031,7 +3031,7 @@ function loadLibrary(user) {
 
             const copyLinkProfile = document.createElement("button");
             copyLinkProfile.type = "button";
-            copyLinkProfile.classList.add("more-menu-btn");
+            copyLinkProfile.classList.add("copy-link-profile");
 
             copyLinkProfile.innerHTML = `
                 <a style="padding:3px 8px; display:flex; border-radius:50%; align-items:center; justify-content:center;">
