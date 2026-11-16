@@ -4723,8 +4723,9 @@ async function deleteArchive(url, archiveId) {
       .remove();
 
     // 3. UI update
-    showNotificationModal();
-    message.innerHTML = "Відео успішно видалено.";
+    document.getElementById("archive-modal").style.display = "none";
+    showPopup();
+    document.getElementById("message-notification").innerHTML = "Архів успішно видалено.";
     loadSecureFiles();
 
   } catch (error) {
@@ -5893,8 +5894,10 @@ async function uploadArchive() {
       createdAt: Date.now(),
       uid
     });
-
-    alert("Зашифровано і завантажено!");
+document.getElementById("archive-modal").style.display = "none";
+    showPopup();
+    document.getElementById("message-notification").innerHTML = "Архів успішно завантажено.";
+    loadSecureFiles();
   } catch (e) {
     console.error(e);
     alert("Помилка завантаження" + e.message);
@@ -7412,7 +7415,7 @@ async function uploadPhoto() {
         });
 
         showPopup();
-        message.innerHTML = "Фото завантажено!";
+        document.getElementById("message-notification").innerHTML = "Фото завантажено!";
         document.getElementById("upload-modal").style.display = "none";
 
         if (progressContainer) progressContainer.style.display = "none";

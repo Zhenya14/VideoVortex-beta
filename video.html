@@ -92,6 +92,19 @@
     </div>
   </div>
 </ios-modal>
+  <ios-modal id="delete-comment-modal">
+  <div class="ios-modal-window">
+
+    <div class="ios-modal-body">
+      <p id="deleted-information">Ви впевнені, що хочете видалити коментар?</p>
+    </div>
+
+    <div class="ios-modal-footer">
+      <button class="delete" data-i18n="deleted" onclick="deleteComment()">Видалити</button>
+      <button class="cancel" data-i18n="cancel" onclick="closeDeleteCommentModal()">Скасувати</button>
+    </div>
+  </div>
+</ios-modal>
 <div class="notification-popup" id="notification-popup">
 <p id="message-notification"></p>
 <p id="boostText" data-i18n="boost_1"></p></div>

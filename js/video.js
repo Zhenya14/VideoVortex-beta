@@ -974,8 +974,23 @@ userEl.onclick = () => {
 
             showModalBlocked();
         });
+const deleteComment = document.createElement("button");
+        deleteComment.className = "delete-button";
 
+        deleteComment.innerHTML = `
+            <span style="display:flex;align-items:center;gap:6px;">
+                <i class="material-symbols">delete</i>
+                <p>Видалити</p>
+            </span>
+        `;
+
+        deleteComment.addEventListener("click", () => {
+
+
+            showDeleteCommentModal();
+        });
         actionMenu.appendChild(blockUser);
+      actionMenu.appendChild(deleteComment);
         textContainer.appendChild(actionMenu);
 
         // =================== ASSEMBLE ===================
@@ -991,7 +1006,12 @@ userEl.onclick = () => {
     applyTranslations();
 }
 
-
+function showDeleteCommentModal() {
+  document.getElementById("delete-comment-modal").style.display = "flex";
+}
+function closeDeleteCommentModal() {
+  document.getElementById("delete-comment-modal").style.display = "none";
+}
 // =================== MODAL ===================
 
 function showModalBlocked() {
@@ -1848,12 +1868,15 @@ videoPlayer.addEventListener("volumechange", () => {
 
 fullscreen.addEventListener("click", async () => {
     try {
-        if (!document.fullscreenElement) {
-            await document.getElementById("video-container")
-                .requestFullscreen();
+        const videoContainer = document.getElementById("video-container");
 
-            const isVertical =
-                video.videoHeight > video.videoWidth;
+        if (!document.fullscreenElement) {
+            await videoContainer.requestFullscreen();
+
+            const isVertical = video.videoHeight > video.videoWidth;
+
+            videoContainer.classList.toggle("vertical-fullscreen", isVertical);
+            videoContainer.classList.toggle("horizontal-fullscreen", !isVertical);
 
             if (screen.orientation?.lock) {
                 try {
@@ -1873,22 +1896,17 @@ fullscreen.addEventListener("click", async () => {
 });
 
 document.addEventListener("fullscreenchange", () => {
-    fullscreen.innerHTML = document.fullscreenElement
-        ? '<i class="material-symbols">fullscreen_exit</i>'
-        : '<i class="material-symbols">fullscreen</i>';
+    const videoContainer = document.getElementById("video-container");
 
     if (!document.fullscreenElement) {
-        screen.orientation?.unlock?.();
-    }
-});
+        videoContainer.classList.remove(
+            "vertical-fullscreen",
+            "horizontal-fullscreen"
+        );
 
-document.addEventListener("fullscreenchange", () => {
-    fullscreen.innerHTML = document.fullscreenElement
-        ? '<i class="material-symbols">fullscreen_exit</i>'
-        : '<i class="material-symbols">fullscreen</i>';
-
-    if (!document.fullscreenElement) {
-        screen.orientation?.unlock?.();
+        if (screen.orientation?.unlock) {
+            screen.orientation.unlock();
+        }
     }
 });
 document.addEventListener("fullscreenchange", () => {
