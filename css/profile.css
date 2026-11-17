@@ -134,7 +134,7 @@ position: relative;
    МОБІЛЬНІ ПРИСТРОЇ
 ================================ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
     #vv-author {
         max-width: 55vw;
         gap: 5px;
