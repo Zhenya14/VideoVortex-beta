@@ -33,13 +33,13 @@ html {
 #player-container {
     position: relative;
     width: 100%;
+  height: 410px;
     max-width: 800px;
-  margin-top: 18%;
+    margin-top: 5%;
     overflow: hidden;
     border-radius: 12px;
     background: #121212;
 }
-
 #video-container {
     position: relative;
     width: 100%;
@@ -595,12 +595,12 @@ button:active {
     background-color: #2a2727;
 }
 
-        #video-player {
-    width: 100%;
-    margin-top: 76px;
-    max-width: 800px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+#video-player {
+width: 100%;
+height: stretch;
+display: unset;
+border-radius: 12px;
+box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 img.video-item {
   border-radius: 14px;
