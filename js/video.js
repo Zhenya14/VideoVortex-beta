@@ -782,8 +782,8 @@ document.addEventListener("click", () => {
 
 // =================== LOAD COMMENTS ===================
 
-async function loadComments(videoKey, videoOwnerEmail) {
-    const commentsContainer = document.getElementById(`comments-${videoKey}`);
+async function loadComments(videoKey, videoOwnerEmail) {    
+  const commentsContainer = document.getElementById(`comments-${videoKey}`);
     if (!commentsContainer) return;
 
     commentsContainer.innerHTML = "";
@@ -800,11 +800,11 @@ async function loadComments(videoKey, videoOwnerEmail) {
     }
 
     const videoKeyLocal = getVideoKey(videoKey);
-    const children = Object.values(snapshot.val() || {});
+    const children = Object.entries(snapshot.val() || {});
 
     const fragment = document.createDocumentFragment();
 
-    for (const data of children) {
+    for (const [commentKey, data] of children) {
 
         if (
             data.isPrivate &&
@@ -987,7 +987,7 @@ const deleteComment = document.createElement("button");
         deleteComment.addEventListener("click", () => {
 
 
-            showDeleteCommentModal();
+            showDeleteCommentModal(commentKey, videoKey);
         });
         actionMenu.appendChild(blockUser);
       actionMenu.appendChild(deleteComment);
@@ -1005,9 +1005,40 @@ const deleteComment = document.createElement("button");
     commentsContainer.appendChild(fragment);
     applyTranslations();
 }
+let commentToDelete = null;
+let ownerVideo = null;
+function showDeleteCommentModal(commentKey, videoKey) {
+    commentToDelete = commentKey;
+  ownerVideo = videoKey;
+    document.getElementById("delete-comment-modal").style.display = "flex";
+}
+async function deleteComment() {
+    if (!commentToDelete) return;
+const uid = firebase.auth().currentUser.uid;
+    try {
+      const videoRef = database.ref(`videos/${ownerVideo}`);
+        const videoSnapshot = await videoRef.once("value");
+        const commentRef = database.ref(`comments/${commentToDelete}`);
+        const snapshot = await commentRef.once("value");
 
-function showDeleteCommentModal() {
-  document.getElementById("delete-comment-modal").style.display = "flex";
+        if (!snapshot.exists()) {
+            alert("Коментар не знайдено.");
+            return;
+        }
+
+        const commentData = snapshot.val();
+        const videoData = videoSnapshot.val();
+        // Перевіряємо, чи є поточний користувач автором
+      
+
+        await commentRef.remove();
+
+        document.getElementById("delete-comment-modal").style.display = "none";
+        commentToDelete = null;
+
+    } catch (error) {
+        console.error("Помилка видалення коментаря:", error);
+    }
 }
 function closeDeleteCommentModal() {
   document.getElementById("delete-comment-modal").style.display = "none";
